@@ -4,16 +4,16 @@ import streamlit as st
 from query_helper_functions import *
 
 
-with open('D:\Desktop\Polimi\Tesi\TesiWebsite\websitename\\resources\\text.yaml', 'r') as file:
+with open('website/resources/text.yaml', 'r') as file:
     text = yaml.safe_load(file)
 
 st.set_page_config(layout="wide")
 
 
 ##### BACKEND #####
-db = st.connection(name="thesis", type="sql", url="sqlite:///websitename/data/thesis.db")
+db = st.connection(name="thesis", type="sql", url="sqlite:///website/data/thesis.db")
 if 'query_results' not in st.session_state:
-    st.session_state.query_results = pandas.DataFrame
+    st.session_state.query_results = pandas.DataFrame()
 
 
 def run_query(query, params):
