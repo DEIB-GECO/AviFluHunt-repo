@@ -1,0 +1,13 @@
+
+1) Extract all mutations associated with one serotype (but not others (, at
+   least x% of the time)
+    Args:
+        serotype:   The serotype to be considered
+        exlusive:   A boolean to get only those mutations associated with
+        			a single serotype
+        percentage: If exclusive is true, the percentage that corrisponds to a
+        			mutation being exlusive (default is 100%)
+
+    Returns:    A list of mutations associated with the particular serotype
+--------------------------------------------------------------------------------  
+2)

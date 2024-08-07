@@ -1,0 +1,13 @@
+website_name: "<h3>Website Name</h3>"
+welcome_message: "<p>Welcome to ???</p>"
+
+### QUERY TAB
+
+query_select_label: "Select Query"
+submit_button: "Run"
+
+## QUERIES TEXT
+query_label: "Query:"
+
+# QUERY ONE
+query_one: "Retrieve the tuples (mutation, effect) associated with an effect type."
