@@ -1,0 +1,12 @@
+version: '3.1'
+
+services:
+  flu-hunter:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: flu-hunter:latest
+    container_name: flu-hunter
+    ports:
+      - 6960:8501
+
