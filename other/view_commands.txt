@@ -1,0 +1,14 @@
+CREATE VIEW MutationsMarkers AS
+SELECT mutation.mutation_id, marker.marker_id
+FROM Mutation mutation
+JOIN Marker marker
+ON mutation.annotation_id = marker.annotation_id
+AND mutation.position = marker.position
+AND mutation.alt = marker.allele
+
+CREATE VIEW SegmentMarkers AS
+SELECT segment.segment_id, marker.marker_id
+FROM SegmentData segment
+JOIN Marker marker
+ON segment.annotation_id = marker.annotation_id
+AND SUBSTRING(segment.sequence, marker.position, 1) = marker.allele
