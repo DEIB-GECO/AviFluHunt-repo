@@ -168,3 +168,5 @@ cython_debug/
 *.csv
 *.fasta.log
 venv/
+
+*.fasta~
