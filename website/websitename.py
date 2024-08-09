@@ -1,6 +1,4 @@
 import pandas
-import yaml
-import streamlit as st
 from query_helper_functions import *
 
 
@@ -28,6 +26,16 @@ query_col, space, results_col = st.columns([0.35, 0.10, 0.55])
 
 display_query_dict = {
     text["query_one"]: display_query_1,
+    text["query_two"]: display_query_2,
+    text["query_three"]: display_query_3,
+    text["query_four"]: display_query_4,
+    text["query_five"]: display_query_5,
+    text["query_six"]: display_query_6,
+    text["query_seven"]: display_query_7,
+    text["query_eight"]: display_query_8,
+    text["query_nine"]: display_query_9,
+    text["query_ten"]: display_query_10,
+    text["query_eleven"]: display_query_11,
 }
 
 with query_col:

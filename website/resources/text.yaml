@@ -1,5 +1,5 @@
-website_name: "<h3>Website Name</h3>"
-welcome_message: "<p>Welcome to ???</p>"
+website_name: "<h3>FluHunter</h3>"
+welcome_message: "<p>Welcome to FluHunter</p>"
 
 ### QUERY TAB
 
@@ -9,5 +9,15 @@ submit_button: "Run"
 ## QUERIES TEXT
 query_label: "Query:"
 
-# QUERY ONE
-query_one: "Retrieve the tuples (mutation, effect) associated with an effect type."
+# QUERIES
+query_one: "1: Get all effects associated with a particular mutation"
+query_two: "2: Get all mutations by % human hosts"
+query_three: "3: Get the most common aa mutations"
+query_four: "4: Get the most common aa mutations per annotation"
+query_five: "5: For each mutation get the number of segments that exhibit it, and the percentage over the total number of segments"
+query_six: "6: Retrieve all markers associated to groups that contain a particular mutation"
+query_seven: "7: Retrieve the marker (if any) associated to a group of mutations"
+query_eight: "8: Identify mutations at a specific position"
+query_nine: "9: Retrieve all effects by specific type"
+query_ten: "10: Identify mutations associated with a particular effect type"
+query_eleven: "11: Get all effects associated with a specific mutation"

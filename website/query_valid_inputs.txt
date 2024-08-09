@@ -1,0 +1,27 @@
+QUERY 1:
+- H5N1:NP:I41V
+- H5N1:HA1:N154S
+
+QUERY 6:
+- H5N1:NP:I41V
+- H5N1:NP:N319K
+- H5N1:NP:E210D
+- H5N1:NP:K198R
+- H5N1:NP:V109T
+
+QUERY 7:
+- H5N1:M2:A30V
+- none with more than one mutation
+
+QUERY 9:
+- "increased"
+
+QUERY 10:
+- "increased"
+
+QUERY 11:
+- H5N1:NP:I41V
+- H5N1:NP:I41V
+- H5N1:NP:N319K
+- H5N1:NP:N319K
+- H5N1:NP:E210D
