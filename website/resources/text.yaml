@@ -9,13 +9,18 @@ submit_button: "Run"
 css: "
 <style>
   .keyword {
-    color: blue;
+    color: magenta;
+    font-weight: bold;
   }
   .domain {
-    color: yellow;
+    color: darkorange;
+    font-weight: bold;
+  }
+  .param {
+    color: chartreuse;
   }
   a {
-    color: red;
+    color: hotpink;
   }
 </style>
 "
@@ -27,26 +32,118 @@ query_label: "Choose your query:"
 
 # QUERY ONE
 query_one_label: "Select the Effects associated to a Mutation"
-query_one_explanation: "
+query_one_explanation: "<p style='text-align: justify;'>
 This query returns all the <span class='keyword'>Effects</span> associated with a 
 particular <span class='keyword'>Mutation</span>, and, if available, which specific 
 <span class='domain'>host</span> the effect was found in or which 
-<span class='domain'>drug</span> was the effect associated with.
-<br>For more information see <a href='/' target='_blank'>documentation</a><br><br>
+<span class='domain'>drug</span> was the effect associated with.</p>
+For more information see the <a href='/' target='_blank'>documentation</a>.<br><br>
 "
 query_one_param_a_label: "Serotype:"
 query_one_param_b_label: "Segment:"
 query_one_param_c_label: "Mutation:"
 query_one_examples: "Examples:<br>&emsp;- H5N1:NP:I41V<br>&emsp;- H5N1:HA1N154S"
 
+# QUERY TWO
+query_two_label: "Get all mutations by % human hosts"
+query_two_explanation: "<p style='text-align: justify;'>
+This query returns all the <span class='keyword'>Mutations</span>, in particular their names,
+by the percentage of <span class='domain'>humans host</span> affected by it in the database. 
+The query can be customized to include a <span class='param'>limit</span> in the number of results and a 
+<span class='param'>range</span> for the percentages.</p>
+For more information see the <a href='/' target='_blank'>documentation</a>.<br><br>
+"
+query_two_param_a_label: "Min: (default: 0%)"
+query_two_param_b_label: "Max: (default: 100%)"
+query_two_param_c_label: "Limit: "
 
-query_two: "2: Get all mutations by % human hosts"
-query_three: "3: Get the most common aa mutations"
-query_four: "4: Get the most common aa mutations per annotation"
+# QUERY 3
+query_three_label: "Get the most common aminoacid mutations"
+query_three_explanation: "<p style='text-align: justify;'>
+This query returns all the <span class='keyword'>Mutations</span>, in particular the combination 
+of their <span class='domain'>reference allele</span>, <span class='domain'>alternative allele</span> and position
+sorted by the number of instances in the database.</p>
+For more information see the <a href='/' target='_blank'>documentation</a>.<br>
+"
+
+# QUERY 4
+query_four_label: "Get the most common aminoacid mutations per annotation"
+query_four_explanation: "<p style='text-align: justify;'>
+This query returns all the <span class='keyword'>Mutations</span> for the given <span class='domain'>annotation</span>, 
+in particular the combination of their <span class='domain'>reference allele</span>, 
+<span class='domain'>alternative allele</span> and position
+sorted by the number of instances in the database.</p>
+For more information see the <a href='/' target='_blank'>documentation</a>.<br><br>
+"
+query_four_param_a_label: "Annotation Name: "
+
+# QUERY 5 TODO
 query_five: "5: For each mutation get the number of segments that exhibit it, and the percentage over the total number of segments"
-query_six: "6: Retrieve all markers associated to groups that contain a particular mutation"
-query_seven: "7: Retrieve the marker (if any) associated to a group of mutations"
-query_eight: "8: Identify mutations at a specific position"
-query_nine: "9: Retrieve all effects by specific type"
-query_ten: "10: Identify mutations associated with a particular effect type"
-query_eleven: "11: Get all effects associated with a specific mutation"
+
+# QUERY 6
+query_six_label: "Retrieve the Markers that contain a specific Mutation"
+query_six_explanation: "<p style='text-align: justify;'>
+This query returns all the <span class='domain'>Markers</span> that 
+are associated by a specific <span class='keyword'>Mutation</span></p>
+For more information see the <a href='/' target='_blank'>documentation</a>.<br><br>
+"
+query_six_param_a_label: "Serotype:"
+query_six_param_b_label: "Segment:"
+query_six_param_c_label: "Mutation:"
+query_six_examples: "
+Examples:
+<br>&emsp;- H5N1:NP:I41V
+<br>&emsp;- H5N1:NP:N319K
+<br>&emsp;- H5N1:NP:E210D
+<br>&emsp;- H5N1:NP:K198R
+<br>&emsp;- H5N1:NP:V109T
+"
+
+# QUERY 7 TODO
+query_seven_label: "Retrieve the marker (if any) associated to a group of mutations"
+query_seven_explanation: "<p style='text-align: justify;'>
+TODO
+For more information see the <a href='/' target='_blank'>documentation</a>.<br><br>
+"
+query_seven_param_a_label: ""
+query_seven_examples: "
+Examples:
+<br>&emsp;- H5N1:M2:A30V
+"
+
+# QUERY 8
+query_eight_label: "Identify Mutations at a specific Position"
+query_eight_explanation: "<p style='text-align: justify;'>
+This query returns all the <span class='keyword'>Mutations</span> that occur in a position inside the 
+range (<span class='param'>Start</span>, <span class='param'>End</span>) [inclusive].
+<br>The query is sorted on the <span class='keyword'>Position</span> itself.</p>
+For more information see the <a href='/' target='_blank'>documentation</a>.<br><br>
+"
+query_eight_param_a_label: "Start Position: "
+query_eight_param_b_label: "End Position: "
+
+# QUERY 9
+query_nine_label: "Retrieve all Effects of a specific Type"
+query_nine_explanation: "<p style='text-align: justify;'>
+This query returns all the <span class='domain'>Effects</span> given a type, ad example the input
+<span class='param'>'increased'</span> will return, among others, the Effects 'Increased HA stability' and 
+'Increased infectivity in mammalian cells'.</p>
+For more information see the <a href='/' target='_blank'>documentation</a>.<br><br>
+"
+query_nine_param_a_label: "Effect Type:"
+query_nine_examples: "Examples:<br>&emsp;- increased"
+
+# QUERY 10
+query_ten_label: "Identify Mutations associated with a particular Effect Type"
+query_ten_explanation: "<p style='text-align: justify;'>
+This query returns all the <span class='keyword'>Mutations</span> 
+associated to the presence of a particular <span class='domain'>Effect</span> in a host.
+<br><span class='domain'>Effects</span> can also be partial to include multiple types.</p>
+For more information see the <a href='/' target='_blank'>documentation</a>.<br><br>
+"
+query_ten_param_a_label: "Effect Type: "
+query_ten_examples: "Examples:<br>&emsp;- increased"
+
+# RESULTS TAB
+result: "<h5>Results</h5>"
+no_result: "<h5>Sorry, the query didn't find any result, please try with a different input</h5>"

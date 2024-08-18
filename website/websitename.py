@@ -1,4 +1,6 @@
 import pandas
+import streamlit
+
 from query_helper_functions import *
 from streamlit.components.v1 import html
 
@@ -27,26 +29,17 @@ query_col, space, results_col = st.columns([0.35, 0.10, 0.55])
 
 display_query_dict = {
     text["query_one_label"]: display_query_1,
-    text["query_two"]: display_query_2,
-    text["query_three"]: display_query_3,
-    text["query_four"]: display_query_4,
+    text["query_two_label"]: display_query_2,
+    text["query_three_label"]: display_query_3,
+    text["query_four_label"]: display_query_4,
     text["query_five"]: display_query_5,
-    text["query_six"]: display_query_6,
-    text["query_seven"]: display_query_7,
-    text["query_eight"]: display_query_8,
-    text["query_nine"]: display_query_9,
-    text["query_ten"]: display_query_10,
-    text["query_eleven"]: display_query_11,
+    text["query_six_label"]: display_query_6,
+    text["query_seven_label"]: display_query_7,
+    text["query_eight_label"]: display_query_8,
+    text["query_nine_label"]: display_query_9,
+    text["query_ten_label"]: display_query_10,
 }
 
-st.markdown(
-    """
-    <div id="div"></div>
-    <script>
-        alert("Hello World!");
-    </script>
-    """,
-    unsafe_allow_html=True,)
 with query_col:
 
     #st.write(text["website_name"], unsafe_allow_html=True)
@@ -63,6 +56,27 @@ with query_col:
 
 with results_col:
     if st.session_state.query_results.empty:
-        st.write("TODO", unsafe_allow_html=True)
+        st.write("")
+        st.write("")
+        st.write("")
+        st.write("")
+        st.write("")
+        st.write("")
+        st.write(text["no_result"], unsafe_allow_html=True)
+        st.markdown(
+            """
+            <style>
+                div [data-testid=stImage]{
+                    text-align: center;
+                    display: block;
+                    margin-left: auto;
+                    margin-right: auto;
+                    width: 100%;
+                }
+            </style>
+            """, unsafe_allow_html=True
+        )
+        st.image("https://i.pinimg.com/originals/6d/a8/78/6da878cf7299317b2bd88c7471111626.gif")
     else:
+        st.write(text["result"], unsafe_allow_html=True)
         st.dataframe(st.session_state.query_results, use_container_width=True)
