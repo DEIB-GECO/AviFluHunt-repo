@@ -8,7 +8,51 @@ with open('website/resources/text.yaml', 'r') as file:
 
 def display_query_1(db):
 
-    query_sql = ("SELECT * FROM Effect e "
+    st.write(text["query_one_explanation"], unsafe_allow_html=True)
+
+    name_serotype, name_segment = st.columns(2)
+    if 'query_1_serotype' not in st.session_state:
+        st.session_state.query_1_serotype = "H5N1"
+    if 'query_1_segment' not in st.session_state:
+        st.session_state.query_1_segment = "HA"
+    if 'query_1_mutations' not in st.session_state:
+        st.session_state.query_1_mutations = set()
+
+    def get_mutations():
+        query = ("SELECT mutation_name "
+                 "FROM Mutation "
+                 "WHERE serotype_name = :serotype_name "
+                 "AND annotation_name = :annotation_name")
+        params = {
+            'serotype_name': st.session_state.query_1_serotype,
+            'annotation_name': st.session_state.query_1_segment
+        }
+        st.session_state.query_1_mutations = db.query(query, params=params)
+
+    with name_serotype:
+
+        def update_serotype():
+            st.session_state.query_1_serotype = st.session_state.query_input_1a
+            get_mutations()
+
+        serotypes = db.query("SELECT name FROM Serotype ")
+        st.selectbox(label=text["query_one_param_a_label"],
+                     key='query_input_1a', options=serotypes, on_change=update_serotype)
+
+    with name_segment:
+
+        def update_segment():
+            st.session_state.query_1_segment = st.session_state.query_input_1b
+            get_mutations()
+
+        segments = db.query("SELECT annotation_name FROM Annotation ")
+        st.selectbox(label=text["query_one_param_b_label"],
+                     key='query_input_1b', options=segments, on_change=update_segment)
+
+    query_input_1 = st.selectbox(label=text["query_one_param_c_label"],
+                                 options=st.session_state.query_1_mutations)
+
+    query_sql = ("SELECT effect_full AS Effect, host AS Host, drug AS Drug FROM Effect e "
                  "WHERE e.effect_id in "
                  "(SELECT pem.effect_id "
                  "FROM MutationsMarkers mtm "
@@ -18,11 +62,8 @@ def display_query_1(db):
                  "WHERE mut.mutation_name = :mutation_name)")
     query_inputs = {}
 
-    st.write(text["query_one"])
-
-    query_input_1 = st.text_input("Mutation Name: ")
+    st.write(text["query_one_examples"], unsafe_allow_html=True)
     query_inputs["mutation_name"] = query_input_1
-
     return query_sql, query_inputs
 
 

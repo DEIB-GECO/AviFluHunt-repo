@@ -1,5 +1,6 @@
 import pandas
 from query_helper_functions import *
+from streamlit.components.v1 import html
 
 
 with open('website/resources/text.yaml', 'r') as file:
@@ -25,7 +26,7 @@ def run_query(query, params):
 query_col, space, results_col = st.columns([0.35, 0.10, 0.55])
 
 display_query_dict = {
-    text["query_one"]: display_query_1,
+    text["query_one_label"]: display_query_1,
     text["query_two"]: display_query_2,
     text["query_three"]: display_query_3,
     text["query_four"]: display_query_4,
@@ -38,19 +39,30 @@ display_query_dict = {
     text["query_eleven"]: display_query_11,
 }
 
+st.markdown(
+    """
+    <div id="div"></div>
+    <script>
+        alert("Hello World!");
+    </script>
+    """,
+    unsafe_allow_html=True,)
 with query_col:
 
-    st.write(text["website_name"], unsafe_allow_html=True)
-    st.write(text["welcome_message"], unsafe_allow_html=True)
+    #st.write(text["website_name"], unsafe_allow_html=True)
+    #st.write(text["welcome_message"], unsafe_allow_html=True)
 
     with st.container():
 
-        query_selection = st.selectbox(label=text["query_select_label"],
-                                       options=display_query_dict.keys())
-        st.write(text["query_label"])
+        st.write(text["query_select_label"], unsafe_allow_html=True)
+        query_selection = st.selectbox(label=text["query_select_label"], label_visibility="collapsed",
+                                       options=display_query_dict.keys(),)
         query_sql, query_inputs = display_query_dict[query_selection](db)
+        st.markdown(text["css"], unsafe_allow_html=True)
         st.button(label=text["submit_button"], on_click=run_query, args=[query_sql, query_inputs])
 
 with results_col:
-    st.dataframe(st.session_state.query_results, use_container_width=True)
-    
+    if st.session_state.query_results.empty:
+        st.write("TODO", unsafe_allow_html=True)
+    else:
+        st.dataframe(st.session_state.query_results, use_container_width=True)

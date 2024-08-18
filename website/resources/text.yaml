@@ -3,14 +3,43 @@ welcome_message: "<p>Welcome to FluHunter</p>"
 
 ### QUERY TAB
 
-query_select_label: "Select Query"
+query_select_label: "<h4>Query:</h4>"
 submit_button: "Run"
 
+css: "
+<style>
+  .keyword {
+    color: blue;
+  }
+  .domain {
+    color: yellow;
+  }
+  a {
+    color: red;
+  }
+</style>
+"
+
 ## QUERIES TEXT
-query_label: "Query:"
+query_label: "Choose your query:"
 
 # QUERIES
-query_one: "1: Get all effects associated with a particular mutation"
+
+# QUERY ONE
+query_one_label: "Select the Effects associated to a Mutation"
+query_one_explanation: "
+This query returns all the <span class='keyword'>Effects</span> associated with a 
+particular <span class='keyword'>Mutation</span>, and, if available, which specific 
+<span class='domain'>host</span> the effect was found in or which 
+<span class='domain'>drug</span> was the effect associated with.
+<br>For more information see <a href='/' target='_blank'>documentation</a><br><br>
+"
+query_one_param_a_label: "Serotype:"
+query_one_param_b_label: "Segment:"
+query_one_param_c_label: "Mutation:"
+query_one_examples: "Examples:<br>&emsp;- H5N1:NP:I41V<br>&emsp;- H5N1:HA1N154S"
+
+
 query_two: "2: Get all mutations by % human hosts"
 query_three: "3: Get the most common aa mutations"
 query_four: "4: Get the most common aa mutations per annotation"
