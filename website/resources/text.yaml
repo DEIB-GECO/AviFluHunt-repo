@@ -1,9 +1,17 @@
-website_name: "<h3>FluHunter</h3>"
+website_name: "<h2>FluHunter</h2>"
 welcome_message: "<p>Welcome to FluHunter</p>"
+
+### README TAB
+
+ack: "We gratefully acknowledge all data contributors, i.e., the Authors and their Originating 
+laboratories responsible for obtaining the specimens, and their Submitting laboratories 
+for generating the genetic sequence and metadata and sharing via the GISAID Initiative, 
+on which this research is based. https://gisaid.org/ (Publication: Shu, Yuelong, and John McCauley.
+'GISAID: Global initiative on sharing all influenza data–from vision to reality.'Eurosurveillance 22.13 (2017): 30494.)"
 
 ### QUERY TAB
 
-query_select_label: "<h4>Query:</h4>"
+query_select_label: "Query"
 submit_button: "Run"
 
 css: "
@@ -37,55 +45,68 @@ This query returns all the <span class='keyword'>Effects</span> associated with 
 particular <span class='keyword'>Mutation</span>, and, if available, which specific 
 <span class='domain'>host</span> the effect was found in or which 
 <span class='domain'>drug</span> was the effect associated with.</p>
-For more information see the <a href='/' target='_blank'>documentation</a>.<br><br>
+
 "
 query_one_param_a_label: "Serotype:"
 query_one_param_b_label: "Segment:"
 query_one_param_c_label: "Mutation:"
-query_one_examples: "Examples:<br>&emsp;- H5N1:NP:I41V<br>&emsp;- H5N1:HA1N154S"
+query_one_examples: "Examples:<br>&emsp;- H5N1:NP:I41V<br>&emsp;- H5N1:HA1:N154S"
+query_one_error: "<h5>No effect was found associated to mutation: </h5>"
 
 # QUERY TWO
 query_two_label: "Get all mutations by % human hosts"
 query_two_explanation: "<p style='text-align: justify;'>
-This query returns all the <span class='keyword'>Mutations</span>, in particular their names,
-by the percentage of <span class='domain'>humans host</span> affected by it in the database. 
+This query returns all the <span class='keyword'>Mutations</span> ordered 
+by the percentage of segments exhibiting the mutation collected from <span class='domain'>human hosts</span> (instead of other kinds of hosts). 
 The query can be customized to include a <span class='param'>limit</span> in the number of results and a 
 <span class='param'>range</span> for the percentages.</p>
-For more information see the <a href='/' target='_blank'>documentation</a>.<br><br>
+
 "
 query_two_param_a_label: "Min: (default: 0%)"
 query_two_param_b_label: "Max: (default: 100%)"
 query_two_param_c_label: "Limit: "
+query_two_error: "<h5>There are no mutations with a percentage of human hosts in the desired range</h5>"
 
 # QUERY 3
-query_three_label: "Get the most common aminoacid mutations"
+query_three_label: "Get the most common aminoacid mutations for the selected serotype"
 query_three_explanation: "<p style='text-align: justify;'>
-This query returns all the <span class='keyword'>Mutations</span>, in particular the combination 
+This query returns all the <span class='keyword'>Mutations</span> of a particular 
+<span class='keyword'>Serotype</span>, in particular the combination 
 of their <span class='domain'>reference allele</span>, <span class='domain'>alternative allele</span> and position
 sorted by the number of instances in the database.</p>
-For more information see the <a href='/' target='_blank'>documentation</a>.<br>
 "
+query_three_param_a_label: "Serotype:"
+query_three_error: "<h5>There are no mutations for the selected serotype</h5>"
 
 # QUERY 4
-query_four_label: "Get the most common aminoacid mutations per annotation"
+query_four_label: "Get the most common aminoacid mutations per annotation and serotype"
 query_four_explanation: "<p style='text-align: justify;'>
 This query returns all the <span class='keyword'>Mutations</span> for the given <span class='domain'>annotation</span>, 
 in particular the combination of their <span class='domain'>reference allele</span>, 
 <span class='domain'>alternative allele</span> and position
 sorted by the number of instances in the database.</p>
-For more information see the <a href='/' target='_blank'>documentation</a>.<br><br>
+
 "
 query_four_param_a_label: "Annotation Name: "
+query_four_param_b_label: "Serotype:"
+query_four_error: "<h5>No mutations exists for the selected pair (annotation, serotype)</h5>"
 
-# QUERY 5 TODO
-query_five: "5: For each mutation get the number of segments that exhibit it, and the percentage over the total number of segments"
+# QUERY 5
+query_five_label: "For each mutation get the number of segments that exhibit it, and the percentage over the total number of segments"
+query_five_explanation: "<p style='text-align: justify;'>
+For each identified <span class='keyword'>Mutation</span>, this query determines how many 
+<span class='keyword'>Segments</span> of the dataset exhibit the mutation. 
+Additionally, it calculates the percentage of these segments relative to the total number of 
+segments in the dataset. This provides insight into the prevalence of each mutation within 
+the entire set of segments, allowing to understand how common or rare each mutation is across the dataset."
+
 
 # QUERY 6
 query_six_label: "Retrieve the Markers that contain a specific Mutation"
 query_six_explanation: "<p style='text-align: justify;'>
 This query returns all the <span class='domain'>Markers</span> that 
-are associated by a specific <span class='keyword'>Mutation</span></p>
-For more information see the <a href='/' target='_blank'>documentation</a>.<br><br>
+are associated with a specific <span class='keyword'>Mutation</span></p>
+
 "
 query_six_param_a_label: "Serotype:"
 query_six_param_b_label: "Segment:"
@@ -98,18 +119,20 @@ Examples:
 <br>&emsp;- H5N1:NP:K198R
 <br>&emsp;- H5N1:NP:V109T
 "
+query_six_error: "<h5>There are no marker containing the specified mutation</h5>"
 
-# QUERY 7 TODO
+# QUERY 7
 query_seven_label: "Retrieve the marker (if any) associated to a group of mutations"
 query_seven_explanation: "<p style='text-align: justify;'>
-TODO
-For more information see the <a href='/' target='_blank'>documentation</a>.<br><br>
+Given a group of <span class='keyword'>Mutations</span>, this query returns an <span class='domain'>Markers</span>
+associated with at least all the mutations.
 "
-query_seven_param_a_label: ""
+query_seven_param_a_label: "Mutation Group: "
 query_seven_examples: "
 Examples:
 <br>&emsp;- H5N1:M2:A30V
 "
+query_seven_error: "<h5>There are no markers associated to the given group of mutations</h5>"
 
 # QUERY 8
 query_eight_label: "Identify Mutations at a specific Position"
@@ -117,10 +140,11 @@ query_eight_explanation: "<p style='text-align: justify;'>
 This query returns all the <span class='keyword'>Mutations</span> that occur in a position inside the 
 range (<span class='param'>Start</span>, <span class='param'>End</span>) [inclusive].
 <br>The query is sorted on the <span class='keyword'>Position</span> itself.</p>
-For more information see the <a href='/' target='_blank'>documentation</a>.<br><br>
+
 "
 query_eight_param_a_label: "Start Position: "
 query_eight_param_b_label: "End Position: "
+query_eight_error: "<h5>There are no mutations in the specified range</h5>"
 
 # QUERY 9
 query_nine_label: "Retrieve all Effects of a specific Type"
@@ -128,21 +152,24 @@ query_nine_explanation: "<p style='text-align: justify;'>
 This query returns all the <span class='domain'>Effects</span> given a type, ad example the input
 <span class='param'>'increased'</span> will return, among others, the Effects 'Increased HA stability' and 
 'Increased infectivity in mammalian cells'.</p>
-For more information see the <a href='/' target='_blank'>documentation</a>.<br><br>
+
 "
 query_nine_param_a_label: "Effect Type:"
 query_nine_examples: "Examples:<br>&emsp;- increased"
+query_nine_error: "<h5>There are no effect of the specified type</h5>"
 
 # QUERY 10
-query_ten_label: "Identify Mutations associated with a particular Effect Type"
+query_ten_label: "Identify Mutations associated with a particular Effect"
 query_ten_explanation: "<p style='text-align: justify;'>
 This query returns all the <span class='keyword'>Mutations</span> 
 associated to the presence of a particular <span class='domain'>Effect</span> in a host.
 <br><span class='domain'>Effects</span> can also be partial to include multiple types.</p>
-For more information see the <a href='/' target='_blank'>documentation</a>.<br><br>
+
 "
 query_ten_param_a_label: "Effect Type: "
+query_ten_param_b_label: "Serotype: "
 query_ten_examples: "Examples:<br>&emsp;- increased"
+query_ten_error: "<h5>There are no mutations associated with the selected effect</h5>"
 
 # RESULTS TAB
 result: "<h5>Results</h5>"

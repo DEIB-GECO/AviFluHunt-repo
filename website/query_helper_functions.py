@@ -22,7 +22,11 @@ def display_query_1(db):
         query = ("SELECT mutation_name "
                  "FROM Mutation "
                  "WHERE serotype_name = :serotype_name "
-                 "AND annotation_name = :annotation_name")
+                 "AND annotation_name = :annotation_name "
+                 "AND mutation_name in ("
+                 "SELECT mutation_name FROM Mutation "
+                 "JOIN MutationsMarkers on Mutation.mutation_id = MutationsMarkers.mutation_id "
+                 "JOIN PaperAndEffectOfMarker ON MutationsMarkers.marker_id = PaperAndEffectOfMarker.marker_id )")
         params = {
             'serotype_name': st.session_state.query_1_serotype,
             'annotation_name': st.session_state.query_1_segment
@@ -35,7 +39,9 @@ def display_query_1(db):
             st.session_state.query_1_serotype = st.session_state.query_input_1a
             get_mutations()
 
-        serotypes = db.query("SELECT name FROM Serotype ")
+        serotypes = db.query("SELECT name FROM Serotype WHERE "
+                             "name IN ("
+                             "SELECT DISTINCT serotype_name from Mutation)")
         st.selectbox(label=text["query_one_param_a_label"],
                      key='query_input_1a', options=serotypes, on_change=update_serotype)
 
@@ -64,7 +70,7 @@ def display_query_1(db):
 
     st.write(text["query_one_examples"], unsafe_allow_html=True)
     query_inputs["mutation_name"] = mutation_input
-    return query_sql, query_inputs
+    return query_sql, query_inputs, "" if mutation_input is None else text["query_one_error"] + mutation_input
 
 
 def display_query_2(db):
@@ -72,8 +78,8 @@ def display_query_2(db):
     st.write(text["query_two_explanation"], unsafe_allow_html=True)
 
     query_sql = ("SELECT m.mutation_name AS 'Mutation Name', "
-                 "total_count AS Instances, human_count AS 'Human Hosts', "
-                 "human_count * 100.0 / total_count AS Percentage "
+                 "total_count AS 'N. Segments', human_count AS 'N. Segments from Human', "
+                 "round(human_count * 100.0 / total_count, 2) AS Percentage "
                  "FROM MutationCounts mc "
                  "JOIN Mutation m ON m.mutation_id = mc.mutation_id "
                  "WHERE :min <= human_count * 100.0 / total_count AND human_count * 100.0 / total_count <= :max "
@@ -88,7 +94,7 @@ def display_query_2(db):
     query_inputs["max"] = int(max_input) if min_input < max_input else 100
     query_inputs["limit"] = int(limit_input)
 
-    return query_sql, query_inputs
+    return query_sql, query_inputs, "" if False is None else text["query_two_error"]
 
 
 def display_query_3(db):
@@ -97,28 +103,45 @@ def display_query_3(db):
 
     query_sql = ("SELECT ref as Reference, alt AS Alternate, COUNT(*) AS 'N. Instances' "
                  "FROM Mutation "
+                 "WHERE Mutation.serotype_name = :serotype_name "
                  "GROUP BY alt, ref "
                  "ORDER BY COUNT(*) DESC;")
-    query_inputs = {}
-    return query_sql, query_inputs
+
+    serotypes = db.query("SELECT name FROM Serotype WHERE "
+                         "name IN ("
+                         "SELECT DISTINCT serotype_name from Mutation)")
+    st.selectbox(label=text["query_three_param_a_label"],
+                 key='query_input_3a', options=serotypes)
+
+    query_inputs = {"serotype_name": st.session_state.query_input_3a}
+    return query_sql, query_inputs, "" if False is None else text["query_three_error"]
 
 
 def display_query_4(db):
 
     st.write(text["query_four_explanation"], unsafe_allow_html=True)
 
-    query_sql = ("SELECT ref as Reference, alt AS Alternate, COUNT(*) AS 'N. Instances' "
+    query_sql = ("SELECT ref as Reference, alt AS Alternate, COUNT(*) AS 'N. Segments' "
                  "FROM Mutation "
-                 "WHERE annotation_name LIKE :annotation_name "
+                 "WHERE serotype_name = :serotype_name AND "
+                 "annotation_name LIKE :annotation_name "
                  "GROUP BY alt, ref, annotation_name "
                  "ORDER BY COUNT(*) DESC")
     query_inputs = {}
 
     segments = db.query("SELECT annotation_name FROM Annotation ")
     annotation_name_input = st.selectbox(label=text["query_four_param_a_label"], options=segments)
-    query_inputs["annotation_name"] = annotation_name_input
 
-    return query_sql, query_inputs
+    serotypes = db.query("SELECT name FROM Serotype WHERE "
+                         "name IN ("
+                         "SELECT DISTINCT serotype_name from Mutation)")
+    st.selectbox(label=text["query_four_param_b_label"],
+                 key='query_input_4b', options=serotypes)
+
+    query_inputs["annotation_name"] = annotation_name_input
+    query_inputs["serotype_name"] = st.session_state.query_input_4b
+
+    return query_sql, query_inputs, "" if False is None else text["query_four_error"]
 
 
 def display_query_5(db):
@@ -148,10 +171,11 @@ def display_query_6(db):
         st.session_state.query_6_mutations = set()
 
     def get_mutations():
-        query = ("SELECT mutation_name "
-                 "FROM Mutation "
+        query = ("SELECT mutation_name AS Name "
+                 "FROM Mutation m "
+                 "JOIN MutationsMarkers mtm ON m.mutation_id = mtm.mutation_id "
                  "WHERE serotype_name = :serotype_name "
-                 "AND annotation_name = :annotation_name")
+                 "AND annotation_name = :annotation_name ")
         params = {
             'serotype_name': st.session_state.query_6_serotype,
             'annotation_name': st.session_state.query_6_segment
@@ -164,7 +188,9 @@ def display_query_6(db):
             st.session_state.query_6_serotype = st.session_state.query_input_6a
             get_mutations()
 
-        serotypes = db.query("SELECT name FROM Serotype ")
+        serotypes = db.query("SELECT name FROM Serotype WHERE "
+                             "name IN ("
+                             "SELECT DISTINCT serotype_name from Mutation)")
         st.selectbox(label=text["query_six_param_a_label"],
                      key='query_input_6a', options=serotypes, on_change=update_serotype)
 
@@ -181,26 +207,71 @@ def display_query_6(db):
     mutation_input = st.selectbox(label=text["query_six_param_c_label"],
                                   options=st.session_state.query_6_mutations)
 
-    query_sql = ("SELECT marker_id AS Marker FROM MutationsMarkers mtm "
+    query_sql = ("SELECT mtm.marker_id AS Marker, effect_full AS Effect, doi AS DOI "
+                 "FROM MutationsMarkers mtm "
+                 "JOIN PaperAndEffectOfMarker ON mtm.marker_id = PaperAndEffectOfMarker.marker_id "
+                 "JOIN Effect ON Effect.effect_id = PaperAndEffectOfMarker.effect_id "
+                 "JOIN Paper ON PaperAndEffectOfMarker.paper_id = Paper.paper_id "
                  "JOIN Mutation mut ON mtm.mutation_id = mut.mutation_id "
-                 "WHERE mut.mutation_name = :mutation_name ")
+                 "WHERE mut.mutation_name = :mutation_name "
+                 "GROUP BY mtm.marker_id")
     query_inputs = {"mutation_name": mutation_input}
     st.write(text["query_six_examples"], unsafe_allow_html=True)
-    return query_sql, query_inputs
+    return query_sql, query_inputs, "" if False is None else text["query_six_error"]
 
 
 def display_query_7(db):
     st.write(text["query_seven_label"])
-    query_input_7 = st.text_input("Mutation Group: ")
 
-    # Step 1: Process the input string into a list of mutation names
-    input_list = query_input_7.split(", ")
+    # Initial query to fetch distinct mutation names
+    if 'mutations' not in st.session_state:
+        st.session_state.mutations = db.query("""
+            SELECT DISTINCT Mutation.mutation_name 
+            FROM Mutation 
+            JOIN MutationsMarkers ON Mutation.mutation_id = MutationsMarkers.mutation_id
+        """)
+
+    def update_mutation_select():
+        # Perform the update based on the marker associations of the selected mutations
+        if st.session_state.selected_mutations:
+            st.session_state.mutations = db.query(f"""
+                SELECT DISTINCT mutation_name 
+                FROM Mutation 
+                WHERE mutation_id IN (
+                    SELECT mm2.mutation_id 
+                    FROM MutationsMarkers mm1
+                    JOIN MutationsMarkers mm2 
+                    ON mm1.marker_id = mm2.marker_id
+                    WHERE mm1.mutation_id IN (
+                        SELECT mutation_id 
+                        FROM Mutation 
+                        WHERE mutation_name IN ({", ".join([f"'{m}'" for m in st.session_state.selected_mutations])})
+                    )
+                    GROUP BY mm2.mutation_id 
+                    HAVING COUNT(DISTINCT mm1.mutation_id) = {len(st.session_state.selected_mutations)}
+                )
+            """)
+        else:
+            # If no mutations are selected, reset to initial list
+            st.session_state.mutations = db.query("""
+                        SELECT DISTINCT Mutation.mutation_name 
+                        FROM Mutation 
+                        JOIN MutationsMarkers ON Mutation.mutation_id = MutationsMarkers.mutation_id
+                    """)
+
+    # Use a session state variable to track selected mutations
+    st.multiselect(
+        text["query_seven_param_a_label"],
+        st.session_state.mutations,
+        on_change=update_mutation_select,
+        key='selected_mutations'
+    )
 
     # Step 2: Create a dictionary where each mutation name is both the key and the value
-    query_inputs = {mut.replace(":", ""): mut for mut in input_list}
+    query_inputs = {mut.replace(":", ""): mut for mut in st.session_state.selected_mutations}
 
     # Step 3: Create a string with the correct named placeholders
-    placeholders = "(" + ", ".join([f":{mut.replace(":", "")}" for mut in input_list]) + ")"
+    placeholders = "(" + ", ".join([f":{mut.replace(":", "")}" for mut in st.session_state.selected_mutations]) + ")"
 
     # Step 4: Formulate the SQL query with the named placeholders
     query_sql = ("WITH mutation_group AS "
@@ -215,7 +286,7 @@ def display_query_7(db):
                  "= (SELECT COUNT(*) FROM mutation_group);")
 
     # Return the SQL query and the dictionary of parameters
-    return query_sql, query_inputs
+    return query_sql, query_inputs, "" if False is None else text["query_seven_error"]
 
 
 def display_query_8(db):
@@ -225,7 +296,7 @@ def display_query_8(db):
     query_sql = ("SELECT mutation_name AS Mutation "
                  "FROM Mutation "
                  "WHERE position >= :start_pos AND position <= :end_pos "
-                 "ORDER BY position")
+                 "ORDER BY position ")
     query_inputs = {}
 
     start_input = st.number_input(text["query_eight_param_a_label"], step=1)
@@ -233,7 +304,7 @@ def display_query_8(db):
     end_input = st.number_input(text["query_eight_param_b_label"], step=1)
     query_inputs["end_pos"] = end_input
 
-    return query_sql, query_inputs
+    return query_sql, query_inputs, "" if False is None else text["query_eight_error"]
 
 
 def display_query_9(db):
@@ -243,13 +314,14 @@ def display_query_9(db):
     query_sql = ("SELECT effect_full as Effect "
                  "FROM Effect "
                  "WHERE effect_type LIKE :type")
-    query_inputs = {}
 
-    type_input = st.text_input(text["query_nine_param_a_label"])
-    query_inputs["type"] = f"%{type_input}%"
-    st.write(text["query_nine_examples"], unsafe_allow_html=True)
+    effect_types = db.query("SELECT effect_type FROM Effect")
+    st.selectbox(label=text["query_nine_param_a_label"],
+                 key='effect_type', options=effect_types)
 
-    return query_sql, query_inputs
+    query_inputs = {"type": st.session_state.effect_type}
+
+    return query_sql, query_inputs, "" if False is None else text["query_nine_error"]
 
 
 def display_query_10(db):
@@ -261,14 +333,23 @@ def display_query_10(db):
                  "JOIN MutationsMarkers mtm ON mtm.mutation_id = mut.mutation_id "
                  "JOIN PaperAndEffectOfMarker pem ON mtm.marker_id = pem.marker_id "
                  "JOIN Effect e ON pem.effect_id = e.effect_id "
-                 "WHERE e.effect_type LIKE :type")
-    query_inputs = {}
+                 "WHERE e.effect_full LIKE :effect "
+                 "AND serotype_name == :serotype")
 
-    type_input = st.text_input(text["query_ten_param_a_label"])
-    query_inputs["type"] = f"%{type_input}%"
-    st.write(text["query_ten_examples"], unsafe_allow_html=True)
+    effects = db.query("SELECT effect_full FROM Effect")
+    st.selectbox(label=text["query_ten_param_a_label"],
+                 key='effect', options=effects)
 
-    return query_sql, query_inputs
+    serotypes = db.query("SELECT name FROM Serotype WHERE "
+                         "name IN ("
+                         "SELECT DISTINCT serotype_name from Mutation)")
+    st.selectbox(label=text["query_ten_param_b_label"],
+                 key='serotype', options=serotypes)
+
+    query_inputs = {"effect": st.session_state.effect,
+                    "serotype": st.session_state.serotype}
+
+    return query_sql, query_inputs, "" if False is None else text["query_ten_error"]
 
 
 """def display_query_1(db):
