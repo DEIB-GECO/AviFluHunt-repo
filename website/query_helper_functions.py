@@ -154,8 +154,8 @@ def display_query_5(db):
                  "GROUP BY sm.mutation_id, sm.reference_id "
                  "ORDER BY count DESC")
     query_inputs = {}
-    st.write(text["query_five"])
-    return query_sql, query_inputs
+    st.write(text["query_five_label"])
+    return query_sql, query_inputs, ""
 
 
 def display_query_6(db):
