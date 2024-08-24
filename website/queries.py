@@ -63,22 +63,78 @@ get_markers_literature = \
 #   TODO
 #
 # Inputs:
-#   - (Optional) A Serotype
-#   - (Optional) A Segment type
-#   - (Optional Filter) A percentage range
-#   - (Optional Filter) A limit in the number of results
-#   - (Optional Filter) A min number of Segments that must contain the Marker
+#   - (Optional) serotype: Serotype
+#   - (Optional) segment_type: Segment type
+#   - (Optional Filter) min_perc, max_perc: Percentage range (default = (0, 100))
+#   - (Optional Filter) limit: Limit in the number of results (default = no limit)
+#   - (Optional Filter) min_n_instance: Min number of Segments that must contain the Marker (default = 1)
 #
 # Outputs:
 #   - A list of all Markers ordered by percentage of human hosts in the given range, and for each:
-#       - The Groups it belongs to TODO
-#       - The Effect associated to each group TODO
-#       - The doi of the Paper the group was found in TODO
+#       - The Groups it belongs to
 #
 # --------------------------------------------------------------
+# NOTE: view SegmentMarker(segment_id, marker_id), tells whether a marker is found in a given segment
 
-get_markers_by_human_percentage = ""  # TODO
+get_markers_by_human_percentage = \
+ ("WITH SelectedSegmentsIds AS ("
+  "SELECT DISTINCT segment.segment_id "
+  "FROM Segment segment "
+  "JOIN Isolate isolate ON segment.isolate_id = isolate.isolate_id "
+  "WHERE isolate.host = 'Human' "
+  "AND (segment.segment_type == :segment_type OR :segment_type IS NULL) "
+  "AND (isolate.serotype_id == :serotype OR :serotype IS NULL)), "
+  ""
+  "HumanMarkerCount AS ("
+  "SELECT marker_id, COUNT(*) human_marker_count FROM SegmentMarkers "
+  "WHERE segment_id IN SelectedSegmentsIds "
+  "GROUP BY marker_id), "
+  ""
+  "TotalMarkerCount AS ("
+  "SELECT marker_id, COUNT(*) as total_marker_count FROM SegmentMarkers "
+  "GROUP BY marker_id), "
+  ""
+  "SelectedMarkers AS ("
+  "SELECT marker.marker_id, COALESCE(HMC.human_marker_count, 0), TMC.total_marker_count, "
+  "ROUND(COALESCE(HMC.human_marker_count, 0) * 100.0 / TMC.total_marker_count, 2) AS Percentage "
+  "FROM Marker marker "
+  "JOIN HumanMarkerCount HMC ON marker.marker_id = HMC.marker_id "
+  "JOIN TotalMarkerCount TMC ON marker.marker_id = TMC.marker_id "
+  "GROUP BY marker.marker_id) "
+  ""
+  ""  # ATTENTION: the following query returns the results SEPARATED
+  "SELECT marker1.name AS 'Marker', GROUP_CONCAT(DISTINCT marker2.name, ', ') AS marker_group "
+  "FROM Marker AS marker1 "
+  "JOIN MarkerToGroup MTG1 ON marker1.marker_id = MTG1.marker_id "
+  "JOIN MarkerToGroup MTG2 ON MTG1.marker_group_id = MTG2.marker_group_id "
+  "JOIN Marker marker2 ON marker1.marker_id = marker2.marker_id "
+  "WHERE marker1.name IN SelectedMarkers "
+  "GROUP BY marker1.name, MTG1.marker_id ")
+
+
 # TODO: Query 3
+# --------------------------------------------------------------
+# QUERY 3: Get Markers ordered by % human hosts, divided by serotype and segment
+# --------------------------------------------------------------
+# Description:
+#   TODO
+#
+# Inputs:
+#   - (Optional) serotype: Serotype
+#   - (Optional) segment_type: Segment type
+#   - (Optional Filter) min_perc, max_perc: Percentage range (default = (0, 100))
+#   - (Optional Filter) limit: Limit in the number of results (default = no limit)
+#   - (Optional Filter) min_n_instance: Min number of Segments that must contain the Marker (default = 1)
+#
+# Outputs:
+#   - A list of all Markers ordered by percentage of human hosts in the given range, and for each:
+#       - The Groups it belongs to
+#
+# --------------------------------------------------------------
+# NOTE: view SegmentMarker(segment_id, marker_id), tells whether a marker is found in a given segment
+
+
+
 # TODO: Query 4
 
 # --------------------------------------------------------------
