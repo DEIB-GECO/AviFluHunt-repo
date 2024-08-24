@@ -35,7 +35,26 @@
 #
 # --------------------------------------------------------------
 
-# TODO
+get_markers_literature = \
+ (f"WITH SelectedMarkersIds AS ("
+  f"SELECT marker_id FROM Marker "
+  f"WHERE name IN ({', '.join(':placeholder' for _ in selected_markers)})) "
+  f""
+  f"WITH SelectedMarkerGroupsIds AS ("
+  f"SELECT DISTINCT marker_group_id FROM MarkerToGroup MTG "
+  f"JOIN SelectedMarkersIds SMI ON MTG.marker_id = SMI.marker_id "
+  f"GROUP BY MTG.marker_group_id "
+  f"HAVING COUNT(DISTINCT MTG.marker_id) = (SELECT COUNT(*) FROM SelectedMarkersIds)) "
+  f""
+  f"SELECT GROUP_CONCAT(DISTINCT marker.name) AS 'Full Marker Group', "
+  f"effect.effect_full AS 'Effect', effect.host AS 'Host', effect.drug AS 'Drug' "
+  f"paper.doi AS 'DOI' "
+  f"FROM MarkerGroup markerGroup "
+  f"JOIN MarkerToGroup MTG ON markerGroup.marker_group_id = MTG.marker_group_id "
+  f"JOIN Marker marker ON MTG.marker_id = marker.marker_id "
+  f"JOIN Effect effect ON markerGroup.effect_id = effect.effect_id "
+  f"JOIN Paper paper ON markerGroup.paper_id = paper.paper_id "
+  f"GROUP BY markerGroup.marker_group_id ")
 
 # --------------------------------------------------------------
 # QUERY 2: Get Markers ordered by % human hosts, divided by serotype and segment
