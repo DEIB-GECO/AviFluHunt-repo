@@ -12,7 +12,6 @@ if __name__ == "__main__":
     academic_dict = {
         "Paper": "data_papers.xlsx",
         "Effect": "data_effects.xlsx",
-        "PaperAndEffectOfMarker": "data_pem.xlsx",
     }
 
     database_handler = handler.DatabaseHandler()

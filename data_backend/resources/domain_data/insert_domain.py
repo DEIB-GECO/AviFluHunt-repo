@@ -12,9 +12,9 @@ if __name__ == "__main__":
     academic_dict = {
         "ReferenceSegment": "data_reference_segment.xlsx",
         "Annotation": "data_annotation.xlsx",
-        "Serotype": "data_serotype.xlsx",
+        "Subtype": "data_subtype.xlsx",
         "Intein": "data_intein.xlsx",
-        "ReferenceOfSerotype": "data_reference_of_serotype.xlsx",
+        "ReferenceToSubtype": "data_reference_to_subtype.xlsx",
     }
 
     database_handler = handler.DatabaseHandler()
