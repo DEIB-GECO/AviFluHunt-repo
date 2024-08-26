@@ -23,12 +23,7 @@ CREATE TABLE IF NOT EXISTS `MarkerToGroup` (
 
 CREATE TABLE IF NOT EXISTS `MarkerGroup` (
     "marker_group_id" INTEGER,
-    "paper_id" INTEGER,
-    "effect_id" INTEGER,
-	FOREIGN KEY("paper_id") REFERENCES "Paper"("paper_id"),
-	FOREIGN KEY("effect_id") REFERENCES "Effect"("effect_id"),
-	PRIMARY KEY("marker_group_id"),
-    UNIQUE (marker_group_id, paper_id, effect_id)
+	PRIMARY KEY("marker_group_id")
 );
 
 CREATE TABLE IF NOT EXISTS "Effect" (
@@ -49,6 +44,16 @@ CREATE TABLE IF NOT EXISTS "Paper" (
 	"address"	TEXT,
 	"doi"	TEXT UNIQUE NOT NULL,
 	PRIMARY KEY("paper_id")
+);
+
+CREATE TABLE IF NOT EXISTS "MarkerGroupPaperAndEffect" (
+    marker_group_id INTEGER,
+    "paper_id" INTEGER,
+    "effect_id" INTEGER,
+	FOREIGN KEY("marker_group_id") REFERENCES "MarkerGroup"("marker_group_id"),
+	FOREIGN KEY("paper_id") REFERENCES "Paper"("paper_id"),
+	FOREIGN KEY("effect_id") REFERENCES "Effect"("effect_id"),
+    PRIMARY KEY (marker_group_id, paper_id, effect_id)
 );
 
 -- CONNECTIONS

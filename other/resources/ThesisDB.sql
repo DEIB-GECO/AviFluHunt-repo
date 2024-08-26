@@ -2,7 +2,8 @@ CREATE TABLE `Marker` (
   `pos` int,
   `allele` string,
   `annotation_id` int,
-  `marker_id` int
+  `marker_id` int,
+  `name` string
 );
 
 CREATE TABLE `SegmentMarkersView` (
@@ -124,6 +125,10 @@ CREATE TABLE `MarkerGroupToSubtype` (
 );
 
 CREATE TABLE `MarkerGroup` (
+  `marker_group_id` integer
+);
+
+CREATE TABLE `MarkerGroupPaperAndEffect` (
   `marker_group_id` integer,
   `paper_id` integer,
   `effect_id` integer
@@ -225,6 +230,35 @@ ALTER TABLE `MarkerGroupToSubtype_Subtype` ADD FOREIGN KEY (`MarkerGroupToSubtyp
 ALTER TABLE `MarkerGroupToSubtype_Subtype` ADD FOREIGN KEY (`Subtype_subtype_id`) REFERENCES `Subtype` (`subtype_id`);
 
 
-ALTER TABLE `MarkerGroup` ADD FOREIGN KEY (`effect_id`) REFERENCES `Effect` (`effect_id`);
+CREATE TABLE `MarkerGroup_MarkerGroupPaperAndEffect` (
+  `MarkerGroup_marker_group_id` integer,
+  `MarkerGroupPaperAndEffect_marker_group_id` integer,
+  PRIMARY KEY (`MarkerGroup_marker_group_id`, `MarkerGroupPaperAndEffect_marker_group_id`)
+);
 
-ALTER TABLE `MarkerGroup` ADD FOREIGN KEY (`paper_id`) REFERENCES `Paper` (`paper_id`);
+ALTER TABLE `MarkerGroup_MarkerGroupPaperAndEffect` ADD FOREIGN KEY (`MarkerGroup_marker_group_id`) REFERENCES `MarkerGroup` (`marker_group_id`);
+
+ALTER TABLE `MarkerGroup_MarkerGroupPaperAndEffect` ADD FOREIGN KEY (`MarkerGroupPaperAndEffect_marker_group_id`) REFERENCES `MarkerGroupPaperAndEffect` (`marker_group_id`);
+
+
+CREATE TABLE `MarkerGroupPaperAndEffect_Effect` (
+  `MarkerGroupPaperAndEffect_effect_id` integer,
+  `Effect_effect_id` integer,
+  PRIMARY KEY (`MarkerGroupPaperAndEffect_effect_id`, `Effect_effect_id`)
+);
+
+ALTER TABLE `MarkerGroupPaperAndEffect_Effect` ADD FOREIGN KEY (`MarkerGroupPaperAndEffect_effect_id`) REFERENCES `MarkerGroupPaperAndEffect` (`effect_id`);
+
+ALTER TABLE `MarkerGroupPaperAndEffect_Effect` ADD FOREIGN KEY (`Effect_effect_id`) REFERENCES `Effect` (`effect_id`);
+
+
+CREATE TABLE `MarkerGroupPaperAndEffect_Paper` (
+  `MarkerGroupPaperAndEffect_paper_id` integer,
+  `Paper_paper_id` integer,
+  PRIMARY KEY (`MarkerGroupPaperAndEffect_paper_id`, `Paper_paper_id`)
+);
+
+ALTER TABLE `MarkerGroupPaperAndEffect_Paper` ADD FOREIGN KEY (`MarkerGroupPaperAndEffect_paper_id`) REFERENCES `MarkerGroupPaperAndEffect` (`paper_id`);
+
+ALTER TABLE `MarkerGroupPaperAndEffect_Paper` ADD FOREIGN KEY (`Paper_paper_id`) REFERENCES `Paper` (`paper_id`);
+
