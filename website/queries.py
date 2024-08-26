@@ -96,8 +96,9 @@ get_markers_by_human_percentage = \
   "GROUP BY marker_id), "
   ""
   "SelectedMarkers AS ("
-  "SELECT marker.marker_id, COALESCE(HMC.human_marker_count, 0), TMC.total_marker_count, "
-  "ROUND(COALESCE(HMC.human_marker_count, 0) * 100.0 / TMC.total_marker_count, 2) AS Percentage "
+  "SELECT marker.marker_id, COALESCE(HMC.human_marker_count, 0) as human_marker_count, "
+  "TMC.total_marker_count as total_marker_count,"
+  "ROUND(COALESCE(HMC.human_marker_count, 0) * 100.0 / TMC.total_marker_count, 2) AS percentage "
   "FROM Marker marker "
   "JOIN HumanMarkerCount HMC ON marker.marker_id = HMC.marker_id "
   "JOIN TotalMarkerCount TMC ON marker.marker_id = TMC.marker_id "
@@ -107,8 +108,9 @@ get_markers_by_human_percentage = \
   "LIMIT :limit) "
   ""
   "SELECT marker1.name AS 'Marker', GROUP_CONCAT(DISTINCT marker2.name, ', ') AS marker_group,"
-  "COALESCE(HMC.human_marker_count, 0) as 'Human Instances', TMC.total_marker_count AS 'Total Instances', "
-  "ROUND(COALESCE(HMC.human_marker_count, 0) * 100.0 / TMC.total_marker_count, 2) AS Percentage "
+  "COALESCE(selectedMarkers.human_marker_count, 0) as 'Human Instances', "
+  "selectedMarkers.total_marker_count AS 'Total Instances', "
+  "selectedMarkers.percentage AS Percentage "
   "FROM Marker AS marker1 "
   "JOIN SelectedMarkers selectedMarkers ON marker1.marker_id = selectedMarkers.marker_id "
   "JOIN MarkerToGroup MTG1 ON marker1.marker_id = MTG1.marker_id "
@@ -118,54 +120,68 @@ get_markers_by_human_percentage = \
   "ORDER BY Percentage DESC")
 
 
-# TODO: Query 3
 # --------------------------------------------------------------
-# QUERY 3: Given a (Group of) Marker count the instances divided by host
+# QUERY 3: Get markers by difference in relative presence in hosts
 # GRAPH
 # --------------------------------------------------------------
 # Description:
 #   TODO
 #
 # Inputs:
-#   - A list of Markers
-#       - After the first on is selected only Markers in group with the selected ones can be
-#         further selected
+#   - (Optional) host1: The first host to consider for the analysis
+#       - host2: The second host to be compared with host1
 #
 # Outputs:
-#   - For each Marker Group that contains the given makers:
-#       - Total number of instances of the Marker Group
-#       - Subdivision by host of the instances
+#   - For each Marker its relative presence in any host type, sorted by the difference in presence
+#     between host1 and host 2
 #
 # --------------------------------------------------------------
 # NOTE: view SegmentMarker(segment_id, marker_id), tells whether a marker is found in a given segment
+# ATTENTION: This query only returns (marker, host%), to aggregate data python is necessary!
 
-get_group_of_marker_by_n_of_hosts = \
- ("")
+get_markers_by_host_relative_presence = \
+ ("WITH SegmentsByHost AS ("
+  "SELECT DISTINCT segment.segment_id, isolate.host "
+  "FROM Segment segment "
+  "JOIN Isolate isolate ON segment.isolate_id = isolate.isolate_id), "
+  ""
+  "MarkerCountByHost AS ( "
+  "SELECT segmentMarkers.marker_id, SBH.host, COUNT(DISTINCT segmentMarkers.segment_id) AS marker_count "
+  "FROM SegmentMarkers segmentMarkers "
+  "JOIN SegmentsByHost SBH ON segmentMarkers.segment_id = SBH.segment_id "
+  "GROUP BY segmentMarkers.marker_id, SBH.host), "
+  ""
+  "TotalSegmentCountByHost AS ( "
+  "SELECT host, COUNT(DISTINCT segment_id) AS segment_count "
+  "FROM SegmentsByHost "
+  "GROUP BY host ) "
+  ""
+  "SELECT MCbH.marker_id, MCbH.host, "
+  "ROUND(MCbH.marker_count / TSCbH.segment_count, 2) AS 'Percentage' "
+  "FROM MarkerCountByHost MCbH "
+  "JOIN TotalSegmentCountByHost TSCbH")
 
 
 # TODO: Query 4
 # --------------------------------------------------------------
-# QUERY 4: Given a (Group of) Marker count the instances divided by location (normalized)
+# QUERY 4:
 # GRAPH
 # --------------------------------------------------------------
 # Description:
 #   TODO
 #
 # Inputs:
-#   - A list of Markers
-#       - After the first on is selected only Markers in group with the selected ones can be
-#         further selected
+#   -
 #
 # Outputs:
-#   - For each Marker Group that contains the given makers:
-#       - Total number of instances of the Marker Group
-#       - Subdivision by location of the instances (normalized) by location
+#   -
 #
 # --------------------------------------------------------------
 # NOTE: view SegmentMarker(segment_id, marker_id), tells whether a marker is found in a given segment
 
-get_group_of_marker_by_n_of_locations = \
+get_markers_by_location_relative_presence = \
  ("")
+
 
 # --------------------------------------------------------------
 # QUERY 5: Get the most common Marker for the selected serotype and segment type with filters
@@ -249,7 +265,41 @@ get_host_by_n_of_markers = \
   "GROUP BY selectedSegments.host "
   "ORDER BY selected_marker_count DESC ")
 
-# TODO: Query 7: For each mutation get the number of segments that exhibit it, and the percentage over the total number of segments
+# --------------------------------------------------------------
+# QUERY 7: Get how common is each Marker
+# GRAPH
+# --------------------------------------------------------------
+# Description:
+#   TODO
+#
+# Inputs:
+#   - (Optional Filter) min_perc, max_perc: Percentage range (default = (0, 100))
+#   - (Optional Filter) limit: Limit in the number of results (default = 10000)
+#
+# Outputs:
+#   - Markers and percentage of appearance sorted
+#
+# --------------------------------------------------------------
+
+get_markers_by_relevance = \
+ ("WITH MarkerCount AS ( "
+  "SELECT marker_id, COUNT(DISTINCT segment_id) AS marker_count "
+  "FROM SegmentMarkers "
+  "GROUP BY marker_id), "
+  ""
+  "TotalCount AS ("
+  "SELECT COUNT(DISTINCT segment_id) AS total_count "
+  "FROM SegmentMarkers) "
+  ""
+  "SELECT marker.name AS 'Marker', "
+  "ROUND((markerCount.marker_count * 100) / totalCount.total_count, 2) AS 'Percentage' "
+  "FROM Marker marker "
+  "JOIN MarkerCount markerCount ON marker.marker_id = markerCount.marker_id "
+  "CROSS JOIN TotalCount totalCount "
+  "WHERE (markerCount.marker_count * 100) / totalCount.total_count BETWEEN :min_perc AND :max_perc "
+  "ORDER BY 'Percentage' DESC "
+  "LIMIT :limit")
+
 
 # --------------------------------------------------------------
 # QUERY 8: Given a Segment Type find the Most Mutable Zones
@@ -270,27 +320,30 @@ get_host_by_n_of_markers = \
 #   - Bins, ordered by average number of mutations in them (?), and how much they have mutated
 #
 # --------------------------------------------------------------
+# IDEA: select only mutations that are markers?
 
+bins = []
 get_segment_mutability_zones = \
- ("")
-
-
-# --------------------------------------------------------------
-# QUERY 9: TODO
-# --------------------------------------------------------------
-# Description:
-#   TODO
-#
-# Inputs:
-#   - TODO (type): TODO
-#
-# Outputs:
-#   - TODO (type): TODO
-#
-# --------------------------------------------------------------
-
-x = \
- ("")
+ ("WITH SelectedSegments AS ("
+  "SELECT DISTINCT segment.segment_id, isolate.host "
+  "FROM Segment segment "
+  "JOIN Isolate isolate ON segment.isolate_id = isolate.isolate_id "
+  "WHERE (segment.segment_type == :segment_type OR :segment_type IS NULL) "
+  "AND (isolate.subtype_id == :serotype OR :serotype IS NULL)), "
+  ""
+  "CountPerBin AS ("
+  "SELECT start_range, end_range, COUNT(DISTINCT mutation.mutation_id) AS bin_count "
+  "FROM Mutation mutation "
+  f"JOIN (VALUES {", ".join([f"({start}, {end})" for start, end in bins])}) "
+  "AS Bins (start_range, end_range) "
+  "ON Mutation.position BEWTWEEN Bins.start_range AND Bins.end_range "
+  "JOIN SegmentMutations segmentMutations ON mutation.mutation_id = segmentMutations.mutation_id "
+  "JOIN SelectedSegments selectedSegments ON segmentMutations.segment_id = selectedSegments.segment_id "
+  "WHERE (segmentMutations.reference_id = :reference_id OR :reference_id IS NULL) "
+  "GROUP BY Bins.start_range, Bins.end_range "
+  "ORDER BY distinct_id_count DESC) "
+  ""
+  "SELECT start_range AS 'From', end_range AS 'To', bin_count FROM CountPerBin AS 'Total Mutations'")
 
 
 # QUERIES ONTOLOGY
