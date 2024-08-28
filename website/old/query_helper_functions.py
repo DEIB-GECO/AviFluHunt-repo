@@ -1,5 +1,7 @@
 import streamlit as st
 import yaml
+import pandas
+from streamlit.components.v1 import html
 
 query_folder = 'resources/html_frames'
 with open('website/resources/text.yaml', 'r') as file:

@@ -1,8 +1,5 @@
-import pandas
-import streamlit
 
 from query_helper_functions import *
-from streamlit.components.v1 import html
 
 
 display_query_dict = {
@@ -47,7 +44,7 @@ query_tab, readme_tab = st.tabs(["Run Query", "About"])
 
 with readme_tab:
 
-    for i in ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]:
+    """for i in ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]:
         label = text[f"query_{i}_label"]
         explanation = text[f"query_{i}_explanation"]
 
@@ -62,7 +59,7 @@ with readme_tab:
                         unsafe_allow_html=True)
 
         # Add a horizontal line for separation between rows
-        st.markdown("<hr>", unsafe_allow_html=True)
+        st.markdown("<hr>", unsafe_allow_html=True)"""
 
     st.write('')
     st.write(text["ack"])

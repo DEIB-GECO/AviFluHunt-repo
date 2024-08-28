@@ -1,0 +1,26 @@
+website_name: "<h2>FluHunter</h2>"
+welcome_message: "<p>Welcome to FluHunter</p>"
+
+### QUERY TAB
+
+query_select_label: "Query"
+submit_button: "Run"
+
+## QUERIES
+
+# QUERY ONE
+label1: "#1 - TODO"
+explanation1:
+  "<p style='text-align: justify;'>
+  TODO
+  </p>"
+param_label1a: "TODO:"
+error1: "TODO"
+
+### README TAB
+
+ack: "We gratefully acknowledge all data contributors, i.e., the Authors and their Originating 
+laboratories responsible for obtaining the specimens, and their Submitting laboratories 
+for generating the genetic sequence and metadata and sharing via the GISAID Initiative, 
+on which this research is based. https://gisaid.org/ (Publication: Shu, Yuelong, and John McCauley.
+'GISAID: Global initiative on sharing all influenza data–from vision to reality.'Eurosurveillance 22.13 (2017): 30494.)"

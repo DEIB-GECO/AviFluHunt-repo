@@ -1,5 +1,7 @@
 # GENERAL QUERIES
-
+get_markers = \
+ ("SELECT DISTINCT name "
+  "FROM Marker")
 
 # QUERIES
 # --------------------------------------------------------------
@@ -40,7 +42,7 @@
 get_markers_literature = \
     (f"WITH SelectedMarkersIds AS ("
      f"SELECT marker_id FROM Marker "
-     f"WHERE name IN ({', '.join(':placeholder' for _ in selected_markers)})), "
+     f"WHERE name IN (placeholder)), "
      f""
      f"SelectedMarkerGroupsIds AS ("
      f"SELECT DISTINCT marker_group_id FROM MarkerToGroup MTG "
@@ -390,7 +392,6 @@ get_segment_mutability_zones = \
 #
 # --------------------------------------------------------------
 
-# TODO: problem with group
 get_group_of_marker = \
     ("WITH MarkerGroupsNames AS ( "
      "SELECT marker_group_id, GROUP_CONCAT(marker.name, ', ') AS group_names "
@@ -408,6 +409,7 @@ get_group_of_marker = \
      "WHERE MGN.marker_group_id IN ( "
      "SELECT marker_group_id FROM MarkerToGroup WHERE marker_id = "
      "(SELECT marker_id FROM Marker WHERE name = :marker_name))")
+
 
 # CHECKED
 # --------------------------------------------------------------
@@ -431,6 +433,7 @@ get_effects_by_effect_metadata = \
      "FROM Effect effect "
      "WHERE (host = :host OR :host IS NULL) "
      "AND (drug = :drug OR :drug IS NULL)")
+
 
 # CHECKED
 # --------------------------------------------------------------
