@@ -16,6 +16,7 @@
 #
 # --------------------------------------------------------------
 
+# CHECKED
 # --------------------------------------------------------------
 # QUERY 1: Select the literature data associated to a group of Markers
 # --------------------------------------------------------------
@@ -33,30 +34,37 @@
 #       - The Serotype the Effect was found in
 #       - The Paper mentioning the Effect
 #
+# EXAMPLE: HA1:156A
 # --------------------------------------------------------------
 
 get_markers_literature = \
- (f"WITH SelectedMarkersIds AS ("
-  f"SELECT marker_id FROM Marker "
-  f"WHERE name IN ({', '.join(':placeholder' for _ in selected_markers)})) "
-  f""
-  f"WITH SelectedMarkerGroupsIds AS ("
-  f"SELECT DISTINCT marker_group_id FROM MarkerToGroup MTG "
-  f"JOIN SelectedMarkersIds SMI ON MTG.marker_id = SMI.marker_id "
-  f"GROUP BY MTG.marker_group_id "
-  f"HAVING COUNT(DISTINCT MTG.marker_id) = (SELECT COUNT(*) FROM SelectedMarkersIds)) "
-  f""
-  f"SELECT GROUP_CONCAT(DISTINCT marker.name) AS 'Marker Group', "
-  f"effect.effect_full AS 'Effect', effect.host AS 'Host', effect.drug AS 'Drug' "
-  f"paper.doi AS 'DOI' "
-  f"FROM MarkerGroup markerGroup "
-  f"JOIN MarkerToGroup MTG ON markerGroup.marker_group_id = MTG.marker_group_id "
-  f"JOIN Marker marker ON MTG.marker_id = marker.marker_id "
-  f"JOIN Effect effect ON markerGroup.effect_id = effect.effect_id "
-  f"JOIN Paper paper ON markerGroup.paper_id = paper.paper_id "
-  f"GROUP BY markerGroup.marker_group_id ")
+    (f"WITH SelectedMarkersIds AS ("
+     f"SELECT marker_id FROM Marker "
+     f"WHERE name IN ({', '.join(':placeholder' for _ in selected_markers)})), "
+     f""
+     f"SelectedMarkerGroupsIds AS ("
+     f"SELECT DISTINCT marker_group_id FROM MarkerToGroup MTG "
+     f"JOIN SelectedMarkersIds SMI ON MTG.marker_id = SMI.marker_id "
+     f"GROUP BY MTG.marker_group_id "
+     f"HAVING COUNT(DISTINCT MTG.marker_id) = (SELECT COUNT(*) FROM SelectedMarkersIds)), "
+     f""
+     f"MarkerGroupsNames AS ( "
+     f"SELECT marker_group_id, GROUP_CONCAT(marker.name, ', ') AS group_names "
+     f"FROM Marker marker "
+     f"JOIN MarkerToGroup MTG ON marker.marker_id = MTG.marker_id "
+     f"WHERE marker_group_id IN SelectedMarkerGroupsIds "
+     f"GROUP BY marker_group_id) "
+     ""
+     f"SELECT group_names AS 'Marker Group', "
+     f"effect.effect_full AS 'Effect', effect.host AS 'Host', effect.drug AS 'Drug', "
+     f"paper.doi AS 'DOI' "
+     f"FROM MarkerGroupsNames MGN "
+     f"JOIN MarkerGroupPaperAndEffect MGPAE ON MGN.marker_group_id = MGPAE.marker_group_id "
+     f"JOIN Effect effect ON MGPAE.effect_id = effect.effect_id "
+     f"JOIN Paper paper ON MGPAE.paper_id = paper.paper_id "
+     f"GROUP BY MGPAE.marker_group_id ")
 
-
+# CHECKED
 # --------------------------------------------------------------
 # QUERY 2: Get Markers ordered by % human hosts, divided by serotype and segment
 # --------------------------------------------------------------
@@ -78,48 +86,57 @@ get_markers_literature = \
 # NOTE: view SegmentMarker(segment_id, marker_id), tells whether a marker is found in a given segment
 
 get_markers_by_human_percentage = \
- ("WITH SelectedSegmentsIds AS ("
-  "SELECT DISTINCT segment.segment_id "
-  "FROM Segment segment "
-  "JOIN Isolate isolate ON segment.isolate_id = isolate.isolate_id "
-  "WHERE isolate.host = 'Human' "
-  "AND (segment.segment_type == :segment_type OR :segment_type IS NULL) "
-  "AND (isolate.subtype_id == :serotype OR :serotype IS NULL)), "
-  ""
-  "HumanMarkerCount AS ("
-  "SELECT marker_id, COUNT(*) AS human_marker_count FROM SegmentMarkers "
-  "WHERE segment_id IN SelectedSegmentsIds "
-  "GROUP BY marker_id), "
-  ""
-  "TotalMarkerCount AS ("
-  "SELECT marker_id, COUNT(*) AS total_marker_count FROM SegmentMarkers "
-  "GROUP BY marker_id), "
-  ""
-  "SelectedMarkers AS ("
-  "SELECT marker.marker_id, COALESCE(HMC.human_marker_count, 0) as human_marker_count, "
-  "TMC.total_marker_count as total_marker_count,"
-  "ROUND(COALESCE(HMC.human_marker_count, 0) * 100.0 / TMC.total_marker_count, 2) AS percentage "
-  "FROM Marker marker "
-  "JOIN HumanMarkerCount HMC ON marker.marker_id = HMC.marker_id "
-  "JOIN TotalMarkerCount TMC ON marker.marker_id = TMC.marker_id "
-  "WHERE :min_perc <= Percentage <= :max_perc "
-  "AND TMC.total_marker_count >= :min_n_instances "
-  "GROUP BY marker.marker_id "
-  "LIMIT :limit) "
-  ""
-  "SELECT marker1.name AS 'Marker', GROUP_CONCAT(DISTINCT marker2.name, ', ') AS marker_group,"
-  "COALESCE(selectedMarkers.human_marker_count, 0) as 'Human Instances', "
-  "selectedMarkers.total_marker_count AS 'Total Instances', "
-  "selectedMarkers.percentage AS Percentage "
-  "FROM Marker AS marker1 "
-  "JOIN SelectedMarkers selectedMarkers ON marker1.marker_id = selectedMarkers.marker_id "
-  "JOIN MarkerToGroup MTG1 ON marker1.marker_id = MTG1.marker_id "
-  "JOIN MarkerToGroup MTG2 ON MTG1.marker_group_id = MTG2.marker_group_id "
-  "JOIN Marker marker2 ON marker1.marker_id = marker2.marker_id "
-  "GROUP BY marker1.name, MTG1.marker_id "
-  "ORDER BY Percentage DESC")
+    ("WITH SelectedSegmentsIds AS ("
+     "SELECT DISTINCT segment.segment_id "
+     "FROM Segment segment "
+     "JOIN Isolate isolate ON segment.isolate_id = isolate.isolate_epi "
+     "WHERE isolate.host = 'Human' "
+     "AND (segment.segment_type == :segment_type OR :segment_type IS NULL) "
+     "AND (isolate.subtype_id == :serotype OR :serotype IS NULL)), "
+     ""
+     "HumanMarkerCount AS ("
+     "SELECT marker_id, COUNT(*) AS human_marker_count FROM SegmentMarkers "
+     "WHERE segment_id IN SelectedSegmentsIds "
+     "GROUP BY marker_id), "
+     ""
+     "TotalMarkerCount AS ("
+     "SELECT marker_id, COUNT(*) AS total_marker_count FROM SegmentMarkers "
+     "GROUP BY marker_id), "
+     ""
+     "SelectedMarkers AS ("
+     "SELECT marker.marker_id, COALESCE(HMC.human_marker_count, 0) as human_marker_count, "
+     "TMC.total_marker_count as total_marker_count,"
+     "ROUND(COALESCE(HMC.human_marker_count, 0) * 100.0 / TMC.total_marker_count, 2) AS percentage "
+     "FROM Marker marker "
+     "JOIN HumanMarkerCount HMC ON marker.marker_id = HMC.marker_id "
+     "JOIN TotalMarkerCount TMC ON marker.marker_id = TMC.marker_id "
+     "WHERE ROUND(COALESCE(HMC.human_marker_count, 0) * 100.0 / TMC.total_marker_count, 2) "
+     "BETWEEN :min_perc AND :max_perc "
+     "AND TMC.total_marker_count >= :min_n_instances "
+     "GROUP BY marker.marker_id "
+     "LIMIT :limit), "
+     ""
+     "MarkerGroupsNames AS ("
+     "SELECT marker_group_id, GROUP_CONCAT(marker.name, ', ') AS group_names "
+     "FROM Marker marker "
+     "JOIN MarkerToGroup MTG ON marker.marker_id = MTG.marker_id "
+     "GROUP BY marker_group_id) "
+     ""
+     "SELECT marker.name AS 'Marker', "
+     "GROUP_CONCAT(CONCAT('(', "
+     "(SELECT group_names "
+     "FROM MarkerGroupsNames "
+     "WHERE marker_group_id = MTG.marker_group_id), ')'), ' ') as 'Groups', "
+     "COALESCE(selectedMarkers.human_marker_count, 0) as 'Human Instances', "
+     "selectedMarkers.total_marker_count AS 'Total Instances', "
+     "selectedMarkers.percentage AS Percentage "
+     "FROM Marker AS marker "
+     "JOIN SelectedMarkers selectedMarkers ON marker.marker_id = selectedMarkers.marker_id "
+     "JOIN MarkerToGroup MTG ON marker.marker_id = MTG.marker_id "
+     "GROUP BY marker.marker_id "
+     "ORDER BY Percentage DESC")
 
-
+# CHECKED
 # --------------------------------------------------------------
 # QUERY 3: Get markers by difference in relative presence in hosts
 # GRAPH
@@ -140,27 +157,26 @@ get_markers_by_human_percentage = \
 # ATTENTION: This query only returns (marker, host%), to aggregate data python is necessary!
 
 get_markers_by_host_relative_presence = \
- ("WITH SegmentsByHost AS ("
-  "SELECT DISTINCT segment.segment_id, isolate.host "
-  "FROM Segment segment "
-  "JOIN Isolate isolate ON segment.isolate_id = isolate.isolate_id), "
-  ""
-  "MarkerCountByHost AS ( "
-  "SELECT segmentMarkers.marker_id, SBH.host, COUNT(DISTINCT segmentMarkers.segment_id) AS marker_count "
-  "FROM SegmentMarkers segmentMarkers "
-  "JOIN SegmentsByHost SBH ON segmentMarkers.segment_id = SBH.segment_id "
-  "GROUP BY segmentMarkers.marker_id, SBH.host), "
-  ""
-  "TotalSegmentCountByHost AS ( "
-  "SELECT host, COUNT(DISTINCT segment_id) AS segment_count "
-  "FROM SegmentsByHost "
-  "GROUP BY host ) "
-  ""
-  "SELECT MCbH.marker_id, MCbH.host, "
-  "ROUND(MCbH.marker_count / TSCbH.segment_count, 2) AS 'Percentage' "
-  "FROM MarkerCountByHost MCbH "
-  "JOIN TotalSegmentCountByHost TSCbH")
-
+    ("WITH SegmentsByHost AS ("
+     "SELECT DISTINCT segment.segment_id, isolate.host "
+     "FROM Segment segment "
+     "JOIN Isolate isolate ON segment.isolate_id = isolate.isolate_epi), "
+     ""
+     "MarkerCountByHost AS ( "
+     "SELECT segmentMarkers.marker_id, SBH.host, COUNT(DISTINCT segmentMarkers.segment_id) AS marker_host_count "
+     "FROM SegmentMarkers segmentMarkers "
+     "JOIN SegmentsByHost SBH ON segmentMarkers.segment_id = SBH.segment_id "
+     "GROUP BY segmentMarkers.marker_id, SBH.host), "
+     ""
+     "TotalSegmentCountByHost AS ( "
+     "SELECT host, COUNT(DISTINCT segment_id) AS host_count "
+     "FROM SegmentsByHost "
+     "GROUP BY host ) "
+     ""
+     "SELECT distinct MCbH.marker_id, MCbH.host, "
+     "ROUND(MCbH.marker_host_count * 100.0 / TSCbH.host_count, 2) AS 'Percentage' "
+     "FROM MarkerCountByHost MCbH "
+     "JOIN TotalSegmentCountByHost TSCbH  ON MCbH.host = TSCbH.host")
 
 # TODO: Query 4
 # --------------------------------------------------------------
@@ -180,9 +196,9 @@ get_markers_by_host_relative_presence = \
 # NOTE: view SegmentMarker(segment_id, marker_id), tells whether a marker is found in a given segment
 
 get_markers_by_location_relative_presence = \
- ("")
+    ("")
 
-
+# CHECKED
 # --------------------------------------------------------------
 # QUERY 5: Get the most common Marker for the selected serotype and segment type with filters
 # --------------------------------------------------------------
@@ -205,34 +221,43 @@ get_markers_by_location_relative_presence = \
 # NOTE: view SegmentMarker(segment_id, marker_id), tells whether a marker is found in a given segment
 
 get_most_common_markers_by_filters = \
- ("WITH SelectedSegmentsIds AS ("
-  "SELECT DISTINCT segment.segment_id "
-  "FROM Segment segment "
-  "JOIN Isolate isolate ON segment.isolate_id = isolate.isolate_id "
-  "JOIN Location location ON isolate.location_id = location.location_id "
-  "WHERE (isolate.host = :host OR :host IS NULL) "
-  "AND (location.region = :region OR :region IS NULL) "
-  "AND (location.state = :state OR :state IS NULL) "
-  "AND (segment.segment_type == :segment_type OR :segment_type IS NULL) "
-  "AND (isolate.subtype_id == :serotype OR :serotype IS NULL)), "
-  ""
-  "SelectedMarkers AS ("
-  "SELECT marker_id, COUNT(*) AS selected_marker_count FROM SegmentMarkers "
-  "WHERE segment_id IN SelectedSegmentsIds "
-  "GROUP BY marker_id ) "
-  ""
-  "SELECT marker1.name AS 'Marker', GROUP_CONCAT(DISTINCT marker2.name, ', ') AS marker_group, "
-  "selected_marker_count AS 'Times Found' "
-  "FROM Marker AS marker1 "
-  "JOIN SelectedMarkers selectedMarkers ON marker1.marker_id = selectedMarkers.marker_id "
-  "JOIN MarkerToGroup MTG1 ON marker1.marker_id = MTG1.marker_id "
-  "JOIN MarkerToGroup MTG2 ON MTG1.marker_group_id = MTG2.marker_group_id "
-  "JOIN Marker marker2 ON marker1.marker_id = marker2.marker_id "
-  "GROUP BY marker1.name, MTG1.marker_id "
-  "ORDER BY selected_marker_count DESC ")
-
+    ("WITH SelectedSegmentsIds AS ("
+     "SELECT DISTINCT segment.segment_id "
+     "FROM Segment segment "
+     "JOIN Isolate isolate ON segment.isolate_id = isolate.isolate_epi "
+     "JOIN Location location ON isolate.location_id = location.location_id "
+     "WHERE (isolate.host = :host OR :host IS NULL) "
+     "AND (location.region = :region OR :region IS NULL) "
+     "AND (location.state = :state OR :state IS NULL) "
+     "AND (segment.segment_type == :segment_type OR :segment_type IS NULL) "
+     "AND (isolate.subtype_id == :serotype OR :serotype IS NULL)), "
+     ""
+     "SelectedMarkers AS ( "
+     "SELECT marker_id, COUNT(*) AS selected_marker_count FROM SegmentMarkers "
+     "WHERE segment_id IN SelectedSegmentsIds "
+     "GROUP BY marker_id ), "
+     ""
+     "MarkerGroupsNames AS ( "
+     "SELECT marker_group_id, GROUP_CONCAT(marker.name, ', ') AS group_names "
+     "FROM Marker marker "
+     "JOIN MarkerToGroup MTG ON marker.marker_id = MTG.marker_id "
+     "GROUP BY marker_group_id) "
+     ""
+     "SELECT marker.name AS 'Marker', "
+     "selected_marker_count AS 'Times Found', "
+     "GROUP_CONCAT( "
+     "CONCAT('(', "
+     "(SELECT group_names "
+     "FROM MarkerGroupsNames "
+     "WHERE marker_group_id = MTG.marker_group_id), ')'), ' ') as 'Groups' "
+     "FROM Marker AS marker "
+     "JOIN SelectedMarkers selectedMarkers ON marker.marker_id = selectedMarkers.marker_id "
+     "JOIN MarkerToGroup MTG ON marker.marker_id = MTG.marker_id "
+     "GROUP BY marker.marker_id "
+     "ORDER BY selected_marker_count DESC")
 
 # TODO: subqueries where the filter is in the group by, so that I can put data in graphs?
+# CHECKED
 # --------------------------------------------------------------
 # QUERY 6: Get N. of instances of distinct Markers for each host
 # GRAPH
@@ -251,20 +276,21 @@ get_most_common_markers_by_filters = \
 # NOTE: view SegmentMarker(segment_id, marker_id), tells whether a marker is found in a given segment
 
 get_host_by_n_of_markers = \
- ("WITH SelectedSegments AS ("
-  "SELECT DISTINCT segment.segment_id, isolate.host "
-  "FROM Segment segment "
-  "JOIN Isolate isolate ON segment.isolate_id = isolate.isolate_id "
-  "WHERE (segment.segment_type == :segment_type OR :segment_type IS NULL) "
-  "AND (isolate.subtype_id == :serotype OR :serotype IS NULL)) "
-  ""
-  "SELECT selectedSegments.host AS 'Host', "
-  "COUNT(DISTINCT segmentMarkers.marker_id) AS selected_marker_count "
-  "FROM SelectedSegments selectedSegments "
-  "JOIN SegmentMarkers segmentMarkers ON selectedSegments.segment_id = segmentMarkers.segment_id "
-  "GROUP BY selectedSegments.host "
-  "ORDER BY selected_marker_count DESC ")
+    ("WITH SelectedSegments AS ("
+     "SELECT DISTINCT segment.segment_id, isolate.host "
+     "FROM Segment segment "
+     "JOIN Isolate isolate ON segment.isolate_id = isolate.isolate_epi "
+     "WHERE (segment.segment_type == :segment_type OR :segment_type IS NULL) "
+     "AND (isolate.subtype_id == :serotype OR :serotype IS NULL)) "
+     ""
+     "SELECT selectedSegments.host AS 'Host', "
+     "COUNT(DISTINCT segmentMarkers.marker_id) AS 'Distinct Markers Per Host' "
+     "FROM SelectedSegments selectedSegments "
+     "JOIN SegmentMarkers segmentMarkers ON selectedSegments.segment_id = segmentMarkers.segment_id "
+     "GROUP BY selectedSegments.host "
+     "ORDER BY COUNT(DISTINCT segmentMarkers.marker_id) DESC ")
 
+# CHECKED
 # --------------------------------------------------------------
 # QUERY 7: Get how common is each Marker
 # GRAPH
@@ -282,24 +308,23 @@ get_host_by_n_of_markers = \
 # --------------------------------------------------------------
 
 get_markers_by_relevance = \
- ("WITH MarkerCount AS ( "
-  "SELECT marker_id, COUNT(DISTINCT segment_id) AS marker_count "
-  "FROM SegmentMarkers "
-  "GROUP BY marker_id), "
-  ""
-  "TotalCount AS ("
-  "SELECT COUNT(DISTINCT segment_id) AS total_count "
-  "FROM SegmentMarkers) "
-  ""
-  "SELECT marker.name AS 'Marker', "
-  "ROUND((markerCount.marker_count * 100) / totalCount.total_count, 2) AS 'Percentage' "
-  "FROM Marker marker "
-  "JOIN MarkerCount markerCount ON marker.marker_id = markerCount.marker_id "
-  "CROSS JOIN TotalCount totalCount "
-  "WHERE (markerCount.marker_count * 100) / totalCount.total_count BETWEEN :min_perc AND :max_perc "
-  "ORDER BY 'Percentage' DESC "
-  "LIMIT :limit")
-
+    ("WITH MarkerCount AS ( "
+     "SELECT marker_id, COUNT(DISTINCT segment_id) AS marker_count "
+     "FROM SegmentMarkers "
+     "GROUP BY marker_id), "
+     ""
+     "TotalCount AS ("
+     "SELECT COUNT(DISTINCT segment_id) AS total_count "
+     "FROM SegmentMarkers) "
+     ""
+     "SELECT marker.name AS 'Marker', "
+     "ROUND((markerCount.marker_count * 100.0) / totalCount.total_count, 2) AS 'Percentage' "
+     "FROM Marker marker "
+     "JOIN MarkerCount markerCount ON marker.marker_id = markerCount.marker_id "
+     "CROSS JOIN TotalCount totalCount "
+     "WHERE (markerCount.marker_count * 100.0) / totalCount.total_count BETWEEN :min_perc AND :max_perc "
+     "ORDER BY ROUND((markerCount.marker_count * 100.0) / totalCount.total_count, 2) DESC "
+     "LIMIT :limit")
 
 # --------------------------------------------------------------
 # QUERY 8: Given a Segment Type find the Most Mutable Zones
@@ -324,30 +349,30 @@ get_markers_by_relevance = \
 
 bins = []
 get_segment_mutability_zones = \
- ("WITH SelectedSegments AS ("
-  "SELECT DISTINCT segment.segment_id, isolate.host "
-  "FROM Segment segment "
-  "JOIN Isolate isolate ON segment.isolate_id = isolate.isolate_id "
-  "WHERE (segment.segment_type == :segment_type OR :segment_type IS NULL) "
-  "AND (isolate.subtype_id == :serotype OR :serotype IS NULL)), "
-  ""
-  "CountPerBin AS ("
-  "SELECT start_range, end_range, COUNT(DISTINCT mutation.mutation_id) AS bin_count "
-  "FROM Mutation mutation "
-  f"JOIN (VALUES {", ".join([f"({start}, {end})" for start, end in bins])}) "
-  "AS Bins (start_range, end_range) "
-  "ON Mutation.position BEWTWEEN Bins.start_range AND Bins.end_range "
-  "JOIN SegmentMutations segmentMutations ON mutation.mutation_id = segmentMutations.mutation_id "
-  "JOIN SelectedSegments selectedSegments ON segmentMutations.segment_id = selectedSegments.segment_id "
-  "WHERE (segmentMutations.reference_id = :reference_id OR :reference_id IS NULL) "
-  "GROUP BY Bins.start_range, Bins.end_range "
-  "ORDER BY distinct_id_count DESC) "
-  ""
-  "SELECT start_range AS 'From', end_range AS 'To', bin_count FROM CountPerBin AS 'Total Mutations'")
-
+    ("WITH SelectedSegments AS ("
+     "SELECT DISTINCT segment.segment_id, isolate.host "
+     "FROM Segment segment "
+     "JOIN Isolate isolate ON segment.isolate_id = isolate.isolate_epi "
+     "WHERE (segment.segment_type == :segment_type OR :segment_type IS NULL) "
+     "AND (isolate.subtype_id == :serotype OR :serotype IS NULL)), "
+     ""
+     "CountPerBin AS ("
+     "SELECT start_range, end_range, COUNT(DISTINCT mutation.mutation_id) AS bin_count "
+     "FROM Mutation mutation "
+     f"JOIN (VALUES {', '.join([f"({start}, {end})" for start, end in bins])}) "
+     "AS Bins (start_range, end_range) "
+     "ON Mutation.position BEWTWEEN Bins.start_range AND Bins.end_range "
+     "JOIN SegmentMutations segmentMutations ON mutation.mutation_id = segmentMutations.mutation_id "
+     "JOIN SelectedSegments selectedSegments ON segmentMutations.segment_id = selectedSegments.segment_id "
+     "WHERE (segmentMutations.reference_id = :reference_id OR :reference_id IS NULL) "
+     "GROUP BY Bins.start_range, Bins.end_range "
+     "ORDER BY distinct_id_count DESC) "
+     ""
+     "SELECT start_range AS 'From', end_range AS 'To', bin_count FROM CountPerBin AS 'Total Mutations'")
 
 # QUERIES ONTOLOGY
 
+# CHECKED
 # --------------------------------------------------------------
 # QUERY ???: Retrieve the Marker Groups that contain a specific Marker
 # --------------------------------------------------------------
@@ -365,19 +390,26 @@ get_segment_mutability_zones = \
 #
 # --------------------------------------------------------------
 
+# TODO: problem with group
 get_group_of_marker = \
- ("SELECT marker1.name AS 'Marker', GROUP_CONCAT(DISTINCT marker2.name, ', ') AS 'Group', "
-  "effect.effect_full AS 'Effect', effect.host AS 'Host', effect.drug AS 'Drug', "
-  "paper.doi AS 'DOI' "
-  "FROM Marker marker1 "
-  "JOIN MarkerToGroup MTG1 ON marker1.marker_id = MTG1.marker_id "
-  "JOIN MarkerToGroup MTG2 ON MTG1.marker_group_id = MTG2.marker_group_id "
-  "JOIN Marker marker2 ON marker1.marker_id = marker2.marker_id "
-  "JOIN MarkerGroup markerGroup ON MTG1.marker_group_id = markerGroup.marker_group_id "
-  "JOIN Effect effect ON markerGroup.effect_id = effect.effect_id "
-  "JOIN Paper paper ON markerGroup.paper_id = paper.paper_id ")
+    ("WITH MarkerGroupsNames AS ( "
+     "SELECT marker_group_id, GROUP_CONCAT(marker.name, ', ') AS group_names "
+     "FROM Marker marker "
+     "JOIN MarkerToGroup MTG ON marker.marker_id = MTG.marker_id "
+     "GROUP BY marker_group_id) "
+     ""
+     "SELECT group_names AS 'Group',"
+     "effect.effect_full AS 'Effect', "
+     "paper.doi AS 'DOI' "
+     "FROM MarkerGroupsNames MGN "
+     "JOIN MarkerGroupPaperAndEffect MGPAE ON MGN.marker_group_id = MGPAE.marker_group_id "
+     "JOIN Effect effect ON MGPAE.effect_id = effect.effect_id "
+     "JOIN Paper paper ON MGPAE.paper_id = paper.paper_id "
+     "WHERE MGN.marker_group_id IN ( "
+     "SELECT marker_group_id FROM MarkerToGroup WHERE marker_id = "
+     "(SELECT marker_id FROM Marker WHERE name = :marker_name))")
 
-
+# CHECKED
 # --------------------------------------------------------------
 # QUERY ???: Retrieve the Effects associated to Host/Drug
 # --------------------------------------------------------------
@@ -394,13 +426,13 @@ get_group_of_marker = \
 # --------------------------------------------------------------
 
 get_effects_by_effect_metadata = \
- ("SELECT effect_full AS 'Effect', effect_type AS 'Type', "
-  "host AS 'Host', drug AS 'Drug' "
-  "FROM Effect effect "
-  "WHERE (host = :host OR :host IS NULL) "
-  "AND (drug = :drug OR :drug IS NULL)")
+    ("SELECT effect_full AS 'Effect', effect_type AS 'Type', "
+     "host AS 'Host', drug AS 'Drug' "
+     "FROM Effect effect "
+     "WHERE (host = :host OR :host IS NULL) "
+     "AND (drug = :drug OR :drug IS NULL)")
 
-
+# CHECKED
 # --------------------------------------------------------------
 # QUERY ???: Retrieve the Groups associated to a particular Effect
 # --------------------------------------------------------------
@@ -416,11 +448,16 @@ get_effects_by_effect_metadata = \
 # --------------------------------------------------------------
 
 get_marker_groups_by_effect = \
- ("SELECT GROUP_CONCAT(DISTINCT marker.name, ', ') AS 'Group', "
-  "paper.doi AS 'DOI' "
-  "FROM Effect effect "
-  "JOIN MarkerGroup markerGroup ON effect.effect_id = markerGroup.effect_id "
-  "JOIN Paper paper ON markerGroup.paper_id = paper.paper_id "
-  "JOIN MarkerToGroup MTG ON markerGroup.marker_group_id = MTG.marker_group_id "
-  "JOIN Marker marker ON MTG.marker_id = marker.marker_id "
-  "GROUP BY markerGroup.marker_group_id ")
+    ("WITH MarkerGroupsNames AS ( "
+     "SELECT marker_group_id, GROUP_CONCAT(marker.name, ', ') AS group_names "
+     "FROM Marker marker "
+     "JOIN MarkerToGroup MTG ON marker.marker_id = MTG.marker_id "
+     "GROUP BY marker_group_id) "
+     ""
+     "SELECT group_names AS 'Group', "
+     "paper.doi AS 'DOI' "
+     "FROM Effect effect "
+     "JOIN MarkerGroupPaperAndEffect MGPAE ON MGPAE.effect_id = effect.effect_id "
+     "JOIN MarkerGroupsNames MGN ON MGPAE.marker_group_id = MGN.marker_group_id "
+     "JOIN Paper paper ON MGPAE.paper_id = paper.paper_id "
+     "WHERE effect.effect_full = :effect_full ")
