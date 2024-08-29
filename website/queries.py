@@ -1,7 +1,27 @@
 # GENERAL QUERIES
+get_hosts = \
+ ("SELECT DISTINCT host "
+  "FROM Isolate")
+
 get_markers = \
  ("SELECT DISTINCT name "
   "FROM Marker")
+
+get_subtypes = \
+ ("SELECT DISTINCT subtype_id, name "
+  "FROM Subtype")
+
+get_segments = \
+ ("SELECT DISTINCT segment_type "
+  "FROM ReferenceSegment")
+
+get_regions = \
+ ("SELECT DISTINCT region "
+  "FROM Location")
+
+get_states = \
+ ("SELECT DISTINCT region, state "
+  "FROM Location")
 
 # QUERIES
 # --------------------------------------------------------------
@@ -33,7 +53,7 @@ get_markers = \
 # Outputs:
 #   - A list of all Markers groups that contain the input Markers, and for each:
 #       - The associated Effect
-#       - The Serotype the Effect was found in
+#       - The subtype the Effect was found in
 #       - The Paper mentioning the Effect
 #
 # EXAMPLE: HA1:156A
@@ -68,13 +88,13 @@ get_markers_literature = \
 
 # CHECKED
 # --------------------------------------------------------------
-# QUERY 2: Get Markers ordered by % human hosts, divided by serotype and segment
+# QUERY 2: Get Markers ordered by % human hosts, divided by subtype and segment
 # --------------------------------------------------------------
 # Description:
 #   TODO
 #
 # Inputs:
-#   - (Optional) serotype: Serotype
+#   - (Optional) subtype: subtype
 #   - (Optional) segment_type: Segment type
 #   - (Optional Filter) min_perc, max_perc: Percentage range (default = (0, 100))
 #   - (Optional Filter) limit: Limit in the number of results (default = 10000)
@@ -92,9 +112,10 @@ get_markers_by_human_percentage = \
      "SELECT DISTINCT segment.segment_id "
      "FROM Segment segment "
      "JOIN Isolate isolate ON segment.isolate_id = isolate.isolate_epi "
+     "JOIN Subtype subtype ON isolate.subtype_id = subtype.subtype_id "
      "WHERE isolate.host = 'Human' "
      "AND (segment.segment_type == :segment_type OR :segment_type IS NULL) "
-     "AND (isolate.subtype_id == :serotype OR :serotype IS NULL)), "
+     "AND (subtype.name == :subtype OR :subtype IS NULL)), "
      ""
      "HumanMarkerCount AS ("
      "SELECT marker_id, COUNT(*) AS human_marker_count FROM SegmentMarkers "
@@ -158,11 +179,12 @@ get_markers_by_human_percentage = \
 # NOTE: view SegmentMarker(segment_id, marker_id), tells whether a marker is found in a given segment
 # ATTENTION: This query only returns (marker, host%), to aggregate data python is necessary!
 
-get_markers_by_host_relative_presence = \
+get_markers_id_by_host_relative_presence = \
     ("WITH SegmentsByHost AS ("
      "SELECT DISTINCT segment.segment_id, isolate.host "
      "FROM Segment segment "
-     "JOIN Isolate isolate ON segment.isolate_id = isolate.isolate_epi), "
+     "JOIN Isolate isolate ON segment.isolate_id = isolate.isolate_epi "
+     "WHERE host in (hosts)), "
      ""
      "MarkerCountByHost AS ( "
      "SELECT segmentMarkers.marker_id, SBH.host, COUNT(DISTINCT segmentMarkers.segment_id) AS marker_host_count "
@@ -175,10 +197,11 @@ get_markers_by_host_relative_presence = \
      "FROM SegmentsByHost "
      "GROUP BY host ) "
      ""
-     "SELECT distinct MCbH.marker_id, MCbH.host, "
-     "ROUND(MCbH.marker_host_count * 100.0 / TSCbH.host_count, 2) AS 'Percentage' "
+     "SELECT distinct marker.name as 'Marker', MCbH.host, "
+     "ROUND(MCbH.marker_host_count * 100.0 / TSCbH.host_count, 2) AS 'percentage' "
      "FROM MarkerCountByHost MCbH "
-     "JOIN TotalSegmentCountByHost TSCbH  ON MCbH.host = TSCbH.host")
+     "JOIN TotalSegmentCountByHost TSCbH  ON MCbH.host = TSCbH.host "
+     "JOIN Marker marker ON MCbH.marker_id = marker.marker_id")
 
 # TODO: Query 4
 # --------------------------------------------------------------
@@ -202,13 +225,13 @@ get_markers_by_location_relative_presence = \
 
 # CHECKED
 # --------------------------------------------------------------
-# QUERY 5: Get the most common Marker for the selected serotype and segment type with filters
+# QUERY 5: Get the most common Marker for the selected subtype and segment type with filters
 # --------------------------------------------------------------
 # Description:
 #   TODO
 #
 # Inputs:
-#   - (Optional) serotype: A Serotype
+#   - (Optional) subtype: A subtype
 #   - (Optional) segment_type: A Segment type
 #   - (Optional Filter) host: Host type
 #   - (Optional Filter) region: Geographical Region
@@ -228,11 +251,12 @@ get_most_common_markers_by_filters = \
      "FROM Segment segment "
      "JOIN Isolate isolate ON segment.isolate_id = isolate.isolate_epi "
      "JOIN Location location ON isolate.location_id = location.location_id "
+     "JOIN Subtype subtype ON isolate.subtype_id = subtype.subtype_id "
      "WHERE (isolate.host = :host OR :host IS NULL) "
      "AND (location.region = :region OR :region IS NULL) "
      "AND (location.state = :state OR :state IS NULL) "
      "AND (segment.segment_type == :segment_type OR :segment_type IS NULL) "
-     "AND (isolate.subtype_id == :serotype OR :serotype IS NULL)), "
+     "AND (subtype.name == :subtype OR :subtype IS NULL)), "
      ""
      "SelectedMarkers AS ( "
      "SELECT marker_id, COUNT(*) AS selected_marker_count FROM SegmentMarkers "
@@ -268,7 +292,7 @@ get_most_common_markers_by_filters = \
 #   TODO
 #
 # Inputs:
-#   - (Optional) serotype: A Serotype
+#   - (Optional) subtype: A subtype
 #   - (Optional) segment_type: A Segment type
 #
 # Outputs:
@@ -282,8 +306,9 @@ get_host_by_n_of_markers = \
      "SELECT DISTINCT segment.segment_id, isolate.host "
      "FROM Segment segment "
      "JOIN Isolate isolate ON segment.isolate_id = isolate.isolate_epi "
+     "JOIN Subtype subtype ON isolate.subtype_id = subtype.subtype_id "
      "WHERE (segment.segment_type == :segment_type OR :segment_type IS NULL) "
-     "AND (isolate.subtype_id == :serotype OR :serotype IS NULL)) "
+     "AND (subtype.name == :subtype OR :subtype IS NULL)) "
      ""
      "SELECT selectedSegments.host AS 'Host', "
      "COUNT(DISTINCT segmentMarkers.marker_id) AS 'Distinct Markers Per Host' "
@@ -337,7 +362,7 @@ get_markers_by_relevance = \
 #
 # Inputs:
 #   - segment_type: Segment to be analyzed
-#   - serotype: Serotype to be analyzed
+#   - subtype: subtype to be analyzed
 #   - reference: Which reference to take into account for the mutations
 #   - list of bins: List of (start, end) of interests
 #   OR
@@ -356,7 +381,7 @@ get_segment_mutability_zones = \
      "FROM Segment segment "
      "JOIN Isolate isolate ON segment.isolate_id = isolate.isolate_epi "
      "WHERE (segment.segment_type == :segment_type OR :segment_type IS NULL) "
-     "AND (isolate.subtype_id == :serotype OR :serotype IS NULL)), "
+     "AND (isolate.subtype_id == :subtype OR :subtype IS NULL)), "
      ""
      "CountPerBin AS ("
      "SELECT start_range, end_range, COUNT(DISTINCT mutation.mutation_id) AS bin_count "
@@ -387,7 +412,7 @@ get_segment_mutability_zones = \
 # Outputs:
 #   - A list of all Marker Groups that contain that Marker and, for each group:
 #       - The associated Effect
-#       - The Serotype the Effect was found in
+#       - The subtype the Effect was found in
 #       - The Paper mentioning the Effect
 #
 # --------------------------------------------------------------

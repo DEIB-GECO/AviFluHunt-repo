@@ -8,14 +8,65 @@ submit_button: "Run"
 
 ## QUERIES
 
-# QUERY ONE
+# QUERY 1
 label1: "#1 - TODO"
 explanation1:
   "<p style='text-align: justify;'>
   TODO
   </p>"
-param_label1a: "TODO:"
+param_label1a: "Marker Group:"
 error1: "TODO"
+
+# QUERY 2
+label2: "#2 - TODO"
+explanation2:
+  "<p style='text-align: justify;'>
+  TODO
+  </p>"
+param_label2a: "Subtype:"
+param_label2b: "Segment:"
+param_label2c: "Min:"
+param_label2d: "Max:"
+param_label2e: "Limit:"
+param_label2f: "Min # Instances:"
+error2: "TODO"
+
+# QUERY 3
+label3: "#3 - TODO"
+explanation3:
+  "<p style='text-align: justify;'>
+  TODO
+  </p>"
+param_label3a: "Host 1:"
+param_label3b: "Host 2:"
+param_label3c: "Other Hosts of Interests: "
+error3: "TODO"
+
+# QUERY 4
+# TODO
+
+# QUERY 5
+label5: "#5 - TODO"
+explanation5:
+  "<p style='text-align: justify;'>
+  TODO
+  </p>"
+param_label5a: "Subtype:"
+param_label5b: "Segment:"
+param_label5c: "Location:"
+param_label5d: "Host:"
+error5: "TODO"
+
+# QUERY 6
+label5: "#6 - TODO"
+explanation6:
+  "<p style='text-align: justify;'>
+  TODO
+  </p>"
+param_label6a: "Subtype:"
+param_label6b: "Segment:"
+error6: "TODO"
+
 
 ### README TAB
 
