@@ -16,14 +16,8 @@ CREATE TABLE IF NOT EXISTS `MarkerToGroup` (
     "marker_id" INTEGER,
     "marker_group_id" INTEGER,
 	FOREIGN KEY("marker_id") REFERENCES "Marker"("marker_id"),
-	FOREIGN KEY("marker_group_id") REFERENCES "MarkerGroup"("marker_group_id"),
 	PRIMARY KEY("marker_id", "marker_group_id"),
     UNIQUE ("marker_id", marker_group_id)
-);
-
-CREATE TABLE IF NOT EXISTS `MarkerGroup` (
-    "marker_group_id" INTEGER,
-	PRIMARY KEY("marker_group_id")
 );
 
 CREATE TABLE IF NOT EXISTS "Effect" (
@@ -47,10 +41,10 @@ CREATE TABLE IF NOT EXISTS "Paper" (
 );
 
 CREATE TABLE IF NOT EXISTS "MarkerGroupPaperAndEffect" (
-    marker_group_id INTEGER,
+    "marker_group_id" INTEGER,
     "paper_id" INTEGER,
     "effect_id" INTEGER,
-	FOREIGN KEY("marker_group_id") REFERENCES "MarkerGroup"("marker_group_id"),
+	FOREIGN KEY("marker_group_id") REFERENCES "MarkerToGroup"("marker_group_id"),
 	FOREIGN KEY("paper_id") REFERENCES "Paper"("paper_id"),
 	FOREIGN KEY("effect_id") REFERENCES "Effect"("effect_id"),
     PRIMARY KEY (marker_group_id, paper_id, effect_id)
@@ -63,7 +57,7 @@ CREATE TABLE IF NOT EXISTS "MarkerGroupToSubtype" (
     "marker_group_id" INTEGER,
     "notes" TEXT,
     FOREIGN KEY("subtype_id") REFERENCES "Subtype"("subtype_id"),
-    FOREIGN KEY("marker_group_id") REFERENCES "MarkerGroup"("marker_group_id"),
+    FOREIGN KEY("marker_group_id") REFERENCES "MarkerToGroup"("marker_group_id"),
     PRIMARY KEY("subtype_id", "marker_group_id"),
     UNIQUE ("subtype_id", marker_group_id)
 );
@@ -71,21 +65,21 @@ CREATE TABLE IF NOT EXISTS "MarkerGroupToSubtype" (
 -- DOMAIN
 
 CREATE TABLE IF NOT EXISTS "ReferenceSegment" (
-	"reference_id"	INTEGER,
+	"reference_seg_id"	INTEGER,
+    "subtype_id" INTEGER,
 	"segment_type"	TEXT,
 	"dna_fasta"	TEXT,
 	"protein_fasta"	TEXT,
-	PRIMARY KEY("reference_id")
+    FOREIGN KEY("subtype_id") REFERENCES "Subtype"("subtype_id"),
+	PRIMARY KEY("reference_seg_id")
 );
 
 CREATE TABLE IF NOT EXISTS "Annotation" (
 	"annotation_id"	INTEGER,
-	"annotation_name"	TEXT NOT NULL,
+    "segment_type" TEXT,
+	"annotation_name"	TEXT NOT NULL UNIQUE,
 	"annotation_type"	INTEGER,
-	"reference_id"	INTEGER NOT NULL,
-	FOREIGN KEY("reference_id") REFERENCES "ReferenceSegment"("reference_id"),
-	PRIMARY KEY("annotation_id"),
-    UNIQUE (annotation_name, reference_id)
+	PRIMARY KEY("annotation_id")
 );
 
 CREATE TABLE IF NOT EXISTS "Intein" (
@@ -122,12 +116,12 @@ CREATE TABLE IF NOT EXISTS "Location" (
 
 CREATE TABLE IF NOT EXISTS "Segment" (
 	"segment_id"	INTEGER,
-	"isolate_id"	INTEGER,
+	"isolate_epi"	TEXT,
 	"segment_type"	TEXT,
 	"segment_epi"	TEXT,
 	"virus_name"	TEXT,
 	"epi_virus_name"	TEXT UNIQUE NOT NULL,
-	FOREIGN KEY("isolate_id") REFERENCES "Isolate"("isolate_id"),
+	FOREIGN KEY("isolate_epi") REFERENCES "Isolate"("isolate_epi"),
 	PRIMARY KEY("segment_id")
 );
 
@@ -141,51 +135,31 @@ CREATE TABLE IF NOT EXISTS "SegmentData" (
 );
 
 CREATE TABLE IF NOT EXISTS "Mutation" (
-	"mutation_id"	INTEGER,
-	"mutation_name"	TEXT UNIQUE NOT NULL,
-	"Subtype_name"	TEXT,
-	"annotation_id"	,
-	"annotation_name"	TEXT,
-	"position"	INTEGER,
-	"ref"	TEXT,
-	"alt"	TEXT,
-	FOREIGN KEY("annotation_id") REFERENCES "Annotation"("annotation_id"),
+	"mutation_id" NTEGER,
+	"position" INTEGER,
+	"ref" TEXT,
+	"alt" TEXT,
+	"name" TEXT UNIQUE NOT NULL,
 	PRIMARY KEY("mutation_id")
 );
 
 CREATE TABLE IF NOT EXISTS "SegmentMutations" (
-	"segment_id"	INTEGER,
-	"reference_id"	INTEGER,
-	"mutation_id"	INTEGER,
+	"segment_id" INTEGER,
+	"reference_seg_id" INTEGER,
+	"mutation_id" INTEGER,
 	FOREIGN KEY("segment_id") REFERENCES "Segment"("segment_id"),
 	FOREIGN KEY("mutation_id") REFERENCES "Mutation"("mutation_id"),
-	FOREIGN KEY("reference_id") REFERENCES "ReferenceSegment"("reference_id"),
-	PRIMARY KEY("segment_id","mutation_id","reference_id")
+	FOREIGN KEY("reference_seg_id") REFERENCES "ReferenceSegment"("reference_seg_id"),
+	PRIMARY KEY("segment_id","mutation_id","reference_seg_id")
 );
 
 CREATE TABLE IF NOT EXISTS "Subtype" (
-	"subtype_id"	INTEGER,
-	"name"	TEXT,
+	"subtype_id" INTEGER,
+	"name" TEXT UNIQUE,
 	PRIMARY KEY("subtype_id")
 );
 
-CREATE TABLE IF NOT EXISTS "ReferenceToSubtype" (
-    "reference_id" INTEGER,
-    "subtype_id" TEXT,
-    FOREIGN KEY("reference_id") REFERENCES "ReferenceSegment"("reference_id"),
-    FOREIGN KEY("subtype_id") REFERENCES "Subtype"("subtype_id"),
-    PRIMARY KEY ("reference_id", "subtype_id")
-);
-
 -- VIEWS
-
-CREATE VIEW IF NOT EXISTS MutationsMarkers AS
-    SELECT mutation.mutation_id, marker.marker_id
-    FROM Mutation mutation
-    JOIN Marker marker
-    ON mutation.annotation_id = marker.annotation_id
-    AND mutation.position = marker.position
-    AND mutation.alt = marker.allele;
 
 CREATE VIEW IF NOT EXISTS SegmentMarkers AS
     SELECT segment.segment_id, marker.marker_id

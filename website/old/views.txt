@@ -1,7 +1,0 @@
-- QUERY 5A
-CREATE VIEW MutationCounts AS
-SELECT sm.mutation_id, COUNT(*) AS total_count,
-SUM(CASE WHEN iso.host = 'Human' THEN 1 ELSE 0 END) AS human_count
-FROM SegmentMutations sm JOIN Segment seg ON sm.segment_id = seg.segment_id
-JOIN Isolate iso ON seg.isolate_id = iso.isolate_epi
-GROUP BY sm.mutation_id

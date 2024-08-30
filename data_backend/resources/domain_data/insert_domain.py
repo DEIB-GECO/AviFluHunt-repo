@@ -13,8 +13,7 @@ if __name__ == "__main__":
         "ReferenceSegment": "data_reference_segment.xlsx",
         "Annotation": "data_annotation.xlsx",
         "Subtype": "data_subtype.xlsx",
-        "Intein": "data_intein.xlsx",
-        "ReferenceToSubtype": "data_reference_to_subtype.xlsx",
+        "Intein": "data_intein.xlsx"
     }
 
     database_handler = handler.DatabaseHandler()

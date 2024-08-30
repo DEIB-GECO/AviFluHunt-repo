@@ -43,7 +43,14 @@ param_label3c: "Other Hosts of Interests: "
 error3: "TODO"
 
 # QUERY 4
-# TODO
+label4: "#4 - TODO"
+explanation4:
+  "<p style='text-align: justify;'>
+  TODO
+  </p>"
+param_label4a: "Main Host:"
+param_label4b: "Other Hosts:"
+error4: "TODO"
 
 # QUERY 5
 label5: "#5 - TODO"
@@ -51,22 +58,97 @@ explanation5:
   "<p style='text-align: justify;'>
   TODO
   </p>"
-param_label5a: "Subtype:"
-param_label5b: "Segment:"
-param_label5c: "Location:"
-param_label5d: "Host:"
+param_label5a: "Marker:"
 error5: "TODO"
 
 # QUERY 6
-label5: "#6 - TODO"
+label6: "#6 - TODO"
 explanation6:
   "<p style='text-align: justify;'>
   TODO
   </p>"
-param_label6a: "Subtype:"
-param_label6b: "Segment:"
+param_label6a: "Marker:"
+param_label6b: "Region:"
 error6: "TODO"
 
+# QUERY 7
+label7: "#7 - TODO"
+explanation7:
+  "<p style='text-align: justify;'>
+  TODO
+  </p>"
+param_label7a: "Subtype:"
+param_label7b: "Segment:"
+param_label7c: "Location:"
+param_label7d: "Host:"
+error7: "TODO"
+
+# QUERY 8
+label8: "#8 - TODO"
+explanation8:
+  "<p style='text-align: justify;'>
+  TODO
+  </p>"
+param_label8a: "Subtype:"
+param_label8b: "Segment:"
+error8: "TODO"
+
+# QUERY 9
+label8: "#9 - TODO"
+explanation9:
+  "<p style='text-align: justify;'>
+  TODO
+  </p>"
+param_label9a: "Min Perc:"
+param_label9b: "Max Perc:"
+param_label9c: "Limit:"
+error9: "TODO"
+
+# QUERY 10
+label10: "#10 - TODO"
+explanation10:
+  "<p style='text-align: justify;'>
+  TODO
+  </p>"
+param_label10a: "Subtype:"
+error10: "TODO"
+
+# QUERY 11
+label11: "#11 - TODO"
+explanation11:
+  "<p style='text-align: justify;'>
+  TODO
+  </p>"
+param_label11a: "Subtype:"
+error11: "TODO"
+
+# QUERY 12
+label12: "#12 - TODO"
+explanation12:
+  "<p style='text-align: justify;'>
+  TODO
+  </p>"
+param_label12a: "Marker:"
+error12: "TODO"
+
+# QUERY 13
+label13: "#13 - TODO"
+explanation13:
+  "<p style='text-align: justify;'>
+  TODO
+  </p>"
+param_label13a: "Host:"
+param_label13b: "Drug:"
+error13: "TODO"
+
+# QUERY 11
+label14: "#14 - TODO"
+explanation14:
+  "<p style='text-align: justify;'>
+  TODO
+  </p>"
+param_label14a: "Effect:"
+error14: "TODO"
 
 ### README TAB
 

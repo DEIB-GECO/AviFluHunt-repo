@@ -5,9 +5,6 @@ import shutil
 import pandas as pd
 
 sys.path.append('helpers')
-import excel_extractor
-import variant_calling
-
 sys.path.append('database')
 import handler
 
@@ -48,39 +45,37 @@ class MutationDatabaseHandler:
         for key in self.dna_fasta_by_ref.keys():
 
             subtype_name, segment_type = key.split('_', 1)
+            reference = self.get_reference(subtype_name, segment_type)
+            if not reference: continue
 
-            references = self.get_references(subtype_name, segment_type)  # TODO: For segments only Padova's Ref
-            for reference in references:
+            aligned_dna_fastas, dna_insertions_file = self.align_sequences(
+                "tmp/dna/", key, reference["dna_fasta"], self.dna_fasta_by_ref[f"{key}"])
 
-                aligned_dna_fastas, dna_insertions_file = self.align_sequences(
-                    "tmp/dna/", key, reference["dna_fasta"], self.dna_fasta_by_ref[f"{key}"])
+            annotations = self.get_annotations(segment_type)
+            for annotation in annotations:
 
-                annotations = self.get_annotations(reference["reference_id"])
-                for annotation in annotations:
+                inteins = self.get_inteins(annotation["annotation_id"])
 
-                    inteins = self.get_inteins(annotation["annotation_id"])
+                coding_sequences_fasta = self.get_coding_sequences_fasta(
+                    aligned_dna_fastas, dna_insertions_file, inteins, reference["dna_fasta"])
 
-                    coding_sequences_fasta = self.get_coding_sequences_fasta(
-                        aligned_dna_fastas, dna_insertions_file, inteins, reference["dna_fasta"])
+                reference_coding_sequence = self.dna2aminoacid(
+                    self.extract_coding_sequence(
+                        reference["dna_fasta"].upper().replace("T", "U").replace("\n", ""),
+                        [(intein["start_pos"], intein["end_pos"]) for intein in inteins], [0, 0, 0]),
+                    "")
 
-                    reference_coding_sequence = self.dna2aminoacid(
-                        self.extract_coding_sequence(
-                            reference["dna_fasta"].upper().replace("T", "U").replace("\n", ""),
-                            [(intein["start_pos"], intein["end_pos"]) for intein in inteins], [0, 0, 0]),
-                        "")
+                aligned_protein_fastas, protein_insertions_file = self.align_sequences(
+                    "tmp/protein/", f"{key}_{annotation["annotation_name"]}",
+                    reference_coding_sequence, "".join(coding_sequences_fasta))
 
-                    aligned_protein_fastas, protein_insertions_file = self.align_sequences(
-                        "tmp/protein/", f"{key}_{annotation["annotation_name"]}",
-                        reference_coding_sequence, "".join(coding_sequences_fasta))
+                for aligned_protein_header, aligned_protein_fasta in aligned_protein_fastas.items():
 
-                    for aligned_protein_header, aligned_protein_fasta in aligned_protein_fastas.items():
+                    header_dict = self.get_header_dict(aligned_protein_header)
+                    segment_id = self.create_segment(header_dict)
+                    self.create_segment_data(segment_id, annotation["annotation_id"], aligned_protein_fasta)
 
-                        # Save Segment Data
-                        header_dict = self.get_header_dict(aligned_protein_header)
-                        segment_id = self.create_segment(header_dict)
-                        self.create_segment_data(segment_id, annotation["annotation_id"], aligned_protein_fasta)
-
-                    self.database_handler.commit_changes()
+                self.database_handler.commit_changes()
 
         self.database_handler.commit_changes()
 
@@ -204,7 +199,7 @@ class MutationDatabaseHandler:
 
     def create_segment(self, header_dict):
 
-        isolate_id = header_dict["isolate_id"]
+        isolate_epi = header_dict["isolate_id"]
         segment_type = header_dict["segment_type"]
         segment_epi = header_dict["segment_epi"]
         virus_name = header_dict["virus_name"]
@@ -215,9 +210,9 @@ class MutationDatabaseHandler:
             return segments_in_db[0]["segment_id"]
 
         return self.database_handler.insert_row("Segment",
-                                                ["segment_id", "isolate_id", "segment_type",
+                                                ["segment_id", "isolate_epi", "segment_type",
                                                  "segment_epi", "virus_name", "epi_virus_name"],
-                                                (None, isolate_id, segment_type,
+                                                (None, isolate_epi, segment_type,
                                                  segment_epi, virus_name, epi_virus_name),
                                                 commit=True)
 
@@ -245,22 +240,20 @@ class MutationDatabaseHandler:
             return subtypes[0]
         return None
 
-    def get_references(self, subtype_name, segment_type):
+    def get_reference(self, subtype_name, segment_type):
 
-        references = []
         subtype = self.get_subtype(subtype_name)
         if subtype:
-            references_of_segment = self.database_handler.get_rows("ReferenceSegment", ["segment_type"], (segment_type,))
-            for reference in references_of_segment:
-                if self.database_handler.row_exists("ReferenceToSubtype",
-                                                    ["reference_id", "subtype_id"],
-                                                    (reference["reference_id"], subtype["subtype_id"],)):
-                    references.append(reference)
+            try:
+                reference = self.database_handler.get_rows(
+                    "ReferenceSegment", ["subtype_id", "segment_type"],
+                    (subtype["subtype_id"], segment_type,))[0]
+                return reference
+            except IndexError:
+                return None
 
-        return references
-
-    def get_annotations(self, reference_id):
-        return self.database_handler.get_rows("Annotation", ["reference_id"], (reference_id,))
+    def get_annotations(self, segment_type):
+        return self.database_handler.get_rows("Annotation", ["segment_type"], (segment_type,))
 
     def get_inteins(self, annotation_id):
         return self.database_handler.get_rows("Intein", ["annotation_id"], (annotation_id,))

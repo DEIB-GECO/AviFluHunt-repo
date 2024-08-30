@@ -23,27 +23,11 @@ get_states = \
  ("SELECT DISTINCT region, state "
   "FROM Location")
 
-# QUERIES
-# --------------------------------------------------------------
-# QUERY TODO: TODO
-# --------------------------------------------------------------
-# Description:
-#   TODO
-#
-# Inputs:
-#   - TODO (type): TODO
-#
-# Outputs:
-#   - TODO (type): TODO
-#
-# --------------------------------------------------------------
 
-# CHECKED
+# QUERIES
 # --------------------------------------------------------------
 # QUERY 1: Select the literature data associated to a group of Markers
 # --------------------------------------------------------------
-# Description:
-#   TODO
 #
 # Inputs:
 #   - A list of Markers
@@ -86,12 +70,10 @@ get_markers_literature = \
      f"JOIN Paper paper ON MGPAE.paper_id = paper.paper_id "
      f"GROUP BY MGPAE.marker_group_id ")
 
-# CHECKED
+
 # --------------------------------------------------------------
 # QUERY 2: Get Markers ordered by % human hosts, divided by subtype and segment
 # --------------------------------------------------------------
-# Description:
-#   TODO
 #
 # Inputs:
 #   - (Optional) subtype: subtype
@@ -111,9 +93,18 @@ get_markers_by_human_percentage = \
     ("WITH SelectedSegmentsIds AS ("
      "SELECT DISTINCT segment.segment_id "
      "FROM Segment segment "
-     "JOIN Isolate isolate ON segment.isolate_id = isolate.isolate_epi "
+     "JOIN Isolate isolate ON segment.isolate_epi = isolate.isolate_epi "
      "JOIN Subtype subtype ON isolate.subtype_id = subtype.subtype_id "
      "WHERE isolate.host = 'Human' "
+     "AND (segment.segment_type == :segment_type OR :segment_type IS NULL) "
+     "AND (subtype.name == :subtype OR :subtype IS NULL)), "
+     ""
+     "OtherHostsSegmentIds AS ("
+     "SELECT DISTINCT segment.segment_id, isolate.host "
+     "FROM Segment segment "
+     "JOIN Isolate isolate ON segment.isolate_epi = isolate.isolate_epi "
+     "JOIN Subtype subtype ON isolate.subtype_id = subtype.subtype_id "
+     "WHERE isolate.host != 'Human' "
      "AND (segment.segment_type == :segment_type OR :segment_type IS NULL) "
      "AND (subtype.name == :subtype OR :subtype IS NULL)), "
      ""
@@ -121,6 +112,13 @@ get_markers_by_human_percentage = \
      "SELECT marker_id, COUNT(*) AS human_marker_count FROM SegmentMarkers "
      "WHERE segment_id IN SelectedSegmentsIds "
      "GROUP BY marker_id), "
+     ""
+     "HostMarkerCount AS ( "
+     "SELECT segmentMarkers.marker_id, OHSI.host, COUNT(DISTINCT segmentMarkers.segment_id) AS host_marker_count "
+     "FROM SegmentMarkers segmentMarkers "
+     "JOIN OtherHostsSegmentIds OHSI ON segmentMarkers.segment_id = OHSI.segment_id "
+     "GROUP BY segmentMarkers.marker_id, OHSI.host "
+     "ORDER BY host_marker_count DESC), "
      ""
      "TotalMarkerCount AS ("
      "SELECT marker_id, COUNT(*) AS total_marker_count FROM SegmentMarkers "
@@ -139,33 +137,29 @@ get_markers_by_human_percentage = \
      "GROUP BY marker.marker_id "
      "LIMIT :limit), "
      ""
-     "MarkerGroupsNames AS ("
-     "SELECT marker_group_id, GROUP_CONCAT(marker.name, ', ') AS group_names "
-     "FROM Marker marker "
-     "JOIN MarkerToGroup MTG ON marker.marker_id = MTG.marker_id "
-     "GROUP BY marker_group_id) "
+     "OtherHostInfo AS ( "
+     "SELECT marker_id, GROUP_CONCAT(CONCAT(host, ': ', host_marker_count), ';       ') as host_info "
+     "FROM HostMarkerCount "
+     "GROUP BY marker_id) "
      ""
      "SELECT marker.name AS 'Marker', "
-     "GROUP_CONCAT(CONCAT('(', "
-     "(SELECT group_names "
-     "FROM MarkerGroupsNames "
-     "WHERE marker_group_id = MTG.marker_group_id), ')'), ' ') as 'Groups', "
      "COALESCE(selectedMarkers.human_marker_count, 0) as 'Human Instances', "
      "selectedMarkers.total_marker_count AS 'Total Instances', "
-     "selectedMarkers.percentage AS Percentage "
+     "selectedMarkers.percentage AS Percentage, "
+     "host_info AS 'Other Hosts' "
      "FROM Marker AS marker "
      "JOIN SelectedMarkers selectedMarkers ON marker.marker_id = selectedMarkers.marker_id "
      "JOIN MarkerToGroup MTG ON marker.marker_id = MTG.marker_id "
+     "JOIN HostMarkerCount HMC ON marker.marker_id = HMC.marker_id "
+     "JOIN OtherHostInfo OHI ON marker.marker_id = OHI.marker_id "
      "GROUP BY marker.marker_id "
      "ORDER BY Percentage DESC")
 
-# CHECKED
+
 # --------------------------------------------------------------
 # QUERY 3: Get markers by difference in relative presence in hosts
 # GRAPH
 # --------------------------------------------------------------
-# Description:
-#   TODO
 #
 # Inputs:
 #   - (Optional) host1: The first host to consider for the analysis
@@ -183,7 +177,7 @@ get_markers_id_by_host_relative_presence = \
     ("WITH SegmentsByHost AS ("
      "SELECT DISTINCT segment.segment_id, isolate.host "
      "FROM Segment segment "
-     "JOIN Isolate isolate ON segment.isolate_id = isolate.isolate_epi "
+     "JOIN Isolate isolate ON segment.isolate_epi = isolate.isolate_epi "
      "WHERE host in (hosts)), "
      ""
      "MarkerCountByHost AS ( "
@@ -203,16 +197,63 @@ get_markers_id_by_host_relative_presence = \
      "JOIN TotalSegmentCountByHost TSCbH  ON MCbH.host = TSCbH.host "
      "JOIN Marker marker ON MCbH.marker_id = marker.marker_id")
 
-# TODO: Query 4
+
 # --------------------------------------------------------------
-# QUERY 4:
+# QUERY 4: Given a reference host, compere other hosts in marker by first host
 # GRAPH
 # --------------------------------------------------------------
-# Description:
-#   TODO
 #
 # Inputs:
-#   -
+#   - host1: The host to consider
+#   - hosts: The other hosts to consider (up to 5)
+#
+# Outputs:
+#   - TODO
+#
+# --------------------------------------------------------------
+# NOTE: view SegmentMarker(segment_id, marker_id), tells whether a marker is found in a given segment
+
+# AS Query 3
+
+
+# --------------------------------------------------------------
+# QUERY 5: Given a Marker obtain the host distribution
+# GRAPH
+# --------------------------------------------------------------
+#
+# Inputs:
+#   - (Optional) marker: Marker
+#
+# Outputs:
+#   - Host distribution for that marker
+#
+# --------------------------------------------------------------
+# NOTE: view SegmentMarker(segment_id, marker_id), tells whether a marker is found in a given segment
+# ATTENTION: This query only returns (marker, host%), to aggregate data python is necessary!
+
+get_marker_host_distribution = \
+    ("WITH SegmentsByHost AS ("
+     "SELECT DISTINCT segment.segment_id, isolate.host "
+     "FROM Segment segment "
+     "JOIN Isolate isolate ON segment.isolate_epi = isolate.isolate_epi) "
+     ""
+     "SELECT SBH.host as 'Host', COUNT(DISTINCT segmentMarkers.segment_id) AS '#' "
+     "FROM SegmentMarkers segmentMarkers "
+     "JOIN SegmentsByHost SBH ON segmentMarkers.segment_id = SBH.segment_id "
+     "JOIN Marker marker ON segmentMarkers.marker_id = marker.marker_id "
+     "WHERE marker.name = :marker "
+     "GROUP BY segmentMarkers.marker_id, SBH.host "
+     "ORDER BY COUNT(DISTINCT segmentMarkers.segment_id) DESC")
+
+
+# --------------------------------------------------------------
+# QUERY 6: Given a Marker (and Region) obtain the location distribution, normalized
+# GRAPH
+# --------------------------------------------------------------
+#
+# Inputs:
+#   - marker: Marker
+#   - (Optional) region: Region
 #
 # Outputs:
 #   -
@@ -220,15 +261,30 @@ get_markers_id_by_host_relative_presence = \
 # --------------------------------------------------------------
 # NOTE: view SegmentMarker(segment_id, marker_id), tells whether a marker is found in a given segment
 
-get_markers_by_location_relative_presence = \
-    ("")
+get_markers_location_distribution = \
+    ("WITH SegmentsByState AS ("
+     "SELECT DISTINCT segment.segment_id, location.state "
+     "FROM Segment segment "
+     "JOIN Isolate isolate ON segment.isolate_epi = isolate.isolate_epi "
+     "JOIN Location location ON isolate.location_id = location.location_id "
+     "WHERE (location.region = :region OR :region IS NULL)) "
+     ""
+     "SELECT SBS.state as 'State', "
+     "COUNT(DISTINCT segmentMarkers.segment_id) * 100.0 / "
+     "(SELECT COUNT(*) FROM SegmentsByState WHERE state = SBS.state) AS 'Normalized Percentage' "
+     "FROM SegmentMarkers segmentMarkers "
+     "JOIN SegmentsByState SBS ON segmentMarkers.segment_id = SBS.segment_id "
+     "JOIN Marker marker ON segmentMarkers.marker_id = marker.marker_id "
+     "WHERE marker.name = :marker "
+     "GROUP BY segmentMarkers.marker_id, SBS.state "
+     "ORDER BY "
+     "(COUNT(DISTINCT segmentMarkers.segment_id) * 100.0 / "
+     "(SELECT COUNT(*) FROM SegmentsByState WHERE state = SBS.state)) DESC")
 
-# CHECKED
+
 # --------------------------------------------------------------
-# QUERY 5: Get the most common Marker for the selected subtype and segment type with filters
+# QUERY 7: Get the most common Marker for the selected subtype and segment type with filters
 # --------------------------------------------------------------
-# Description:
-#   TODO
 #
 # Inputs:
 #   - (Optional) subtype: A subtype
@@ -249,7 +305,7 @@ get_most_common_markers_by_filters = \
     ("WITH SelectedSegmentsIds AS ("
      "SELECT DISTINCT segment.segment_id "
      "FROM Segment segment "
-     "JOIN Isolate isolate ON segment.isolate_id = isolate.isolate_epi "
+     "JOIN Isolate isolate ON segment.isolate_epi = isolate.isolate_epi "
      "JOIN Location location ON isolate.location_id = location.location_id "
      "JOIN Subtype subtype ON isolate.subtype_id = subtype.subtype_id "
      "WHERE (isolate.host = :host OR :host IS NULL) "
@@ -270,7 +326,7 @@ get_most_common_markers_by_filters = \
      "GROUP BY marker_group_id) "
      ""
      "SELECT marker.name AS 'Marker', "
-     "selected_marker_count AS 'Times Found', "
+     "selected_marker_count AS 'Found in #Isolates', "
      "GROUP_CONCAT( "
      "CONCAT('(', "
      "(SELECT group_names "
@@ -282,14 +338,10 @@ get_most_common_markers_by_filters = \
      "GROUP BY marker.marker_id "
      "ORDER BY selected_marker_count DESC")
 
-# TODO: subqueries where the filter is in the group by, so that I can put data in graphs?
-# CHECKED
+
 # --------------------------------------------------------------
-# QUERY 6: Get N. of instances of distinct Markers for each host
-# GRAPH
+# QUERY 8: Get N. of instances of distinct Markers for each host
 # --------------------------------------------------------------
-# Description:
-#   TODO
 #
 # Inputs:
 #   - (Optional) subtype: A subtype
@@ -305,7 +357,7 @@ get_host_by_n_of_markers = \
     ("WITH SelectedSegments AS ("
      "SELECT DISTINCT segment.segment_id, isolate.host "
      "FROM Segment segment "
-     "JOIN Isolate isolate ON segment.isolate_id = isolate.isolate_epi "
+     "JOIN Isolate isolate ON segment.isolate_epi = isolate.isolate_epi "
      "JOIN Subtype subtype ON isolate.subtype_id = subtype.subtype_id "
      "WHERE (segment.segment_type == :segment_type OR :segment_type IS NULL) "
      "AND (subtype.name == :subtype OR :subtype IS NULL)) "
@@ -317,13 +369,11 @@ get_host_by_n_of_markers = \
      "GROUP BY selectedSegments.host "
      "ORDER BY COUNT(DISTINCT segmentMarkers.marker_id) DESC ")
 
-# CHECKED
+
 # --------------------------------------------------------------
-# QUERY 7: Get how common is each Marker
+# QUERY 9: Get how common is each Marker
 # GRAPH
 # --------------------------------------------------------------
-# Description:
-#   TODO
 #
 # Inputs:
 #   - (Optional Filter) min_perc, max_perc: Percentage range (default = (0, 100))
@@ -354,11 +404,9 @@ get_markers_by_relevance = \
      "LIMIT :limit")
 
 # --------------------------------------------------------------
-# QUERY 8: Given a Segment Type find the Most Mutable Zones
+# QUERY 10: TODO Given a Segment Type find the Most Mutable Zones
 # GRAPH
 # --------------------------------------------------------------
-# Description:
-#   TODO
 #
 # Inputs:
 #   - segment_type: Segment to be analyzed
@@ -379,7 +427,7 @@ get_segment_mutability_zones = \
     ("WITH SelectedSegments AS ("
      "SELECT DISTINCT segment.segment_id, isolate.host "
      "FROM Segment segment "
-     "JOIN Isolate isolate ON segment.isolate_id = isolate.isolate_epi "
+     "JOIN Isolate isolate ON segment.isolate_epi = isolate.isolate_epi "
      "WHERE (segment.segment_type == :segment_type OR :segment_type IS NULL) "
      "AND (isolate.subtype_id == :subtype OR :subtype IS NULL)), "
      ""
@@ -397,14 +445,26 @@ get_segment_mutability_zones = \
      ""
      "SELECT start_range AS 'From', end_range AS 'To', bin_count FROM CountPerBin AS 'Total Mutations'")
 
+
+# --------------------------------------------------------------
+# QUERY 11: TODO (Dates bin)
+# GRAPH
+# --------------------------------------------------------------
+#
+# Inputs:
+#   - TODO
+#
+# Outputs:
+#   - TODO
+#
+# --------------------------------------------------------------
+
+
 # QUERIES ONTOLOGY
 
-# CHECKED
 # --------------------------------------------------------------
-# QUERY ???: Retrieve the Marker Groups that contain a specific Marker
+# QUERY 12: Retrieve the Marker Groups that contain a specific Marker
 # --------------------------------------------------------------
-# Description:
-#   TODO
 #
 # Inputs:
 #   - marker: A Marker
@@ -436,12 +496,9 @@ get_group_of_marker = \
      "(SELECT marker_id FROM Marker WHERE name = :marker_name))")
 
 
-# CHECKED
 # --------------------------------------------------------------
-# QUERY ???: Retrieve the Effects associated to Host/Drug
+# QUERY 13: Retrieve the Effects associated to Host/Drug
 # --------------------------------------------------------------
-# Description:
-#   TODO
 #
 # Inputs:
 #   - (Optional) host: A Host type
@@ -460,12 +517,9 @@ get_effects_by_effect_metadata = \
      "AND (drug = :drug OR :drug IS NULL)")
 
 
-# CHECKED
 # --------------------------------------------------------------
-# QUERY ???: Retrieve the Groups associated to a particular Effect
+# QUERY 14: Retrieve the Groups associated to a particular Effect
 # --------------------------------------------------------------
-# Description:
-#   TODO
 #
 # Inputs:
 #   - (Optional) effect: Effect

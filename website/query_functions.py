@@ -39,13 +39,36 @@ def run_query(query_selection):
             params = params3()
             query = get_markers_id_by_host_relative_presence.replace("hosts", params["hosts"])
         if query_selection == 4:
-            pass
+            params = params4()
+            query = get_markers_id_by_host_relative_presence.replace("hosts", params["hosts"])
         if query_selection == 5:
             params = params5()
-            query = get_most_common_markers_by_filters
+            query = get_marker_host_distribution
         if query_selection == 6:
             params = params6()
+            query = get_markers_location_distribution
+        if query_selection == 7:
+            params = params7()
+            query = get_most_common_markers_by_filters
+        if query_selection == 8:
+            params = params8()
             query = get_host_by_n_of_markers
+        if query_selection == 9:
+            params = params9()
+            query = get_markers_by_relevance
+        if query_selection == 10:
+            pass  # TODO
+        if query_selection == 11:
+            pass  # TODO
+        if query_selection == 12:
+            params = params12()
+            query = get_group_of_marker
+        if query_selection == 13:
+            params = params13()
+            query = get_effects_by_effect_metadata
+        if query_selection == 14:
+            params = params14()
+            query = get_marker_groups_by_effect
 
         submitted = st.form_submit_button("Submit")
         if submitted:
@@ -56,8 +79,15 @@ def run_query(query_selection):
             if query_selection == 3:
                 result = manip_result3(result, params)
                 graph = graph3(result, params)
+            if query_selection == 4:
+                result = manip_result4(result, params)
+                graph = graph4(result, params)
+            if query_selection == 5:
+                graph = graph5(result, params)
             if query_selection == 6:
                 graph = graph6(result)
+            if query_selection == 9:
+                graph = graph9(result)
 
             return result, graph
 
@@ -194,25 +224,124 @@ def graph3(result_df, params):
     return fig
 
 
-# TODO: 4
+def params4():
+
+    host = st.selectbox(label=strings["param_label4a"], options=hosts)
+    other_hosts = st.multiselect(label=strings["param_label4b"], options=hosts, max_selections=5)
+
+    return {
+        "host": host,
+        "other_hosts": other_hosts,
+        "hosts": f"'{host}'{', ' if other_hosts else ""}{','.join([f"'{host}'" for host in other_hosts])}"
+    }
+
+
+def manip_result4(results_pre, params):
+    pivot_result = results_pre.pivot(index='Marker', columns='host', values='percentage').reset_index()
+    sorted_result = pivot_result.sort_values(by=params["host"], ascending=False)
+    columns = list(sorted_result.columns)
+    columns.remove(params["host"])
+    columns.insert(1, params["host"])
+    sorted_result = sorted_result[columns]
+    return sorted_result
+
+
+def graph4(result_df, params):
+
+    top_10_df = result_df.head(10)
+    fig, ax = plt.subplots(figsize=(14, 8))
+
+    num_markers = len(top_10_df)
+    num_hosts = len(top_10_df.columns) - 1
+    bar_width = 0.8 / num_hosts
+    index = range(num_markers)
+    colors = ['r', 'g', 'b', 'c', 'm', 'y']
+
+    for i, host in enumerate(top_10_df.columns[1:]):  # Skip 'marker' column
+        offset = (i - (num_hosts - 1) / 2) * bar_width
+        ax.bar([p + offset for p in index], top_10_df[host], bar_width, label=host, color=colors[i % len(colors)])
+
+    ax.set_xlabel('Marker')
+    ax.set_ylabel('Values')
+    ax.set_title('Top 10 Markers Ordered by ' + params["host"] + "%")
+    ax.set_xticks(index)
+    ax.set_xticklabels(top_10_df['Marker'], rotation=45)
+    ax.legend(title='Hosts')
+    ax.grid(True, linestyle='--', alpha=0.7)
+
+    return plt.gcf()
 
 
 def params5():
+    marker = st.selectbox(label=strings["param_label5a"], options=markers)
+    return {"marker": marker}
+
+
+def graph5(result_df, params):
+
+    df_sorted = result_df.sort_values(by='#', ascending=False)
+
+    # Select the top 20 rows
+    top_20 = df_sorted.head(20)
+
+    # Plotting
+    plt.figure(figsize=(12, 8))
+    plt.barh(top_20['Host'], top_20['#'], color='skyblue')
+    plt.xlabel('#')
+    plt.ylabel('Host')
+    plt.title('Top Hosts')
+    plt.gca().invert_yaxis()  # Optional: To have the highest values at the top
+    plt.grid(axis='x', linestyle='--', alpha=0.7)
+
+    # Return the matplotlib figure object
+    return plt.gcf()
+
+
+def params6():
+    marker = st.selectbox(label=strings["param_label6a"], options=markers)
+    region = st.selectbox(label=strings["param_label6b"], options=[None] + regions["region"].tolist())
+    return {
+        "marker": marker,
+        "region": region
+    }
+
+
+def graph6(result_df):
+
+    df_sorted = result_df.sort_values(by='Normalized Percentage', ascending=False)
+
+    # Select the top 20 rows
+    top_20 = df_sorted.head(20)
+
+    # Plotting
+    plt.figure(figsize=(12, 8))
+    plt.barh(top_20['State'], top_20['Normalized Percentage'], color='skyblue')
+    plt.xlabel('Normalized Percentage')
+    plt.ylabel('State')
+    plt.title('Top States')
+    plt.gca().invert_yaxis()  # Optional: To have the highest values at the top
+    plt.grid(axis='x', linestyle='--', alpha=0.7)
+
+    # Return the matplotlib figure object
+    return plt.gcf()
+
+
+def params7():
 
     l_col, r_col = st.columns(2)
     with l_col:
-        subtype = st.selectbox(label=strings["param_label5a"],
-                               options=["H5N1"])  # [sub["name"] for _, sub in subtypes.iterrows()])
+        subtype = st.selectbox(label=strings["param_label7a"],
+                               options=["H7N1"])  # [sub["name"] for _, sub in subtypes.iterrows()])
     with r_col:
-        segment = st.selectbox(label=strings["param_label5b"], options=segments)
+        segment = st.selectbox(label=strings["param_label7b"], options=segments)
 
-    location = st.selectbox(label=strings["param_label5c"],
+    location = st.selectbox(label=strings["param_label7c"],
                             options=[None] + regions['region'].tolist()
                                     + [f"{row['region']} - {row['state']}" for _, row in states.iterrows()])
-    host = st.selectbox(label=strings["param_label5d"], options=[None] + hosts['host'].tolist())
+    host = st.selectbox(label=strings["param_label7d"], options=[None] + hosts['host'].tolist())
 
     if location:
-        location = location.strip().split("-")
+        location = location.split(" - ")
         region = location[0]
         state = location[1] if len(location) > 1 else None
     else:
@@ -228,14 +357,14 @@ def params5():
     }
 
 
-def params6():
+def params8():
 
     l_col, r_col = st.columns(2)
     with l_col:
-        subtype = st.selectbox(label=strings["param_label6a"],
+        subtype = st.selectbox(label=strings["param_label8a"],
                                options=[None, "H5N1"])  # [sub["name"] for _, sub in subtypes.iterrows()])
     with r_col:
-        segment = st.selectbox(label=strings["param_label6b"], options=[None] + segments["segment_type"].tolist())
+        segment = st.selectbox(label=strings["param_label8b"], options=[None] + segments["segment_type"].tolist())
 
     return {
         "subtype": subtype,
@@ -243,7 +372,7 @@ def params6():
     }
 
 
-def graph6(result_df):
+def graph8(result_df):
 
     df_sorted = result_df.sort_values(by='Distinct Markers Per Host', ascending=False).head(10)
     fig, ax = plt.subplots(figsize=(12, 8))
@@ -260,3 +389,73 @@ def graph6(result_df):
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
     return fig
+
+
+def params9():
+
+    l_col, r_col = st.columns(2)
+    with l_col:
+        min_perc = st.number_input(label=strings["param_label9a"], key=strings["param_label9a"],
+                                   min_value=0.0, step=0.1, max_value=100.0)
+    with r_col:
+        max_perc = st.number_input(label=strings["param_label9b"], key=strings["param_label9b"],
+                                   min_value=0.0, step=0.1, max_value=100.0, value=100.0)
+
+    limit = st.number_input(label=strings["param_label9c"], key=strings["param_label9c"],
+                            min_value=1, step=1, value=10000)
+
+    return {
+        "min_perc": min_perc,
+        "max_perc": max_perc,
+        "limit": limit
+    }
+
+
+def graph9(result_df):
+
+    df_sorted = result_df.sort_values(by='Percentage', ascending=False).head(10)
+    fig, ax = plt.subplots(figsize=(12, 8))
+    bars = ax.bar(df_sorted['Marker'], df_sorted['Percentage'], color='skyblue')
+
+    ax.set_xlabel('Marker')
+    ax.set_ylabel('Markers By Percentage')
+
+    for bar in bars:
+        yval = bar.get_height()
+        ax.text(bar.get_x() + bar.get_width() / 2, yval, int(yval), va='bottom', ha='center')
+
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+    return fig
+
+
+# TODO: 10
+# TODO 11
+
+
+def params12():
+    marker = st.selectbox(label=strings["param_label12a"], options=markers)
+    return {"marker_name": marker}
+
+
+def params13():
+
+    effect_hosts = db.query("SELECT DISTINCT host FROM Effect WHERE host != ''")
+    effect_drugs = db.query("SELECT DISTINCT drug FROM Effect WHERE drug != ''")
+
+    effect_host = st.selectbox(label=strings["param_label13a"],
+                               options=[None] + effect_hosts["host"].tolist())
+    effect_drug = st.selectbox(label=strings["param_label13b"],
+                               options=[None] + effect_drugs["drug"].tolist())
+
+    return {
+        "host": effect_host,
+        "drug": effect_drug
+    }
+
+
+def params14():
+    effects = db.query("SELECT DISTINCT effect_full FROM Effect")
+    effect_full = st.selectbox(label=strings["param_label14a"],
+                               options=effects)
+    return {"effect_full": effect_full}

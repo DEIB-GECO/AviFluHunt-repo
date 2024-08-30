@@ -10,8 +10,6 @@ import handler
 
 import pandas as pd
 
-# Load the Excel file
-markers_data_file = 'data_markers.xlsx'
 
 annotation_dict = {
     "M1": "M1",
@@ -70,12 +68,6 @@ def create_marker(marker_string):
         [annotation["annotation_id"], position, allele, f"{annotation_name}:{position}{allele}"])
 
 
-def create_marker_group(group):
-    markers = database_handler.get_rows("MarkerGroup", ["marker_group_id"], (group,))
-    if markers: return markers[0]["marker_group_id"]
-    return database_handler.insert_row("MarkerGroup", ["marker_group_id"], [group])
-
-
 if __name__ == '__main__':
 
     file_path = 'data_markers_aggregated.xlsx'
@@ -94,9 +86,6 @@ if __name__ == '__main__':
         # Create Marker (if, not exists), return marker_id
         marker_id = create_marker(marker)
 
-        # Create Marker Group (if, not exists), return marker_group_id
-        group_id = create_marker_group(marker_group_id)
-
         try:
 
             # Find Paper id from Doi
@@ -112,17 +101,17 @@ if __name__ == '__main__':
 
                 # Create Entry in MarkerToGroup
                 database_handler.insert_row("MarkerToGroup",
-                                            ["marker_id", "marker_group_id"], [marker_id, group_id])
+                                            ["marker_id", "marker_group_id"], [marker_id, marker_group_id])
 
                 # Create Entry in MarkerGroupPaperAndEffect
                 database_handler.insert_row("MarkerGroupPaperAndEffect",
                                             ["marker_group_id", "paper_id", "effect_id"],
-                                            [group_id, paper_id, effect_id])
+                                            [marker_group_id, paper_id, effect_id])
 
                 # Create Entry in MarkerGroupToSubtype
                 database_handler.insert_row("MarkerGroupToSubtype",
                                             ["subtype_id", "marker_group_id"],
-                                            [subtype_id, group_id])
+                                            [subtype_id, marker_group_id])
 
         except IndexError:
             continue

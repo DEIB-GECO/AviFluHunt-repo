@@ -21,12 +21,15 @@ with query_tab:
     with query_col:
 
         with st.container():
-            query_selection = st.selectbox(label=strings["query_select_label"], options=[x for x in range(1, 10)],
+            query_selection = st.selectbox(label=strings["query_select_label"], options=[x for x in range(1, 15)],
                                            on_change=lambda: results_col.empty())
             result, graph = run_query(query_selection)
             with results_col:
                 if graph:
                     st.pyplot(graph)
-                st.table(result)
+                if result is not None:
+                    st.table(result)
+                    st.download_button(label="Download data as CSV", data=result.to_csv(index=False).encode(),
+                                       file_name="data.csv", mime="text/csv")
 
 
