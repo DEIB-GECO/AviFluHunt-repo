@@ -422,28 +422,25 @@ get_markers_by_relevance = \
 # --------------------------------------------------------------
 # IDEA: select only mutations that are markers?
 
-bins = []
+# TODO: other inputs
 get_segment_mutability_zones = \
-    ("WITH SelectedSegments AS ("
-     "SELECT DISTINCT segment.segment_id, isolate.host "
-     "FROM Segment segment "
+    ("SelectedSegments AS ( "
+     "SELECT DISTINCT segment.segment_id "
+     "FROM Segment segment  "
      "JOIN Isolate isolate ON segment.isolate_epi = isolate.isolate_epi "
-     "WHERE (segment.segment_type == :segment_type OR :segment_type IS NULL) "
-     "AND (isolate.subtype_id == :subtype OR :subtype IS NULL)), "
+     "WHERE (segment.segment_type == 'HA')), "
      ""
-     "CountPerBin AS ("
+     "CountPerBin AS ( "
      "SELECT start_range, end_range, COUNT(DISTINCT mutation.mutation_id) AS bin_count "
      "FROM Mutation mutation "
-     f"JOIN (VALUES {', '.join([f"({start}, {end})" for start, end in bins])}) "
-     "AS Bins (start_range, end_range) "
-     "ON Mutation.position BEWTWEEN Bins.start_range AND Bins.end_range "
-     "JOIN SegmentMutations segmentMutations ON mutation.mutation_id = segmentMutations.mutation_id "
-     "JOIN SelectedSegments selectedSegments ON segmentMutations.segment_id = selectedSegments.segment_id "
-     "WHERE (segmentMutations.reference_id = :reference_id OR :reference_id IS NULL) "
-     "GROUP BY Bins.start_range, Bins.end_range "
-     "ORDER BY distinct_id_count DESC) "
+     "JOIN Bin bin ON mutation.position BETWEEN bin.start_range AND bin.end_range "
+     "JOIN SegmentMutations segmentMutations ON mutation.mutation_id = segmentMutations.mutation_id  "
+     "WHERE segmentMutations.segment_id IN SelectedSegments "
+     "GROUP BY bin.start_range, bin.end_range "
+     "ORDER BY start_range) "
      ""
-     "SELECT start_range AS 'From', end_range AS 'To', bin_count FROM CountPerBin AS 'Total Mutations'")
+     "SELECT start_range AS 'From', end_range AS 'To', bin_count AS 'Total Mutations' "
+     "FROM CountPerBin")
 
 
 # --------------------------------------------------------------

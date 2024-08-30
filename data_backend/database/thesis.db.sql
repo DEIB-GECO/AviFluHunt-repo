@@ -135,7 +135,8 @@ CREATE TABLE IF NOT EXISTS "SegmentData" (
 );
 
 CREATE TABLE IF NOT EXISTS "Mutation" (
-	"mutation_id" NTEGER,
+	"mutation_id" INTEGER,
+    "segment_type" TEXT,
 	"position" INTEGER,
 	"ref" TEXT,
 	"alt" TEXT,

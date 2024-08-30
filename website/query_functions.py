@@ -57,7 +57,8 @@ def run_query(query_selection):
             params = params9()
             query = get_markers_by_relevance
         if query_selection == 10:
-            pass  # TODO
+            params = params10()
+            query = with_query10(params["bins"]) + get_segment_mutability_zones
         if query_selection == 11:
             pass  # TODO
         if query_selection == 12:
@@ -88,8 +89,15 @@ def run_query(query_selection):
                 graph = graph6(result)
             if query_selection == 9:
                 graph = graph9(result)
+            if query_selection == 10:
+                st.session_state.num_inputs = 1
 
             return result, graph
+
+    # Custom behaviour
+    if query_selection == 10:
+        if st.button("Add input"):
+            st.session_state.num_inputs += 1
 
     return None, None
 
@@ -429,7 +437,30 @@ def graph9(result_df):
     return fig
 
 
-# TODO: 10
+def params10():
+
+    if 'num_inputs' not in st.session_state:
+        st.session_state.num_inputs = 1
+
+    start_col, end_col = st.columns(2)
+    for i in range(st.session_state.num_inputs):
+        with start_col:
+            st.number_input(f"Start", key=f"start_{i + 1}", min_value=0, step=1)
+        with end_col:
+            st.number_input(f"End", key=f"end_{i + 1}", min_value=0, step=1)
+
+    return {
+        "bins": [(st.session_state[f"start_{i+1}"], st.session_state[f"end_{i+1}"]) for i in range(st.session_state.num_inputs)]
+    }
+
+
+def with_query10(bins):
+    select_statements = " UNION ALL\n".join(
+        [f"SELECT {start} AS start_range, {end} AS end_range" for start, end in bins])
+    with_query = f"WITH Bin AS (SELECT start_range, end_range FROM ({select_statements})), "
+    return with_query
+
+
 # TODO 11
 
 
