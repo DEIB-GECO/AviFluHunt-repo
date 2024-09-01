@@ -439,18 +439,39 @@ def graph9(result_df):
 
 def params10():
 
-    if 'num_inputs' not in st.session_state:
-        st.session_state.num_inputs = 1
+    subtype = st.selectbox(label=strings["param_label10a"],
+                           options=[None, "H5N1"])  # [sub["name"] for _, sub in subtypes.iterrows()])
+    segment = st.selectbox(label=strings["param_label10b"], options=[None] + segments["segment_type"].tolist())
 
-    start_col, end_col = st.columns(2)
-    for i in range(st.session_state.num_inputs):
-        with start_col:
-            st.number_input(f"Start", key=f"start_{i + 1}", min_value=0, step=1)
-        with end_col:
-            st.number_input(f"End", key=f"end_{i + 1}", min_value=0, step=1)
+    manual_tab, auto_tab = st.tabs([strings["param_tab10a"], strings["param_tab10b"]])
+
+    with manual_tab:
+
+        if 'num_inputs' not in st.session_state:
+            st.session_state.num_inputs = 1
+
+        start_col, end_col = st.columns(2)
+        for i in range(st.session_state.num_inputs):
+            with start_col:
+                st.number_input(f"Start", key=f"start_{i + 1}", min_value=0, step=1)
+            with end_col:
+                st.number_input(f"End", key=f"end_{i + 1}", min_value=0, step=1)
+
+    with auto_tab:
+
+        bin_size = st.number_input(label=strings["param_label10c"], min_value=0, step=10, value=0)
+        offset = st.number_input(label=strings["param_label10d"], min_value=0, step=1, value=0)
+
+    if bin_size == 0:
+        bins = [(st.session_state[f"start_{i + 1}"], st.session_state[f"end_{i + 1}"])
+                for i in range(st.session_state.num_inputs)]
+    else:
+        bins = [(i, i + bin_size) for i in range(offset, 3000 + offset, bin_size)]
 
     return {
-        "bins": [(st.session_state[f"start_{i+1}"], st.session_state[f"end_{i+1}"]) for i in range(st.session_state.num_inputs)]
+        "subtype": subtype,
+        "segment_type": segment,
+        "bins": bins
     }
 
 

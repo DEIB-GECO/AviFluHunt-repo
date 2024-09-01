@@ -411,7 +411,6 @@ get_markers_by_relevance = \
 # Inputs:
 #   - segment_type: Segment to be analyzed
 #   - subtype: subtype to be analyzed
-#   - reference: Which reference to take into account for the mutations
 #   - list of bins: List of (start, end) of interests
 #   OR
 #   - bin_size: Uniform size for the bins
@@ -428,7 +427,9 @@ get_segment_mutability_zones = \
      "SELECT DISTINCT segment.segment_id "
      "FROM Segment segment  "
      "JOIN Isolate isolate ON segment.isolate_epi = isolate.isolate_epi "
-     "WHERE (segment.segment_type == 'HA')), "
+     "JOIN Subtype subtype ON isolate.subtype_id = subtype.subtype_id "
+     "WHERE (segment.segment_type == :segment_type OR :segment_type IS NULL) "
+     "AND (subtype.name = :subtype OR :subtype IS NULL)), "
      ""
      "CountPerBin AS ( "
      "SELECT start_range, end_range, COUNT(DISTINCT mutation.mutation_id) AS bin_count "

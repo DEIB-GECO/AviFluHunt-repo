@@ -111,6 +111,11 @@ explanation10:
   TODO
   </p>"
 param_label10a: "Subtype:"
+param_label10b: "Segment:"
+param_label10c: "Size:"
+param_label10d: "Offset:"
+param_tab10a: "Manual"
+param_tab10b: "Auto"
 error10: "TODO"
 
 # QUERY 11
