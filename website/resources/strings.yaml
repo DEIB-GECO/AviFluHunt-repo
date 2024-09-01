@@ -125,6 +125,10 @@ explanation11:
   TODO
   </p>"
 param_label11a: "Subtype:"
+param_label11b: "Segment:"
+param_label11c: "From:"
+param_label11d: "To:"
+param_label11e: "Min # Of Samples:"
 error11: "TODO"
 
 # QUERY 12

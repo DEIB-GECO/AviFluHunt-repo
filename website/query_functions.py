@@ -1,3 +1,5 @@
+import datetime
+
 import numpy as np
 import yaml
 import pandas
@@ -60,7 +62,8 @@ def run_query(query_selection):
             params = params10()
             query = with_query10(params["bins"]) + get_segment_mutability_zones
         if query_selection == 11:
-            pass  # TODO
+            params = params11()
+            query = get_mutability_peak_months
         if query_selection == 12:
             params = params12()
             query = get_group_of_marker
@@ -482,7 +485,26 @@ def with_query10(bins):
     return with_query
 
 
-# TODO 11
+def params11():
+
+    subtype = st.selectbox(label=strings["param_label11a"],
+                           options=[None, "H5N1"])  # [sub["name"] for _, sub in subtypes.iterrows()])
+    segment = st.selectbox(label=strings["param_label11b"], options=[None] + segments["segment_type"].tolist())
+
+    start_date = st.date_input(label=strings["param_label11c"], value=datetime.date(2000, 1, 1))
+    end_date = st.date_input(label=strings["param_label11d"], value=datetime.datetime.today())
+    min_n_instances = st.number_input(label=strings["param_label11e"], key=strings["param_label11e"],
+                                      min_value=1, step=1)
+
+    return {
+        "subtype": subtype,
+        "segment_type": segment,
+        "start_month": start_date.month,
+        "start_year": start_date.year,
+        "end_month": end_date.month,
+        "end_year": end_date.year,
+        "min_n_instances": min_n_instances
+    }
 
 
 def params12():

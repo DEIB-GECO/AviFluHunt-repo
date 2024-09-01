@@ -421,7 +421,6 @@ get_markers_by_relevance = \
 # --------------------------------------------------------------
 # IDEA: select only mutations that are markers?
 
-# TODO: other inputs
 get_segment_mutability_zones = \
     ("SelectedSegments AS ( "
      "SELECT DISTINCT segment.segment_id "
@@ -445,17 +444,44 @@ get_segment_mutability_zones = \
 
 
 # --------------------------------------------------------------
-# QUERY 11: TODO (Dates bin)
+# QUERY 11: Get mutations per month, year and sort them based on ratio Mutation In Period / Samples in Period
 # GRAPH
 # --------------------------------------------------------------
 #
 # Inputs:
-#   - TODO
+#   - segment_type: Segment to be analyzed
+#   - subtype: subtype to be analyzed
+#   - start_date
+#   - end_date
 #
 # Outputs:
-#   - TODO
+#   - A period (as in year, month), the number of mutation registered in that timeframe, the number of samples and
+#     the ratio between the two
 #
 # --------------------------------------------------------------
+
+get_mutability_peak_months = \
+ ("WITH SelectedSegmentsPerMonths AS ( "
+  "SELECT DISTINCT segment.segment_id, "
+  "strftime('%Y', isolate.collection_date) AS year, strftime('%m', isolate.collection_date) AS month "
+  "FROM Segment segment  "
+  "JOIN Isolate isolate ON segment.isolate_epi = isolate.isolate_epi "
+  "JOIN Subtype subtype ON isolate.subtype_id = subtype.subtype_id "
+  "WHERE (segment.segment_type == :segment_type OR :segment_type IS NULL) "
+  "AND (subtype.name = :subtype OR :subtype IS NULL) "
+  "AND (strftime('%Y', isolate.collection_date) * 100 + strftime('%m', isolate.collection_date)) "
+  "BETWEEN (:start_year * 100 + :start_month) AND (:end_year * 100 + :end_month)) "
+  ""
+  "SELECT month AS 'Month', year AS 'Year', "
+  "COUNT(DISTINCT mutation.mutation_id) AS '# Mutation', "
+  "COUNT(DISTINCT SSPM.segment_id) AS '# Samples', "
+  "ROUND((COUNT(DISTINCT mutation.mutation_id) * 1.0 / COUNT(DISTINCT SSPM.segment_id)), 2) AS 'Ratio' "
+  "FROM SelectedSegmentsPerMonths SSPM "
+  "JOIN SegmentMutations segmentMutations ON SSPM.segment_id = segmentMutations.segment_id "
+  "JOIN Mutation mutation ON segmentMutations.mutation_id = mutation.mutation_id "
+  "GROUP BY year, month "
+  "HAVING COUNT(DISTINCT SSPM.segment_id) >= :min_n_instances "
+  "ORDER BY Ratio DESC")
 
 
 # QUERIES ONTOLOGY
