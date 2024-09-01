@@ -170,3 +170,5 @@ cython_debug/
 venv/
 
 *.fasta~
+
+identifier.sqlite
