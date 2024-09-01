@@ -404,7 +404,7 @@ get_markers_by_relevance = \
      "LIMIT :limit")
 
 # --------------------------------------------------------------
-# QUERY 10: TODO Given a Segment Type find the Most Mutable Zones
+# QUERY 10: Given a Segment Type find the Most Mutable Zones
 # GRAPH
 # --------------------------------------------------------------
 #

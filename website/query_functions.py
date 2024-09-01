@@ -1,14 +1,10 @@
-import datetime
-
-import numpy as np
 import yaml
-import pandas
+import datetime
+import numpy as np
 from matplotlib import pyplot as plt
-from numpy.matlib import empty
 
 from queries import *
 import streamlit as st
-from streamlit.components.v1 import html
 
 st.set_page_config(layout="wide")
 
@@ -16,6 +12,7 @@ st.set_page_config(layout="wide")
 with open('website/resources/strings.yaml', 'r') as yaml_file:
     strings = yaml.safe_load(yaml_file)
 
+# DATABASE
 db = st.connection(name="thesis", type="sql", url="sqlite:///website/data/thesis.db")
 hosts = db.query(get_hosts)
 markers = db.query(get_markers)
@@ -29,6 +26,9 @@ states = db.query(get_states)
 def run_query(query_selection):
 
     st.write(strings[f"explanation{query_selection}"], unsafe_allow_html=True)
+
+    def reset_10():
+        st.session_state.num_inputs = 1
 
     with st.form("query_inputs"):
         if query_selection == 1:
@@ -74,7 +74,7 @@ def run_query(query_selection):
             params = params14()
             query = get_marker_groups_by_effect
 
-        submitted = st.form_submit_button("Submit")
+        submitted = st.form_submit_button("Submit", on_click=reset_10)
         if submitted:
 
             result = db.query(query, params=params)
@@ -92,17 +92,16 @@ def run_query(query_selection):
                 graph = graph6(result)
             if query_selection == 9:
                 graph = graph9(result)
-            if query_selection == 10:
-                st.session_state.num_inputs = 1
 
-            return result, graph
+            return result, graph, strings[f"error{query_selection}"]
 
     # Custom behaviour
     if query_selection == 10:
-        if st.button("Add input"):
+        def increment_inputs():
             st.session_state.num_inputs += 1
+        st.button("Add input", on_click=increment_inputs)
 
-    return None, None
+    return None, None, None
 
 
 # QUERIES' FUNCTIONS
@@ -342,7 +341,7 @@ def params7():
     l_col, r_col = st.columns(2)
     with l_col:
         subtype = st.selectbox(label=strings["param_label7a"],
-                               options=["H7N1"])  # [sub["name"] for _, sub in subtypes.iterrows()])
+                               options=["H5N1"])  # [sub["name"] for _, sub in subtypes.iterrows()])
     with r_col:
         segment = st.selectbox(label=strings["param_label7b"], options=segments)
 
