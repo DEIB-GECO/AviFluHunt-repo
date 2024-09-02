@@ -6,24 +6,16 @@ from matplotlib import pyplot as plt
 from queries import *
 import streamlit as st
 
-st.set_page_config(layout="wide")
 
 # RESOURCES
 with open('website/resources/strings.yaml', 'r') as yaml_file:
     strings = yaml.safe_load(yaml_file)
 
-# DATABASE
-db = st.connection(name="thesis", type="sql", url="sqlite:///website/data/thesis.db")
-hosts = db.query(get_hosts)
-markers = db.query(get_markers)
-subtypes = db.query(get_subtypes)
-segments = db.query(get_segments)
-regions = db.query(get_regions)
-states = db.query(get_states)
+# subtypes = db.query(get_subtypes)
 
 
 # FUNCTIONS
-def run_query(query_selection):
+def run_query(query_selection, db):
 
     st.write(strings[f"explanation{query_selection}"], unsafe_allow_html=True)
 
@@ -32,68 +24,68 @@ def run_query(query_selection):
 
     with st.form("query_inputs"):
         if query_selection == 1:
-            placeholder, params = params1()
+            placeholder, params = params1(db)
             query = get_markers_literature.replace("placeholder", placeholder)
         if query_selection == 2:
-            params = params2()
+            params = params2(db)
             query = get_markers_by_human_percentage
         if query_selection == 3:
-            params = params3()
+            params = params3(db)
             query = get_markers_id_by_host_relative_presence.replace("hosts", params["hosts"])
         if query_selection == 4:
-            params = params4()
+            params = params4(db)
             query = get_markers_id_by_host_relative_presence.replace("hosts", params["hosts"])
         if query_selection == 5:
-            params = params5()
+            params = params5(db)
             query = get_marker_host_distribution
         if query_selection == 6:
-            params = params6()
+            params = params6(db)
             query = get_markers_location_distribution
         if query_selection == 7:
-            params = params7()
+            params = params7(db)
             query = get_most_common_markers_by_filters
         if query_selection == 8:
-            params = params8()
+            params = params8(db)
             query = get_host_by_n_of_markers
         if query_selection == 9:
-            params = params9()
+            params = params9(db)
             query = get_markers_by_relevance
         if query_selection == 10:
-            params = params10()
+            params = params10(db)
             query = with_query10(params["bins"]) + get_segment_mutability_zones
         if query_selection == 11:
-            params = params11()
+            params = params11(db)
             query = get_mutability_peak_months
         if query_selection == 12:
-            params = params12()
+            params = params12(db)
             query = get_group_of_marker
         if query_selection == 13:
-            params = params13()
+            params = params13(db)
             query = get_effects_by_effect_metadata
         if query_selection == 14:
-            params = params14()
+            params = params14(db)
             query = get_marker_groups_by_effect
 
         submitted = st.form_submit_button("Submit", on_click=reset_10)
         if submitted:
 
             result = db.query(query, params=params)
-            graph = None
+            graphs = {}
 
             if query_selection == 3:
                 result = manip_result3(result, params)
-                graph = graph3(result, params)
+                graphs["Bar Plot"] = graph3(result, params)
             if query_selection == 4:
                 result = manip_result4(result, params)
-                graph = graph4(result, params)
+                graphs["Bar Plot"] = graph4(result, params)
             if query_selection == 5:
-                graph = graph5(result, params)
+                graphs["Bar Plot"] = graph5(result, params)
             if query_selection == 6:
-                graph = graph6(result)
+                graphs["Bar Plot"] = graph6(result)
             if query_selection == 9:
-                graph = graph9(result)
+                graphs["Bar Plot"] = graph9(result)
 
-            return result, graph, strings[f"error{query_selection}"]
+            return result, graphs, strings[f"error{query_selection}"]
 
     # Custom behaviour
     if query_selection == 10:
@@ -105,7 +97,7 @@ def run_query(query_selection):
 
 
 # QUERIES' FUNCTIONS
-def params1():
+def params1(db):
 
     """def update_markers(selected):
         marker_names = ', '.join([f"'{marker}'" for marker in selected_markers])
@@ -134,6 +126,7 @@ def params1():
         new_options = db.query(query)
         return new_options"""
 
+    markers = db.query(get_markers)
     selected_markers = st.multiselect(label=strings["param_label1a"], options=markers)
 
     placeholder = ', '.join(f":{marker.replace(":", "")}" for marker in selected_markers)
@@ -141,8 +134,8 @@ def params1():
     return placeholder, params
 
 
-def params2():
-
+def params2(db):
+    segments = db.query(get_segments)
     l_col, r_col = st.columns(2)
     with l_col:
         subtype = st.selectbox(label=strings["param_label2a"],
@@ -169,8 +162,9 @@ def params2():
     }
 
 
-def params3():
+def params3(db):
 
+    hosts = db.query(get_hosts)
     host1 = st.selectbox(label=strings["param_label3a"],
                          options=hosts)
     host2 = st.selectbox(label=strings["param_label3b"],
@@ -234,8 +228,9 @@ def graph3(result_df, params):
     return fig
 
 
-def params4():
+def params4(db):
 
+    hosts = db.query(get_hosts)
     host = st.selectbox(label=strings["param_label4a"], options=hosts)
     other_hosts = st.multiselect(label=strings["param_label4b"], options=hosts, max_selections=5)
 
@@ -253,6 +248,7 @@ def manip_result4(results_pre, params):
     columns.remove(params["host"])
     columns.insert(1, params["host"])
     sorted_result = sorted_result[columns]
+    sorted_result.columns = [col + " %" if col != 'Marker' else col for col in sorted_result.columns]
     return sorted_result
 
 
@@ -282,7 +278,8 @@ def graph4(result_df, params):
     return plt.gcf()
 
 
-def params5():
+def params5(db):
+    markers = db.query(get_markers)
     marker = st.selectbox(label=strings["param_label5a"], options=markers)
     return {"marker": marker}
 
@@ -307,7 +304,9 @@ def graph5(result_df, params):
     return plt.gcf()
 
 
-def params6():
+def params6(db):
+    markers = db.query(get_markers)
+    regions = db.query(get_regions)
     marker = st.selectbox(label=strings["param_label6a"], options=markers)
     region = st.selectbox(label=strings["param_label6b"], options=[None] + regions["region"].tolist())
     return {
@@ -336,7 +335,12 @@ def graph6(result_df):
     return plt.gcf()
 
 
-def params7():
+def params7(db):
+
+    hosts = db.query(get_hosts)
+    segments = db.query(get_segments)
+    regions = db.query(get_regions)
+    states = db.query(get_states)
 
     l_col, r_col = st.columns(2)
     with l_col:
@@ -367,8 +371,9 @@ def params7():
     }
 
 
-def params8():
+def params8(db):
 
+    segments = db.query(get_segments)
     l_col, r_col = st.columns(2)
     with l_col:
         subtype = st.selectbox(label=strings["param_label8a"],
@@ -401,7 +406,7 @@ def graph8(result_df):
     return fig
 
 
-def params9():
+def params9(db):
 
     l_col, r_col = st.columns(2)
     with l_col:
@@ -439,8 +444,9 @@ def graph9(result_df):
     return fig
 
 
-def params10():
+def params10(db):
 
+    segments = db.query(get_segments)
     subtype = st.selectbox(label=strings["param_label10a"],
                            options=[None, "H5N1"])  # [sub["name"] for _, sub in subtypes.iterrows()])
     segment = st.selectbox(label=strings["param_label10b"], options=[None] + segments["segment_type"].tolist())
@@ -484,8 +490,9 @@ def with_query10(bins):
     return with_query
 
 
-def params11():
+def params11(db):
 
+    segments = db.query(get_segments)
     subtype = st.selectbox(label=strings["param_label11a"],
                            options=[None, "H5N1"])  # [sub["name"] for _, sub in subtypes.iterrows()])
     segment = st.selectbox(label=strings["param_label11b"], options=[None] + segments["segment_type"].tolist())
@@ -506,12 +513,13 @@ def params11():
     }
 
 
-def params12():
+def params12(db):
+    markers = db.query(get_markers)
     marker = st.selectbox(label=strings["param_label12a"], options=markers)
     return {"marker_name": marker}
 
 
-def params13():
+def params13(db):
 
     effect_hosts = db.query("SELECT DISTINCT host FROM Effect WHERE host != ''")
     effect_drugs = db.query("SELECT DISTINCT drug FROM Effect WHERE drug != ''")
@@ -527,7 +535,7 @@ def params13():
     }
 
 
-def params14():
+def params14(db):
     effects = db.query("SELECT DISTINCT effect_full FROM Effect")
     effect_full = st.selectbox(label=strings["param_label14a"],
                                options=effects)

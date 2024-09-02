@@ -12,7 +12,7 @@ submit_button: "Run"
 label1: "1 - Obtain the literature associated to a group of Markers"
 explanation1:
   "<p style='text-align: justify;'>
-  Select Markers to obtein all the Groups of markers that contain each of them, 
+  Select Markers to obtain all the Groups of markers that contain each of them, 
   the Doi of the Paper that found the group and the effect that was studied to be
   associated with it.
   </p>"
@@ -20,7 +20,7 @@ param_label1a: "Marker Group:"
 error1: "There is no known group for the selected markers"
 
 # QUERY 2
-label2: "2 - Get Markers buy relative percentage of human samples"
+label2: "2 - Get Markers by relative percentage of human samples"
 explanation2:
   "<p style='text-align: justify;'>
   Get information about how often a Marker has infected human hosts.<br>
@@ -34,14 +34,14 @@ param_label2c: "Min:"
 param_label2d: "Max:"
 param_label2e: "Limit:"
 param_label2f: "Min # Instances:"
-error2: "There are no makres within the speficied filters"
+error2: "There are no markers within the specified filters"
 
 # QUERY 3
 label3: "3 - Get markers by difference in relative presence between two hosts"
 explanation3:
   "<p style='text-align: justify;'>
   Get information on the difference in infection rate of Markers for the selected two Hosts.<br>
-  It is also possible to specify further hosts (up to 5) to obtein their relative infection rates but results will be 
+  It is also possible to specify further hosts (up to 5) to obtain their relative infection rates but results will be 
   provided ordered by the difference between the first two hosts only.
   </p>"
 param_label3a: "Host 1:"
@@ -55,7 +55,7 @@ explanation4:
   "<p style='text-align: justify;'>
   Get information on the presence of Markers in different Hosts. The first host will be used 
   to order results based on relative rate of infection. Other hosts (up to 5) can be specified to
-  obtein information on their relative rate of infection for each Marker.
+  obtain information on their relative rate of infection for each Marker.
   </p>"
 param_label4a: "Main Host:"
 param_label4b: "Other Hosts:"
@@ -88,13 +88,13 @@ explanation7:
   "<p style='text-align: justify;'>
   Get information on the most common (in absolute terms) Marker. <br>
   It is possible to restrict the results to a specific Subtype or/and Segment or to markers found in 
-  a speicific Country or that have been found in the selected Host.
+  a specific Country or that have been found in the selected Host.
   </p>"
 param_label7a: "Subtype:"
 param_label7b: "Segment:"
 param_label7c: "Location:"
 param_label7d: "Host:"
-error7: "There are no markers within the speficied filters"
+error7: "There are no markers within the specified filters"
 
 # QUERY 8
 label8: "8 - Get N. of instances of distinct Markers for each host"
@@ -117,15 +117,15 @@ explanation9:
 param_label9a: "Min Perc:"
 param_label9b: "Max Perc:"
 param_label9c: "Limit:"
-error9: "There are no Markers within the speicified range of presence in the dataset"
+error9: "There are no Markers within the specified range of presence in the dataset"
 
 # QUERY 10
 label10: "10 - Find the Most Mutable Zones"
 explanation10:
   "<p style='text-align: justify;'>
   Find the most mutable zones (compared to a reference) within the dataset.<br>
-  For more interesing information it is possible to restrict the search to a speific Subtype and/or Segment.<br><br>
-  Furthermore the zone of interest can be provided either by manually inserting start and end posisitions 
+  For more interesting information it is possible to restrict the search to a specific Subtype and/or Segment.<br><br>
+  Furthermore the zone of interest can be provided either by manually inserting start and end positions 
   for each zone or by selecting a uniform size and an offset.
   </p>"
 param_label10a: "Subtype:"
@@ -141,7 +141,7 @@ label11: "11 - Get the number of mutation found in data submitted for each month
 explanation11:
   "<p style='text-align: justify;'>
   Get information on how many mutated samples where found for each month in the given range. <br>
-  For more interesting information, the total number of samples collected in the same period is repored 
+  For more interesting information, the total number of samples collected in the same period is reported 
   along a ratio indicating the N. of Mutation for each sample in the same period.<br><br>
   <b>Note: The specified months go from the 1st of the month to its last day included</b>
   </p>"

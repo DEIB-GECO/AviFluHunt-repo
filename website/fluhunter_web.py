@@ -1,5 +1,10 @@
 from query_functions import *
 
+st.set_page_config(layout="wide")
+
+# DATABASE
+db = st.connection(name="thesis", type="sql", url="sqlite:///website/data/thesis.db")
+
 # FRONTEND
 N_QUERIES = 15
 queries = {strings[f"label{x}"]: x for x in range(1, N_QUERIES)}
@@ -33,17 +38,29 @@ with query_tab:
                                            options=queries.keys(),
                                            on_change=lambda: results_col.empty(),
                                            key="query_selection")
-            result, graph, error = run_query(queries[st.session_state.query_selection])
+            result, graphs, error = run_query(queries[st.session_state.query_selection], db)
             with results_col:
-                if graph:
-                    st.pyplot(graph)
 
-                if result is not None and not result.empty:
-                    st.table(result)
-                    st.download_button(label="Download data as CSV", data=result.to_csv(index=False).encode(),
-                                       file_name="data.csv", mime="text/csv")
-                else:
-                    if error is not None:
-                        st.write(error)
+                if result is not None:
+                    results_tab, *graph_tabs = st.tabs(["Results"] + [key for key in graphs.keys()])
 
+                    for index, graph_tab in enumerate(graph_tabs):
+                        with graph_tab:
+                            graph = graphs[[key for key in graphs.keys()][index]]
+                            fn = 'results.png'
+                            graph.savefig(fn)
+                            with open(fn, "rb") as img:
+                                btn = st.download_button(label="Download Plot", data=img,
+                                                         file_name=fn, mime="image/png")
 
+                            st.pyplot(graph)
+
+                    with results_tab:
+
+                        if not result.empty:
+                            st.download_button(label="Download data as CSV", data=result.to_csv(index=False).encode(),
+                                               file_name="data.csv", mime="text/csv")
+                            st.table(result)
+                        else:
+                            if error is not None:
+                                st.write(error)
