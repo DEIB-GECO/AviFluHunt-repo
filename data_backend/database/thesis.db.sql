@@ -78,7 +78,6 @@ CREATE TABLE IF NOT EXISTS "Annotation" (
 	"annotation_id"	INTEGER,
     "segment_type" TEXT,
 	"annotation_name"	TEXT NOT NULL UNIQUE,
-	"annotation_type"	INTEGER,
 	PRIMARY KEY("annotation_id")
 );
 
@@ -136,7 +135,7 @@ CREATE TABLE IF NOT EXISTS "SegmentData" (
 
 CREATE TABLE IF NOT EXISTS "Mutation" (
 	"mutation_id" INTEGER,
-    "segment_type" TEXT,
+    "segment_cds_type" TEXT,
 	"position" INTEGER,
 	"ref" TEXT,
 	"alt" TEXT,
