@@ -1,4 +1,5 @@
 import gc
+import itertools
 import os
 import sys
 import shutil
@@ -25,6 +26,7 @@ class MutationDatabaseHandler:
 
         try:
             os.mkdir("tmp_mutations")
+            os.mkdir("tmp_mutations/dna")
             os.mkdir("tmp_mutations/protein")
         except FileExistsError:
             pass
@@ -34,7 +36,7 @@ class MutationDatabaseHandler:
         self.fasta_file = None
         self.metadata_file = None
         self.database_handler = handler.DatabaseHandler()
-        self.protein_fasta_by_ref = {}
+        self.dna_fasta_by_ref = {}
 
         self.organize_files(metadata_file, fasta_file)
         self.execute_data_flow()
@@ -44,53 +46,75 @@ class MutationDatabaseHandler:
 
     def execute_data_flow(self):
 
-        for key in self.protein_fasta_by_ref.keys():
+        for key in self.dna_fasta_by_ref.keys():
 
             subtype_name, segment_type = key.split('_', 1)
             reference = self.get_reference(subtype_name, segment_type)
-            dna_reference = reference["dna_fasta"]
-            protein_reference = self.dna2aminoacid(dna_reference.upper().replace("T", "U").replace("\n", ""),
-                                                   f"{key} Reference")
+            if not reference: continue
 
-            if protein_reference is None:
-                continue
+            aligned_dna_fastas, dna_insertions_file = self.align_sequences(
+                "tmp/mutation/dna/", key, reference["dna_fasta"], self.dna_fasta_by_ref[f"{key}"])
 
-            aligned_protein_fastas, protein_insertions_file = (
-                self.align_sequences("tmp_mutations/protein/", f"{key}",
-                                     protein_reference, "".join(self.protein_fasta_by_ref[key])))
+            annotations = self.get_annotations(segment_type)
+            if segment_type == "NS":
+                annotations = annotations[0]
 
-            for aligned_protein_header, aligned_protein_fasta in aligned_protein_fastas.items():
+            for annotation in annotations:
 
-                header_dict = self.get_header_dict(aligned_protein_header)
-                segment_id = self.get_segment(header_dict)
+                # Special Case HA
+                if segment_type == "HA":
+                    inteins = itertools.chain(
+                        [self.get_inteins(annotation["annotation_id"] for annotation in annotations)],)
+                else:
+                    inteins = self.get_inteins(annotation["annotation_id"])
 
-                if segment_id is None: continue
+                coding_sequences_fasta = self.get_coding_sequences_fasta(
+                    aligned_dna_fastas, dna_insertions_file, inteins, reference["dna_fasta"])
 
-                mutations = self.get_mutations(aligned_protein_header, aligned_protein_fasta,
-                                               protein_reference, protein_insertions_file)
+                protein_reference = self.dna2aminoacid(
+                    self.extract_coding_sequence(
+                        reference["dna_fasta"].upper().replace("T", "U").replace("\n", ""),
+                        [(intein["start_pos"], intein["end_pos"]) for intein in inteins], [0, 0, 0]),
+                    "")
 
-                for mutation in mutations:
-                    mut_id = self.create_mutation(header_dict['segment_subtype'], segment_type, mutation)
-                    self.create_segment_mutation(segment_id, reference["reference_seg_id"], mut_id)
+                aligned_protein_fastas, protein_insertions_file = self.align_sequences(
+                    "tmp/mutation/protein/", f"{key}_{annotation["annotation_name"]}",
+                    protein_reference, "".join(coding_sequences_fasta))
+
+                for aligned_protein_header, aligned_protein_fasta in aligned_protein_fastas.items():
+                    header_dict = self.get_header_dict(aligned_protein_header)
+                    segment_id = self.get_segment(header_dict)
+
+                    if segment_id is None: continue
+
+                    mutations = self.get_mutations(aligned_protein_header, aligned_protein_fasta,
+                                                   protein_reference, protein_insertions_file)
+
+                    for mutation in mutations:
+                        mut_id = self.create_mutation(header_dict['segment_subtype'], segment_type, mutation)
+                        self.create_segment_mutation(segment_id, reference["reference_seg_id"], mut_id)
 
                 self.database_handler.commit_changes()
+
+                if segment_type == "HA":
+                    pass  # To avoid the next useless iterations
 
         self.database_handler.commit_changes()
 
     """ --- EXECUTION FUNCTIONS --- """
-    def organize_protein_fasta_by_reference(self):
+    def organize_dna_fasta_by_reference(self):
         header, dna_sequence = None, ""
         for line in self.fasta_file.readlines():
             if line.startswith('>'):
                 if header:
-                    self.add_to_protein_fasta_by_ref_dict(header, dna_sequence)
+                    self.add_to_dna_fasta_by_ref_dict(header, dna_sequence)
                 header = line.strip()
                 dna_sequence = ""
             else:
                 dna_sequence += line.strip()
 
         if header:
-            self.add_to_protein_fasta_by_ref_dict(header, dna_sequence)
+            self.add_to_dna_fasta_by_ref_dict(header, dna_sequence)
 
     def align_sequences(self, path, base_name, reference_fasta, target_fasta):
 
@@ -108,6 +132,42 @@ class MutationDatabaseHandler:
 
         return aligned_fastas, insertions_file
 
+    def get_coding_sequences_fasta(self, aligned_dna_fastas, dna_insertions_file, inteins, reference_fasta):
+
+        try:
+            insertions_file = open(dna_insertions_file, "r")
+            insertions_csv = pd.read_csv(insertions_file, on_bad_lines='skip', low_memory=False)
+        except FileNotFoundError:
+            insertions_file, insertions_csv = None, None
+
+        coding_sequences_fasta = []
+
+        for aligned_header, aligned_dna_fasta in aligned_dna_fastas.items():
+
+            aligned_dna_fasta = aligned_dna_fasta.upper().replace("T", "U").replace("\n", "")
+
+            insertions = []
+            if insertions_file:
+                for intein in inteins:
+                    aligned_dna_fasta, intein_insertions = self.reinsert_insertions(
+                        aligned_header, aligned_dna_fasta, intein, insertions_csv, sum(insertions))
+                    insertions.append(intein_insertions)
+
+            aligned_cds = self.extract_coding_sequence(
+                aligned_dna_fasta, [(intein["start_pos"], intein["end_pos"]) for intein in inteins], insertions)
+
+            # Correct start and end deletion
+            aligned_cds = self.correct_start_end_deletions(reference_fasta, aligned_cds)
+            aligned_cds = aligned_cds.upper().replace("T", "U").replace("\n", "").replace("-", "")
+
+            try:
+                cds_aminoacid = self.dna2aminoacid(aligned_cds, aligned_header)
+                coding_sequences_fasta.append(f"{aligned_header}\n{cds_aminoacid}\n")
+            except (ValueError, NameError):
+                continue
+
+        return coding_sequences_fasta
+
     @staticmethod
     def get_mutations(aminoacid_header, aminoacid_aligned, reference_aminoacid_fasta, insertion_file_path):
         variant_caller = variant_calling.VariantCaller(reference_aminoacid_fasta,
@@ -119,7 +179,7 @@ class MutationDatabaseHandler:
     """ --- FILE HANDLING FUNCTIONS --- """
     def organize_files(self, metadata_file, fasta_file):
         self.read_fasta_and_metadata(metadata_file, fasta_file)
-        self.organize_protein_fasta_by_reference()
+        self.organize_dna_fasta_by_reference()
         self.fasta_file.close()
         del self.metadata_file
 
@@ -174,6 +234,12 @@ class MutationDatabaseHandler:
             except IndexError:
                 return None
 
+    def get_annotations(self, segment_type):
+        return self.database_handler.get_rows("Annotation", ["segment_type"], (segment_type,))
+
+    def get_inteins(self, annotation_id):
+        return self.database_handler.get_rows("Intein", ["annotation_id"], (annotation_id,))
+
     def get_segment(self, header_dict):
         epi_virus_name = header_dict["segment_id"]
         segments_in_db = self.database_handler.get_rows("Segment", ["epi_virus_name"], (epi_virus_name,))
@@ -182,19 +248,18 @@ class MutationDatabaseHandler:
         return None
 
     """ --- HELPER FUNCTIONS --- """
-    def add_to_protein_fasta_by_ref_dict(self, header, dna_sequence):
+    def add_to_dna_fasta_by_ref_dict(self, header, dna_sequence):
         segment = header.split("|")[1]
         subtype = header.split("|")[5][-4:]
 
-        protein_sequence = self.dna2aminoacid(dna_sequence.upper().replace("T", "U").replace("\n", ""), header)
         key = f"{subtype}_{segment}"
-        entry = f"{header}\n{protein_sequence}\n"
+        entry = f"{header}\n{dna_sequence}\n"
 
-        if protein_sequence is not None:
-            if key in self.protein_fasta_by_ref:
-                self.protein_fasta_by_ref[key] += entry
+        if dna_sequence is not None:
+            if key in self.dna_fasta_by_ref:
+                self.dna_fasta_by_ref[key] += entry
             else:
-                self.protein_fasta_by_ref[key] = entry
+                self.dna_fasta_by_ref[key] = entry
 
     @staticmethod
     def execute_augur(reference_path, target_path, aligned_path):
@@ -253,6 +318,27 @@ class MutationDatabaseHandler:
             "segment_subtype": segment_subtype
         }
 
+    @staticmethod
+    def extract_coding_sequence(whole_fasta, inteins_positions, additions):
+
+        whole_fasta = whole_fasta.strip()
+        cumulative_sum = 0
+        substrings = []
+
+        for i, (start, end) in enumerate(inteins_positions):
+            adjusted_start = start + cumulative_sum
+            adjusted_end = end + cumulative_sum
+
+            if i < len(additions):
+                adjusted_end += additions[i]
+                cumulative_sum += additions[i]
+
+            substrings.append(whole_fasta[adjusted_start - 1: adjusted_end])
+
+        # Join substrings to form the final result string
+        result_string = ''.join(substrings)
+        return result_string
+
     def dna2aminoacid(self, sequence, header):
 
         codon_table = {
@@ -284,6 +370,80 @@ class MutationDatabaseHandler:
                 return None
 
         return protein_sequence
+
+    def reinsert_insertions(self, aligned_header, aligned_fasta, intein, dna_insertions_file, total_insertions):
+
+        row = dna_insertions_file.loc[dna_insertions_file['strain'] == aligned_header.replace(">", "")]
+        if row.empty:
+            return aligned_fasta, 0
+
+        row_dict = {key: value for i, (key, value) in enumerate(row.to_dict(orient='records')[0].items()) if i != 0}
+
+        intein_insertions = 0
+        for insertion, nucleotides in row_dict.items():
+
+            pos = int(insertion[insertion.index("pos ") + len("pos "):])
+
+            if pd.notna(nucleotides):
+
+                nucleotides = nucleotides.replace("T", "U").replace("\n", "")
+                n_nucleotides = len(nucleotides)
+
+                if pos == intein["start_pos"] - 1:
+                    pos, nucleotides, n_nucleotides = (
+                        self.check_start_pos(pos, nucleotides, n_nucleotides, aligned_fasta))
+
+                if pos == intein["end_pos"] - 1:
+                    pos, nucleotides, n_nucleotides = self.check_end_pos(pos, nucleotides, aligned_fasta)
+
+                if intein["start_pos"] - 1 <= pos <= intein["end_pos"] - 1:
+                    aligned_fasta = (aligned_fasta[:pos + intein_insertions + total_insertions]
+                                     + nucleotides +
+                                     aligned_fasta[pos + intein_insertions + total_insertions:])
+                    intein_insertions += n_nucleotides
+
+        return aligned_fasta, intein_insertions
+
+    @staticmethod
+    def check_start_pos(pos, nucleotides, n_nucleotides, check_fasta):
+        start_codon = "AUG"
+        start_codon_index = nucleotides.find(start_codon)
+        if start_codon_index == -1 or check_fasta[:3] == "AUG":
+            return -1, "", 0  # Ignore insertion, cause it doesn't have start codon
+        return pos, nucleotides[start_codon_index:], n_nucleotides - start_codon_index
+
+    @staticmethod
+    def check_end_pos(pos, nucleotides, check_fasta):
+
+        stop_codons = ["UAA", "UAG", "UGA"]
+        min_stop_codon_index = -1
+        for stop_codon in stop_codons:
+            stop_codon_index = nucleotides.find(stop_codon)
+            if stop_codon_index != -1:
+                if min_stop_codon_index == -1 or stop_codon_index < min_stop_codon_index:
+                    min_stop_codon_index = stop_codon_index
+
+        if min_stop_codon_index == -1 or check_fasta[-3:] in ["UAA", "UAG", "UGA"]:
+            return -1, "", 0  # Ignore insertion, because it doesn't have a stop codon
+
+        return pos, nucleotides[:min_stop_codon_index + 3], min_stop_codon_index + 3
+
+    @staticmethod
+    def correct_start_end_deletions(reference, target):
+
+        # Count the number of '-' at the start and end of the target string
+        start_dashes = len(target) - len(target.lstrip('-'))
+        end_dashes = len(target) - len(target.rstrip('-'))
+
+        # Replace the start '-' sequence with the corresponding characters from the start of the reference
+        if start_dashes > 0:
+            target = reference[:start_dashes] + target[start_dashes:]
+
+        # Replace the end '-' sequence with the corresponding characters from the end of the reference
+        if end_dashes > 0:
+            target = target[:-end_dashes] + reference[-end_dashes:]
+
+        return target
 
 
 if __name__ == "__main__":
