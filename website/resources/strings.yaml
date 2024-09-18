@@ -18,12 +18,10 @@ custom_css:
     .ezrtsby2 {
       height: 0rem;
     }
-    .stApp {
-      background: rgb(100,217,232);
-      background: linear-gradient(180deg, rgba(100,217,232,0.42759101931788346) 0%, rgba(0,212,255,0) 100%);         
+    .stApp {      
     }
     table {
-      color: #ffff00;
+    
     }
   </style>
   "

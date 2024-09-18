@@ -87,7 +87,6 @@ def run_query(query_selection, db, query_col, input_col):
                 if query_selection == 9:
                     graphs["Bar Plot"] = graph9(result)
 
-                result.columns = result.columns.str.replace(' ', '_', regex=False)
                 return result, graphs, strings[f"error{query_selection}"]
 
     # Custom behaviour
