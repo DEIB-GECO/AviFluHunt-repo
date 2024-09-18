@@ -1,0 +1,9 @@
+[client]
+showErrorDetails = true  # false
+toolbarMode = "viewer"  # "auto"
+
+[theme]
+primaryColor = "#7D6FB9"  # Accent color for interactive elements
+# secondaryBackgroundColor = ""  # Background for sidebar and interactive widgets
+textColor = "#7D6FB9"
+# font = "sans serif/serif/monospace"

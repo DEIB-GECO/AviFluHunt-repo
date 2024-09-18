@@ -1,6 +1,33 @@
 website_name: "<h2>FluHunter</h2>"
 welcome_message: "<p>Welcome to FluHunter</p>"
 
+### GENERAL
+
+custom_css:
+  "
+  <style>
+    #MainMenu {
+      visibility: hidden;
+    }
+    footer {
+      visibility: hidden;
+    }
+    .ea3mdgi5 {
+      padding-top: 2rem;
+    }
+    .ezrtsby2 {
+      height: 0rem;
+    }
+    .stApp {
+      background: rgb(100,217,232);
+      background: linear-gradient(180deg, rgba(100,217,232,0.42759101931788346) 0%, rgba(0,212,255,0) 100%);         
+    }
+    table {
+      color: #ffff00;
+    }
+  </style>
+  "
+
 ### QUERY TAB
 
 query_select_label: "Query"

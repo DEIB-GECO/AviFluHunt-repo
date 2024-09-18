@@ -49,6 +49,10 @@ class MutationDatabaseHandler:
         for key in self.dna_fasta_by_ref.keys():
 
             subtype_name, segment_type = key.split('_', 1)
+
+            if segment_type != "HA":
+                continue
+
             reference = self.get_reference(subtype_name, segment_type)
             if not reference: continue
 
@@ -56,15 +60,13 @@ class MutationDatabaseHandler:
                 "tmp/mutation/dna/", key, reference["dna_fasta"], self.dna_fasta_by_ref[f"{key}"])
 
             annotations = self.get_annotations(segment_type)
-            if segment_type == "NS":
-                annotations = annotations[0]
 
             for annotation in annotations:
 
                 # Special Case HA
                 if segment_type == "HA":
-                    inteins = itertools.chain(
-                        [self.get_inteins(annotation["annotation_id"] for annotation in annotations)],)
+                    inteins = list(itertools.chain(*[
+                        self.get_inteins(annotation["annotation_id"]) for annotation in annotations]))
                 else:
                     inteins = self.get_inteins(annotation["annotation_id"])
 
@@ -91,13 +93,14 @@ class MutationDatabaseHandler:
                                                    protein_reference, protein_insertions_file)
 
                     for mutation in mutations:
-                        mut_id = self.create_mutation(header_dict['segment_subtype'], segment_type, mutation)
+                        mut_id = self.create_mutation(header_dict['segment_subtype'],
+                                                      annotation["annotation_name"], mutation)
                         self.create_segment_mutation(segment_id, reference["reference_seg_id"], mut_id)
 
                 self.database_handler.commit_changes()
 
                 if segment_type == "HA":
-                    pass  # To avoid the next useless iterations
+                    break
 
         self.database_handler.commit_changes()
 
@@ -195,20 +198,20 @@ class MutationDatabaseHandler:
         return f"{path}{file_name}.fasta"
 
     """ --- DATABASE FUNCTIONS --- """
-    def create_mutation(self, subtype_name, segment_type, mutation):
+    def create_mutation(self, subtype_name, segment_cds_type, mutation):
 
         position = int(mutation[:mutation.find('_')]) + 1
         ref = mutation[mutation.find('|') - 1:mutation.find('|')]
         alt = mutation[mutation.find('|') + 1:]
-        mutation_name = f"{subtype_name}:{segment_type}:{ref}{position}{alt}"
+        mutation_name = f"{subtype_name}:{segment_cds_type}:{ref}{position}{alt}"
 
         mutations_in_db = self.database_handler.get_rows("Mutation", ["name"], (mutation_name,))
         if mutations_in_db:
             return mutations_in_db[0]["mutation_id"]
 
         return self.database_handler.insert_row("Mutation",
-                                                ["segment_type", "position", "ref", "alt", "name"],
-                                                (segment_type, position, ref, alt, mutation_name, ), commit=True)
+                                                ["segment_cds_type", "position", "ref", "alt", "name"],
+                                                (segment_cds_type, position, ref, alt, mutation_name, ), commit=True)
 
     def create_segment_mutation(self, segment_id, reference_id, mutation_id):
         self.database_handler.insert_row("SegmentMutations",

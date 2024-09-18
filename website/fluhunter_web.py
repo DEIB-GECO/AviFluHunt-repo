@@ -1,4 +1,9 @@
+import pandas as pd
+from duckdb.duckdb import aggregate
+
 from query_functions import *
+import awesome_table
+from pygwalker.api.streamlit import StreamlitRenderer
 
 st.set_page_config(layout="wide")
 
@@ -8,6 +13,15 @@ db = st.connection(name="thesis", type="sql", url="sqlite:///website/data/thesis
 # FRONTEND
 N_QUERIES = 15
 queries = {strings[f"label{x}"]: x for x in range(1, N_QUERIES)}
+if "sort_by" not in st.session_state:
+    st.session_state.sort_by = "Effect"
+if "result" not in st.session_state:
+    st.session_state.result = None
+if "graph" not in st.session_state:
+    st.session_state.graph = None
+
+
+st.markdown(strings["custom_css"], unsafe_allow_html=True)
 
 st.write(strings["website_name"], unsafe_allow_html=True)
 
@@ -30,37 +44,67 @@ with readme_tab:
 
 with query_tab:
 
-    query_col, space, results_col = st.columns([0.35, 0.05, 0.60])
-    with query_col:
+    query_tab, results_tab, graph_tab = st.tabs(["Query", "Results", "Graphs"])
+
+    with query_tab:
 
         with st.container():
-            query_selection = st.selectbox(label=strings["query_select_label"],
-                                           options=queries.keys(),
-                                           on_change=lambda: results_col.empty(),
-                                           key="query_selection")
-            result, graphs, error = run_query(queries[st.session_state.query_selection], db)
-            with results_col:
 
-                if result is not None:
-                    results_tab, *graph_tabs = st.tabs(["Results"] + [key for key in graphs.keys()])
+            query_col, space_col, input_col = st.columns([0.45, 0.05, 0.5])
 
-                    for index, graph_tab in enumerate(graph_tabs):
-                        with graph_tab:
-                            graph = graphs[[key for key in graphs.keys()][index]]
-                            fn = 'results.png'
-                            graph.savefig(fn)
-                            with open(fn, "rb") as img:
-                                btn = st.download_button(label="Download Plot", data=img,
-                                                         file_name=fn, mime="image/png")
+            with query_col:
+                query_selection = st.selectbox(label=strings["query_select_label"],
+                                               options=queries.keys(),
+                                               on_change=lambda: empty_result(),
+                                               key="query_selection",
+                                               label_visibility="collapsed")
+            result, graphs, error = run_query(queries[st.session_state.query_selection], db,
+                                              query_col, input_col)
 
-                            st.pyplot(graph)
+            if result is not None:
+                st.session_state.result = result
+            if graphs is not None:
+                st.session_state.graph = graphs
 
-                    with results_tab:
+    if st.session_state.result is not None:
 
-                        if not result.empty:
-                            st.download_button(label="Download data as CSV", data=result.to_csv(index=False).encode(),
-                                               file_name="data.csv", mime="text/csv")
-                            st.table(result)
-                        else:
-                            if error is not None:
-                                st.write(error)
+        with graph_tab:
+            if st.session_state.graph and not st.session_state.result.empty:
+                def get_pyg_renderer() -> "StreamlitRenderer":
+                    return StreamlitRenderer(st.session_state.result, spec="./gw_config.json",
+                                             spec_io_mode="r", appearance="light")
+                renderer = get_pyg_renderer()
+                renderer.explorer()
+
+        with results_tab:
+
+            if not st.session_state.result.empty:
+                st.download_button(label="Download data as CSV", data=st.session_state.result.to_csv(index=False).encode(),
+                                   file_name="data.csv", mime="text/csv")
+
+                columns_list = []
+                for col in st.session_state.result.columns:
+                    columns_list.append(awesome_table.Column(name=f'{col}', label=f'{col.replace('_', ' ').title()}'))
+                awesome_table.AwesomeTable(st.session_state.result, columns=columns_list,
+                                           show_order=True, show_search=True)
+
+                st.markdown(
+                    """
+                    <style>
+                    th {
+                      color: blue !important;
+                    }
+                    </style>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+            else:
+                if error is not None:
+                    st.write(error)
+
+
+def empty_result():
+    st.session_state.result = None
+    st.session_state.graph = None
+

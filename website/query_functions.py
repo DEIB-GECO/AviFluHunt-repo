@@ -15,77 +15,80 @@ with open('website/resources/strings.yaml', 'r') as yaml_file:
 
 
 # FUNCTIONS
-def run_query(query_selection, db):
+def run_query(query_selection, db, query_col, input_col):
 
-    st.write(strings[f"explanation{query_selection}"], unsafe_allow_html=True)
+    with query_col:
+        st.write(strings[f"explanation{query_selection}"], unsafe_allow_html=True)
 
     def reset_10():
         st.session_state.num_inputs = 1
 
-    with st.form("query_inputs"):
-        if query_selection == 1:
-            placeholder, params = params1(db)
-            query = get_markers_literature.replace("placeholder", placeholder)
-        if query_selection == 2:
-            params = params2(db)
-            query = get_markers_by_human_percentage
-        if query_selection == 3:
-            params = params3(db)
-            query = get_markers_id_by_host_relative_presence.replace("hosts", params["hosts"])
-        if query_selection == 4:
-            params = params4(db)
-            query = get_markers_id_by_host_relative_presence.replace("hosts", params["hosts"])
-        if query_selection == 5:
-            params = params5(db)
-            query = get_marker_host_distribution
-        if query_selection == 6:
-            params = params6(db)
-            query = get_markers_location_distribution
-        if query_selection == 7:
-            params = params7(db)
-            query = get_most_common_markers_by_filters
-        if query_selection == 8:
-            params = params8(db)
-            query = get_host_by_n_of_markers
-        if query_selection == 9:
-            params = params9(db)
-            query = get_markers_by_relevance
-        if query_selection == 10:
-            params = params10(db)
-            query = with_query10(params["bins"]) + get_segment_mutability_zones
-        if query_selection == 11:
-            params = params11(db)
-            query = get_mutability_peak_months
-        if query_selection == 12:
-            params = params12(db)
-            query = get_group_of_marker
-        if query_selection == 13:
-            params = params13(db)
-            query = get_effects_by_effect_metadata
-        if query_selection == 14:
-            params = params14(db)
-            query = get_marker_groups_by_effect
-
-        submitted = st.form_submit_button("Submit", on_click=reset_10)
-        if submitted:
-
-            result = db.query(query, params=params)
-            graphs = {}
-
+    with input_col:
+        with st.form("query_inputs"):
+            if query_selection == 1:
+                placeholder, params = params1(db)
+                query = get_markers_literature.replace("placeholder", placeholder)
+            if query_selection == 2:
+                params = params2(db)
+                query = get_markers_by_human_percentage
             if query_selection == 3:
-                result = manip_result3(result, params)
-                graphs["Bar Plot"] = graph3(result, params)
+                params = params3(db)
+                query = get_markers_id_by_host_relative_presence.replace("hosts", params["hosts"])
             if query_selection == 4:
-                result = manip_result4(result, params)
-                graphs["Bar Plot"] = graph4(result, params)
+                params = params4(db)
+                query = get_markers_id_by_host_relative_presence.replace("hosts", params["hosts"])
             if query_selection == 5:
-                graphs["Bar Plot"] = graph5(result, params)
+                params = params5(db)
+                query = get_marker_host_distribution
             if query_selection == 6:
-                graphs["Bar Plot"] = graph6(result)
+                params = params6(db)
+                query = get_markers_location_distribution
+            if query_selection == 7:
+                params = params7(db)
+                query = get_most_common_markers_by_filters
+            if query_selection == 8:
+                params = params8(db)
+                query = get_host_by_n_of_markers
             if query_selection == 9:
-                graphs["Bar Plot"] = graph9(result)
+                params = params9(db)
+                query = get_markers_by_relevance
+            if query_selection == 10:
+                params = params10(db)
+                query = with_query10(params["bins"]) + get_segment_mutability_zones
+            if query_selection == 11:
+                params = params11(db)
+                query = get_mutability_peak_months
+            if query_selection == 12:
+                params = params12(db)
+                query = get_group_of_marker
+            if query_selection == 13:
+                params = params13(db)
+                query = get_effects_by_effect_metadata
+            if query_selection == 14:
+                params = params14(db)
+                query = get_marker_groups_by_effect
 
-            return result, graphs, strings[f"error{query_selection}"]
+            submitted = st.form_submit_button("Submit", on_click=reset_10)
+            if submitted:
+
+                result = db.query(query, params=params)
+                graphs = {}
+
+                if query_selection == 3:
+                    result = manip_result3(result, params)
+                    graphs["Bar Plot"] = graph3(result, params)
+                if query_selection == 4:
+                    result = manip_result4(result, params)
+                    graphs["Bar Plot"] = graph4(result, params)
+                if query_selection == 5:
+                    graphs["Bar Plot"] = graph5(result, params)
+                if query_selection == 6:
+                    graphs["Bar Plot"] = graph6(result)
+                if query_selection == 9:
+                    graphs["Bar Plot"] = graph9(result)
+
+                result.columns = result.columns.str.replace(' ', '_', regex=False)
+                return result, graphs, strings[f"error{query_selection}"]
 
     # Custom behaviour
     if query_selection == 10:
