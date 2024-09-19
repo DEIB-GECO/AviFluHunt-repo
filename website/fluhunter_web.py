@@ -29,7 +29,7 @@ st.markdown(
             --main-bg-color: #1A1A1A;
             --secondary-bg-color: white;
             --main-text-color: white;
-            --accent-color: #67C184;
+            --accent-color: rgba(6,188,157,1);
             --border-color: black;
         }
     
@@ -52,8 +52,8 @@ st.markdown(
         .stApp {   
             background: rgb(130,165,255);
             background: linear-gradient(45deg, rgba(130,165,255,1) 0%, rgba(203,164,255,1) 100%); 
-            background-size: cover;
-            background-image: url("https://static.vecteezy.com/system/resources/previews/002/048/142/original/abstract-minimal-geometric-pattern-design-of-black-and-green-decorative-design-background-illustration-vector.jpg");
+            background: rgb(188,6,95);
+            background: linear-gradient(90deg, rgba(6,188,157,1) 0%, rgba(23,6,89,1) 100%); 
         }
         
         .st-emotion-cache-1jicfl2 {
@@ -62,6 +62,7 @@ st.markdown(
         }
         
         h1 {
+            width: fit-content !important;
             font-size: 4rem;
             font-weight: bold;
             margin-bottom: 2rem;
@@ -71,30 +72,50 @@ st.markdown(
         }
         
         [role="tablist"] {
+            gap: 0;
             width: fit-content;
-            height: auto !important;
-            background-color: var(--secondary-bg-color) !important;
+            height: fit-content !important;
+            border: 2.5px solid var(--border-color);
+            background-color: transparent !important;
         }
         
         #tabs-bui3-tab-0 p, #tabs-bui3-tab-1 p, #tabs-bui3-tab-2 p {
+            height: fit-content !important;
             font-size: 1rem;
             font-weight: bold;
-            padding: 0.1rem 0.5rem;
+            background-color: transparent !important;
+        }
+        
+        #tabs-bui3-tab-0, #tabs-bui3-tab-1, #tabs-bui3-tab-2 {
+            padding: 0.1rem 1rem !important;
+            height: fit-content !important;
             background-color: var(--secondary-bg-color) !important;
         }
         
-        #tabs-bui3-tab-0 p:hover, #tabs-bui3-tab-1 p:hover, #tabs-bui3-tab-2 p:hover {
+        #tabs-bui3-tab-0:hover, #tabs-bui3-tab-1:hover, #tabs-bui3-tab-2:hover {
             color: var(--border-color);
-            background-color: var(--secondary-bg-color) !important;
+            background-color: var(--accent-color) !important;
         }
         
-        [aria-selected="true"] p {
+        [aria-selected="true"]#tabs-bui3-tab-0 {
+            border-right: 2.5px solid var(--border-color);
+            background-color: var(--accent-color) !important;
+        }
+    
+        [aria-selected="true"]#tabs-bui3-tab-1 {
+            border-left: 2.5px solid var(--border-color);
+            border-right: 2.5px solid var(--border-color);
+        }
+        
+        [aria-selected="true"]#tabs-bui3-tab-2 {
+            border-left: 2.5px solid var(--border-color);
+        }
+        
+        [aria-selected="true"] {
             font-weight: bold;
             color: var(--border-color);
-            border: 2.5px solid var(--border-color);
-            border-bottom: 0px solid var(--border-color);
             padding: 0.1rem 1rem !important;
-            background-color: var(--secondary-bg-color) !important;
+            background-color: var(--accent-color) !important;
         }
         
         .st-bq {
@@ -115,10 +136,6 @@ st.markdown(
         
         .st-c6 {
             height: 0.125rem;
-        }
-        
-        .st-ff, .st-fg {
-            width: 0rem !important;
         }
         
         .st-bw {
@@ -232,7 +249,7 @@ st.markdown(
         }
         
         #tabs-bui3-tabpanel-1 {
-            background-color: var(--secondary-bg-color) !important;
+            background-color: transparent !important;
         }
         
         table {
