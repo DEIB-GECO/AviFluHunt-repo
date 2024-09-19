@@ -25,6 +25,9 @@ def run_query(query_selection, db, query_col, input_col):
 
     with input_col:
         with st.form("query_inputs"):
+
+            st.write(strings["query_inputs_label"], unsafe_allow_html=True)
+
             if query_selection == 1:
                 placeholder, params = params1(db)
                 query = get_markers_literature.replace("placeholder", placeholder)

@@ -23,31 +23,253 @@ if "graph" not in st.session_state:
 st.markdown(
     """
     <style>
-    #MainMenu {
-      visibility: hidden;
-    }
-    footer {
-      visibility: hidden;
-    }
-    .ea3mdgi5 {
-      padding-top: 0rem;
-    }
-    .ezrtsby2 {
-      height: 0rem;
-    }
-    .stApp {   
-        background-size: cover;   
-    }
-    .table.table-striped.table-hover {
-      color: blue !important;
-    }
-    table {
-      color: white !important;
-    }
-    .st-emotion-cache-1jicfl2 {
-      padding-left: 3.5rem;
-      padding-right: 3.5rem;
-    }
+        
+        /* General Styling */
+        :root {
+            --main-bg-color: #1A1A1A;
+            --secondary-bg-color: white;
+            --main-text-color: white;
+            --accent-color: #67C184;
+            --border-color: black;
+        }
+    
+        #MainMenu {
+          visibility: hidden;
+        }
+        
+        footer {
+          visibility: hidden;
+        }
+        
+        .ea3mdgi5 {
+          padding-top: 0rem !important;
+        }
+        
+        .ezrtsby2 {
+          height: 0rem;
+        }
+        
+        .stApp {   
+            background: rgb(130,165,255);
+            background: linear-gradient(45deg, rgba(130,165,255,1) 0%, rgba(203,164,255,1) 100%); 
+            background-size: cover;
+            background-image: url("https://static.vecteezy.com/system/resources/previews/002/048/142/original/abstract-minimal-geometric-pattern-design-of-black-and-green-decorative-design-background-illustration-vector.jpg");
+        }
+        
+        .st-emotion-cache-1jicfl2 {
+          padding-left: 3.5rem;
+          padding-right: 3.5rem;
+        }
+        
+        h1 {
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            border: 2.5px solid var(--border-color);
+            padding: 0rem 1rem !important;
+            background-color: var(--secondary-bg-color) !important;
+        }
+        
+        [role="tablist"] {
+            width: fit-content;
+            height: auto !important;
+            background-color: var(--secondary-bg-color) !important;
+        }
+        
+        #tabs-bui3-tab-0 p, #tabs-bui3-tab-1 p, #tabs-bui3-tab-2 p {
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 0.1rem 0.5rem;
+            background-color: var(--secondary-bg-color) !important;
+        }
+        
+        #tabs-bui3-tab-0 p:hover, #tabs-bui3-tab-1 p:hover, #tabs-bui3-tab-2 p:hover {
+            color: var(--border-color);
+            background-color: var(--secondary-bg-color) !important;
+        }
+        
+        [aria-selected="true"] p {
+            font-weight: bold;
+            color: var(--border-color);
+            border: 2.5px solid var(--border-color);
+            border-bottom: 0px solid var(--border-color);
+            padding: 0.1rem 1rem !important;
+            background-color: var(--secondary-bg-color) !important;
+        }
+        
+        .st-bq {
+            font-size: 1rem !important;
+        }
+        
+        .st-f9 {
+            height: 0 !important;
+        }
+        
+        .st-c9 {
+            background-color: black;
+        }
+        
+        .st-ak {
+            padding-bottom: 0rem !important;
+        }
+        
+        .st-c6 {
+            height: 0.125rem;
+        }
+        
+        .st-ff, .st-fg {
+            width: 0rem !important;
+        }
+        
+        .st-bw {
+            height: 2.25rem;
+        }
+        
+        [data-testid="stForm"] button, [data-testid="baseButton-secondary"] {
+            border: 2.5px solid var(--border-color);
+            border-radius: 0rem !important;
+            padding: 0.1rem 2rem !important;
+            float: right;
+            font-weight: bold !important;
+            margin: 1rem 0rem !important;
+            background: var(--secondary-bg-color) !important;
+        }
+        
+        [data-testid="baseButton-secondary"] {
+            font-weight: bold !important;
+            float: left !important;
+            padding: 0.1rem 1rem !important;
+        }
+        
+        [data-testid="stForm"] button:hover, [data-testid="baseButton-secondary"]:hover {
+            color: black !important;
+            font-weight: bold;
+            border: 2.5px solid var(--border-color);
+            background-color: var(--accent-color) !important;
+        }
+        
+        [data-testid="stForm"] .stMarkdown p {
+            font-weight: bold !important;
+            font-size: 1.5rem !important;
+        }
+        
+        [data-testid="stForm"] button p {
+            font-weight: bold !important;
+        }
+        
+        [data-baseweb="tab-highlight"] {
+            width: 0rem !important;
+            background-color: var(--secondary-bg-color) !important;
+        }
+        
+        [data-baseweb="tab-border"] {
+            background-color: var(--border-color) !important;
+        }
+        
+        /* Query Tab Styling */
+        
+        .st-ci, .st-cg, .st-ch, .st-cf {
+            border-radius: 0rem !important;
+        }
+        
+        [data-baseweb="select"] {
+            border: 2.5px solid var(--border-color);
+            background-color: var(--secondary-bg-color) !important;
+            font-weight: bold;
+            height: auto !important;
+            padding-left: .5rem;
+            padding-top: .25rem;
+            padding-bottom: .25rem;
+        }
+        
+        [data-baseweb="select"] div {
+            border: 0px solid var(--border-color) !important;
+        }
+        
+        ul {
+            border-radius: 0 !important;
+            border: 2.5px solid var(--border-color) !important;
+        }
+        
+        li {
+            background: var(--secondary-bg-color) !important;
+            font-weight: bold;
+        }
+        
+        li:hover {
+            background: black !important;
+            color: var(--main-text-color); !important;
+            font-weight: bold;
+        }
+        
+        .query_text {
+            padding: 1.5rem;
+            font-size: 1.1rem !important;
+            border: 2.5px solid var(--border-color);
+            background-color: var(--secondary-bg-color) !important;
+            border-radius: 0rem !important;
+        }
+        
+        .e10yg2by1 {
+            border: 2.5px solid var(--border-color);
+            border-radius: 0rem;
+            padding: 1.5rem;
+        }
+        
+        label p {
+            font-weight: bold !important;
+            font-size: 1rem !important;
+        }
+        
+        [data-testid="stForm"] {
+            background-color: var(--secondary-bg-color) !important;
+        }
+        
+        /* Table Tab Styling */
+        
+        .table.table-striped.table-hover {
+            background-color: var(--accent-color) !important;
+        }
+        
+        #tabs-bui3-tabpanel-1 {
+            background-color: var(--secondary-bg-color) !important;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 2.5px solid var(--border-color) !important;
+        }
+        
+        table th, table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+        
+        table th {
+            background-color:  var(--accent-color);
+            color: black !important;
+            font-weight: bold !important;
+        }
+        
+        table tr:nth-child(odd) {
+            background-color: #fff !important;
+        }
+        
+        table tr:nth-child(even) {
+            background-color: #f2f2f2 !important;
+        }
+        
+        table tr:hover {
+            background-color: #ddd !important;
+        }
+        
+        /* Graphs Tab Styling */
+        
+        #tabs-bui3-tabpanel-2 iframe {
+            border: 2.5px solid var(--border-color) !important;
+        }
+
     </style>
     """,
     unsafe_allow_html=True
@@ -64,7 +286,7 @@ with query_tab:
 
     with st.container():
 
-        query_col, space_col, input_col = st.columns([0.45, 0.05, 0.5])
+        query_col, space, input_col = st.columns([0.45, 0.025, 0.525])
 
         with query_col:
             query_selection = st.selectbox(label=strings["query_select_label"],
@@ -86,7 +308,7 @@ if st.session_state.result is not None:
         if st.session_state.graph and not st.session_state.result.empty:
             def get_pyg_renderer() -> "StreamlitRenderer":
                 return StreamlitRenderer(st.session_state.result, spec="./gw_config.json",
-                                         spec_io_mode="r", appearance="dark")
+                                         spec_io_mode="r", appearance="light")
             renderer = get_pyg_renderer()
             renderer.explorer()
 

@@ -3,8 +3,8 @@ showErrorDetails = true  # false
 toolbarMode = "viewer"  # "auto"
 
 [theme]
-primaryColor = "#FFF"  # Accent color for interactive elements
-backgroundColor = "#09090B"
-secondaryBackgroundColor = "#101B39"  # Background for sidebar and interactive widgets
-textColor = "#FFF"
+primaryColor = "black"  # Accent color for interactive elements
+backgroundColor = "transparent"
+secondaryBackgroundColor = "transparent"  # Background for sidebar and interactive widgets
+textColor = "black"
 # font = "sans serif/serif/monospace"
