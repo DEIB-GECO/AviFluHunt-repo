@@ -49,9 +49,7 @@ st.markdown(
           height: 0rem;
         }
         
-        .stApp {   
-            background: rgb(130,165,255);
-            background: linear-gradient(45deg, rgba(130,165,255,1) 0%, rgba(203,164,255,1) 100%); 
+        .stApp {
             background: rgb(188,6,95);
             background: linear-gradient(90deg, rgba(6,188,157,1) 0%, rgba(23,6,89,1) 100%); 
         }
@@ -165,6 +163,34 @@ st.markdown(
             background-color: var(--accent-color) !important;
         }
         
+        [data-testid="stNumberInputContainer"], [data-testid="stDateInput-Input"] {
+            border-radius: 0rem !important;
+            height: fit-content !important;
+            border: 2.5px solid var(--border-color);
+        }
+        
+        [aria-roledescription="datepicker"] {
+            font-weight: bold !important;
+            border: 2.5px solid var(--border-color);
+            background-color: var(--secondary-bg-color) !important;
+        }
+        
+        [data-testid="stDateInput-Input"] {
+            font-weight: bold !important;
+        }
+        
+        [data-testid="stNumberInputContainer"] button {
+            color: black !important;
+            border: 0px solid var(--border-color);
+            margin: 0rem 0rem !important;
+        }
+        
+        [data-testid="stNumberInputContainer"] button:hover {
+            color: black !important;
+            border: 0px solid var(--border-color);
+            margin: 0rem 0rem !important;
+        }
+        
         [data-testid="stForm"] .stMarkdown p {
             font-weight: bold !important;
             font-size: 1.5rem !important;
@@ -214,8 +240,8 @@ st.markdown(
         }
         
         li:hover {
-            background: black !important;
-            color: var(--main-text-color); !important;
+            background: var(--accent-color) !important;
+            color: black !important;
             font-weight: bold;
         }
         
@@ -325,7 +351,7 @@ if st.session_state.result is not None:
         if st.session_state.graph and not st.session_state.result.empty:
             def get_pyg_renderer() -> "StreamlitRenderer":
                 return StreamlitRenderer(st.session_state.result, spec="./gw_config.json",
-                                         spec_io_mode="r", appearance="light")
+                                         spec_io_mode="r", appearance="dark")
             renderer = get_pyg_renderer()
             renderer.explorer()
 
