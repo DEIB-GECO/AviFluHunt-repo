@@ -172,3 +172,5 @@ venv/
 *.fasta~
 
 identifier.sqlite
+
+.streamlit/secrets.toml
