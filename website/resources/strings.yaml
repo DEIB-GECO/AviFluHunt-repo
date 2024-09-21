@@ -35,7 +35,7 @@ submit_button: "Run"
 ## QUERIES
 
 # QUERY 1
-label1: "1 - Obtain the literature associated to a group of Markers"
+label1: "Obtain the literature associated to a group of Markers"
 explanation1:
   "<p class='query_text' style='text-align: justify;'>
   Select Markers to obtain all the Groups of markers that contain each of them, 
@@ -46,7 +46,7 @@ param_label1a: "Marker Group:"
 error1: "There is no known group for the selected markers"
 
 # QUERY 2
-label2: "2 - Get Markers by relative percentage of human samples"
+label2: "Get Markers by relative percentage of human samples"
 explanation2:
   "<p class='query_text'style='text-align: justify;'>
   Get information about how often a Marker has infected human hosts.<br>
@@ -63,7 +63,7 @@ param_label2f: "Min # Instances:"
 error2: "There are no markers within the specified filters"
 
 # QUERY 3
-label3: "3 - Get markers by difference in relative presence between two hosts"
+label3: "Get markers by difference in relative presence between two hosts"
 explanation3:
   "<p class='query_text'style='text-align: justify;'>
   Get information on the difference in infection rate of Markers for the selected two Hosts.<br>
@@ -76,7 +76,7 @@ param_label3c: "Other Hosts of Interests: "
 error3: "Error: This should not be possible"
 
 # QUERY 4
-label4: "4 - Given a reference host, compare Marker presence other hosts"
+label4: "Given a reference host, compare Marker presence other hosts"
 explanation4:
   "<p class='query_text'style='text-align: justify;'>
   Get information on the presence of Markers in different Hosts. The first host will be used 
@@ -88,7 +88,7 @@ param_label4b: "Other Hosts:"
 error4: "Error: This shouldn't happen"
 
 # QUERY 5
-label5: "5 - Given a Marker obtain its host distribution"
+label5: "Given a Marker obtain its host distribution"
 explanation5:
   "<p class='query_text'style='text-align: justify;'>
   Get information on the hosts markup of the selected Marker.
@@ -97,7 +97,7 @@ param_label5a: "Marker:"
 error5: "Error: This shouldn't happen"
 
 # QUERY 6
-label6: "6 - Given a Marker obtain the location distribution, normalized"
+label6: "Given a Marker obtain the location distribution, normalized"
 explanation6:
   "<p class='query_text'style='text-align: justify;'>
   Get information on the location markup of the selected Marker. <br>
@@ -109,7 +109,7 @@ param_label6b: "Region:"
 error6: "Error: This shouldn't happen"
 
 # QUERY 7
-label7: "7 - Get the most common Marker"
+label7: "Get the most common Marker"
 explanation7:
   "<p class='query_text'style='text-align: justify;'>
   Get information on the most common (in absolute terms) Marker. <br>
@@ -123,7 +123,7 @@ param_label7d: "Host:"
 error7: "There are no markers within the specified filters"
 
 # QUERY 8
-label8: "8 - Get N. of instances of distinct Markers for each host"
+label8: "Get N. of instances of distinct Markers for each host"
 explanation8:
   "<p class='query_text'style='text-align: justify;'>
   Get information on how many different Markers have infected the same Host.<br>
@@ -134,7 +134,7 @@ param_label8b: "Segment:"
 error8: "There is no data for the selected Subtype/Segment combination"
 
 # QUERY 9
-label9: "9 - Get how common is each Marker"
+label9: "Get how common is each Marker"
 explanation9:
   "<p class='query_text'style='text-align: justify;'>
   Get information on the relative percentage of markers in the dataset.<br>
@@ -146,7 +146,7 @@ param_label9c: "Limit:"
 error9: "There are no Markers within the specified range of presence in the dataset"
 
 # QUERY 10
-label10: "10 - Find the Most Mutable Zones"
+label10: "Find the Most Mutable Zones"
 explanation10:
   "<p class='query_text'style='text-align: justify;'>
   Find the most mutable zones (compared to a reference) within the dataset.<br>
@@ -163,7 +163,7 @@ param_tab10b: "Auto"
 error10: "There is no data for the specified filters"
 
 # QUERY 11
-label11: "11 - Get the number of mutation found in data submitted for each month"
+label11: "Get the number of mutation found in data submitted for each month"
 explanation11:
   "<p class='query_text'style='text-align: justify;'>
   Get information on how many mutated samples where found for each month in the given range. <br>
@@ -179,7 +179,7 @@ param_label11e: "Min # Of Samples:"
 error11: "No samples where reported in the given timeframe for the selected subtype/segment combination"
 
 # QUERY 12
-label12: "12 - Retrieve the Marker Groups for a specific Marker"
+label12: "Retrieve the Marker Groups for a specific Marker"
 explanation12:
   "<p class='query_text'style='text-align: justify;'>
   Get all the Marker Groups that contain the given Marker.<br>
@@ -189,7 +189,7 @@ param_label12a: "Marker:"
 error12: "No group was found for the given marker"
 
 # QUERY 13
-label13: "13 - Retrieve the Effects associated to Host/Drug"
+label13: "Retrieve the Effects associated to Host/Drug"
 explanation13:
   "<p class='query_text'style='text-align: justify;'>
   Get information on which effects are associated to particular types of Host and/or Drugs.
@@ -199,7 +199,7 @@ param_label13b: "Drug:"
 error13: "No effect was found for the given combination of Host and Drug"
 
 # QUERY 14
-label14: "14 - Retrieve the Marker Groups associated to a particular Effect"
+label14: "Retrieve the Marker Groups associated to a particular Effect"
 explanation14:
   "<p class='query_text'style='text-align: justify;'>
   Get information on all the Marker Groups associated to the selected effect along the doi 

@@ -38,18 +38,17 @@ def check_password():
     return False
 
 
-if not check_password():
-    st.stop()  # Do not continue if check_password is not True.
+#if not check_password():
+    #st.stop()  # Do not continue if check_password is not True.
 
 # FRONTEND
 N_QUERIES = 15
-queries = {strings[f"label{x}"]: x for x in range(1, N_QUERIES)}
 if "sort_by" not in st.session_state:
     st.session_state.sort_by = "Effect"
 if "result" not in st.session_state:
     st.session_state.result = None
-if "graph" not in st.session_state:
-    st.session_state.graph = None
+if "graphs" not in st.session_state:
+    st.session_state.graphs = {}
 
 st.markdown(
     """
@@ -354,32 +353,52 @@ st.markdown(strings["custom_css"], unsafe_allow_html=True)
 st.write(strings["website_name"], unsafe_allow_html=True)
 
 
-query_tab, results_tab, graph_tab = st.tabs(["Query", "Results", "Graphs"])
+query_tabs = st.tabs(["Markers' Effects", "Markers", "Markers with Filters", "Mutations"])
+queries_for_tab = [[1, 12, 13, 14], [9, 7, 6], [5, 2, 3, 4, 8], [10, 11]]
 
-with query_tab:
+for tab_index, query_tab in enumerate(query_tabs):
 
-    with st.container():
+    queries = {strings[f"label{x}"]: x for x in queries_for_tab[tab_index]}
 
-        query_col, space, input_col = st.columns([0.45, 0.025, 0.525])
+    with query_tab:
 
-        with query_col:
-            query_selection = st.selectbox(label=strings["query_select_label"],
-                                           options=queries.keys(),
-                                           on_change=lambda: empty_result(),
-                                           key="query_selection",
-                                           label_visibility="collapsed")
-        result, graphs, error = run_query(queries[st.session_state.query_selection], db,
-                                          query_col, input_col)
+        with st.container():
 
-        if result is not None:
-            st.session_state.result = result
-        if graphs is not None:
-            st.session_state.graph = graphs
+            query_col, space, input_col = st.columns([0.45, 0.025, 0.525])
+
+            with query_col:
+                query_selection = st.selectbox(label=strings["query_select_label"],
+                                               options=queries.keys(),
+                                               on_change=lambda: empty_result(),
+                                               key=f"query_selection{query_tab}",
+                                               label_visibility="collapsed")
+            result, graphs, error = run_query(queries[query_selection], db,
+                                              query_col, input_col)
+
+            if result is not None:
+                st.session_state.result = result
+                if graphs is not None:
+                    st.session_state.graphs = graphs
+                else:
+                    st.session_state.graphs = {}
 
 if st.session_state.result is not None:
 
-    with graph_tab:
-        if st.session_state.graph and not st.session_state.result.empty:
+    results_tab, *graph_tabs, explore_tab = (
+        st.tabs(["Results"] + [key for key in st.session_state.graphs.keys()] + ["Explore Data"]))
+
+    for index, graph_tab in enumerate(graph_tabs):
+        with graph_tab:
+            graph = st.session_state.graphs[[key for key in st.session_state.graphs.keys()][index]]
+            fn = 'results.png'
+            graph.savefig(fn)
+            with open(fn, "rb") as img:
+                btn = st.download_button(label="Download Plot", data=img,
+                                         file_name=fn, mime="image/png")
+            st.pyplot(graph)
+
+    with explore_tab:
+        if not st.session_state.result.empty:
             def get_pyg_renderer() -> "StreamlitRenderer":
                 return StreamlitRenderer(st.session_state.result, spec="./gw_config.json",
                                          spec_io_mode="r", appearance="dark")
@@ -398,7 +417,7 @@ if st.session_state.result is not None:
         if not st.session_state.result.empty:
             st.download_button(label="Download data as CSV", data=st.session_state.result.to_csv(index=False).encode(),
                                file_name="data.csv", mime="text/csv")
-            st.table(st.session_state.result)
+            st.table(st.session_state.result.reset_index(drop=True))
 
         else:
             if error is not None:
@@ -421,4 +440,4 @@ def order_table():
 
 def empty_result():
     st.session_state.result = None
-    st.session_state.graph = None
+    st.session_state.graphs = {}

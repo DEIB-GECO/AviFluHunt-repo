@@ -24,7 +24,7 @@ def run_query(query_selection, db, query_col, input_col):
         st.session_state.num_inputs = 1
 
     with input_col:
-        with st.form("query_inputs"):
+        with st.form(f"query_inputs{query_selection}"):
 
             st.write(strings["query_inputs_label"], unsafe_allow_html=True)
 
@@ -98,7 +98,7 @@ def run_query(query_selection, db, query_col, input_col):
             st.session_state.num_inputs += 1
         st.button("Add input", on_click=increment_inputs)
 
-    return None, None, None
+    return None, {}, None
 
 
 # QUERIES' FUNCTIONS
@@ -169,7 +169,7 @@ def params2(db):
 
 def params3(db):
 
-    hosts = db.query(get_hosts)
+    hosts = db.query(get_hosts).sort_values("host")
     host1 = st.selectbox(label=strings["param_label3a"],
                          options=hosts)
     host2 = st.selectbox(label=strings["param_label3b"],
@@ -235,7 +235,7 @@ def graph3(result_df, params):
 
 def params4(db):
 
-    hosts = db.query(get_hosts)
+    hosts = db.query(get_hosts).sort_values("host")
     host = st.selectbox(label=strings["param_label4a"], options=hosts)
     other_hosts = st.multiselect(label=strings["param_label4b"], options=hosts, max_selections=5)
 
@@ -311,7 +311,7 @@ def graph5(result_df, params):
 
 def params6(db):
     markers = db.query(get_markers)
-    regions = db.query(get_regions)
+    regions = db.query(get_regions).sort_values("region")
     marker = st.selectbox(label=strings["param_label6a"], options=markers)
     region = st.selectbox(label=strings["param_label6b"], options=[None] + regions["region"].tolist())
     return {
@@ -342,10 +342,10 @@ def graph6(result_df):
 
 def params7(db):
 
-    hosts = db.query(get_hosts)
+    hosts = db.query(get_hosts).sort_values("host")
     segments = db.query(get_segments)
-    regions = db.query(get_regions)
-    states = db.query(get_states)
+    regions = db.query(get_regions).sort_values("region")
+    states = db.query(get_states).sort_values("state")
 
     l_col, r_col = st.columns(2)
     with l_col:
@@ -526,8 +526,8 @@ def params12(db):
 
 def params13(db):
 
-    effect_hosts = db.query("SELECT DISTINCT host FROM Effect WHERE host != ''")
-    effect_drugs = db.query("SELECT DISTINCT drug FROM Effect WHERE drug != ''")
+    effect_hosts = db.query("SELECT DISTINCT host FROM Effect WHERE host != ''").sort_values("host")
+    effect_drugs = db.query("SELECT DISTINCT drug FROM Effect WHERE drug != ''").sort_values("drug")
 
     effect_host = st.selectbox(label=strings["param_label13a"],
                                options=[None] + effect_hosts["host"].tolist())
@@ -541,7 +541,7 @@ def params13(db):
 
 
 def params14(db):
-    effects = db.query("SELECT DISTINCT effect_full FROM Effect")
+    effects = db.query("SELECT DISTINCT effect_full FROM Effect").sort_values("effect_full")
     effect_full = st.selectbox(label=strings["param_label14a"],
                                options=effects)
     return {"effect_full": effect_full}
