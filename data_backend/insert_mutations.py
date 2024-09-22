@@ -50,14 +50,11 @@ class MutationDatabaseHandler:
 
             subtype_name, segment_type = key.split('_', 1)
 
-            if segment_type != "HA":
-                continue
-
             reference = self.get_reference(subtype_name, segment_type)
             if not reference: continue
 
             aligned_dna_fastas, dna_insertions_file = self.align_sequences(
-                "tmp/mutation/dna/", key, reference["dna_fasta"], self.dna_fasta_by_ref[f"{key}"])
+                "tmp_mutation/dna/", key, reference["dna_fasta"], self.dna_fasta_by_ref[f"{key}"])
 
             annotations = self.get_annotations(segment_type)
 
@@ -80,7 +77,7 @@ class MutationDatabaseHandler:
                     "")
 
                 aligned_protein_fastas, protein_insertions_file = self.align_sequences(
-                    "tmp/mutation/protein/", f"{key}_{annotation["annotation_name"]}",
+                    "tmp_mutation/protein/", f"{key}_{annotation["annotation_name"]}",
                     protein_reference, "".join(coding_sequences_fasta))
 
                 for aligned_protein_header, aligned_protein_fasta in aligned_protein_fastas.items():
