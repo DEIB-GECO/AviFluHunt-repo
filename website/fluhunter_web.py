@@ -99,6 +99,10 @@ st.markdown(
             background-color: var(--secondary-bg-color) !important;
         }
         
+        data-testid="stTabs"] {
+            min-height: 0vh;
+        }
+        
         [role="tablist"] {
             gap: 0;
             width: fit-content;
@@ -107,36 +111,22 @@ st.markdown(
             background-color: transparent !important;
         }
         
-        #tabs-bui3-tab-0 p, #tabs-bui3-tab-1 p, #tabs-bui3-tab-2 p {
+        [data-baseweb="tab"] p {
             height: fit-content !important;
             font-size: 1rem;
             font-weight: bold;
             background-color: transparent !important;
         }
         
-        #tabs-bui3-tab-0, #tabs-bui3-tab-1, #tabs-bui3-tab-2 {
+        [data-baseweb="tab"]  {
             padding: 0.1rem 1rem !important;
             height: fit-content !important;
             background-color: var(--secondary-bg-color) !important;
         }
         
-        #tabs-bui3-tab-0:hover, #tabs-bui3-tab-1:hover, #tabs-bui3-tab-2:hover {
+        [data-baseweb="tab"]:hover {
             color: var(--border-color);
             background-color: var(--accent-color) !important;
-        }
-        
-        [aria-selected="true"]#tabs-bui3-tab-0 {
-            border-right: 2.5px solid var(--border-color);
-            background-color: var(--accent-color) !important;
-        }
-    
-        [aria-selected="true"]#tabs-bui3-tab-1 {
-            border-left: 2.5px solid var(--border-color);
-            border-right: 2.5px solid var(--border-color);
-        }
-        
-        [aria-selected="true"]#tabs-bui3-tab-2 {
-            border-left: 2.5px solid var(--border-color);
         }
         
         [aria-selected="true"] {
@@ -296,6 +286,28 @@ st.markdown(
         
         [data-testid="stForm"] {
             background-color: var(--secondary-bg-color) !important;
+        }
+        
+        #tabs-bui3-tabpanel-3 button {
+            float: right !important;
+        }
+        
+        #tabs-bui3-tabpanel-3 [role="tablist"] {
+            gap: 0;
+            width: fit-content;
+            border: 2.5px solid var(--border-color);
+            background-color: transparent !important;
+        }
+        
+        #tabs-bui3-tabpanel-3 [role="tablist"] button {
+            border: 0 solid var(--border-color);
+            margin: 0rem 0rem !important;
+        }
+        
+        #tabs-bui3-tabpanel-3 [role="tablist"] [aria-selected="true"] {
+            font-weight: bold;
+            color: var(--border-color);
+            background-color: var(--accent-color) !important;
         }
         
         /* Table Tab Styling */
