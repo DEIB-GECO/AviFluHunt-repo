@@ -13,3 +13,4 @@ SQLAlchemy==2.0.32
 openpyxl
 matplotlib
 miniFasta==3.0.3
+pygwalker
