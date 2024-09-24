@@ -1,10 +1,5 @@
 import hmac
-
-import pandas as pd
-from duckdb.duckdb import aggregate
-
 from query_functions import *
-import awesome_table
 from pygwalker.api.streamlit import StreamlitRenderer
 
 st.set_page_config(layout="wide")
