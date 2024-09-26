@@ -25,11 +25,11 @@ RUN conda install -y mafft python=3.12 && \
     conda clean --all --yes
 
 # Install Python dependencies
-ADD requirements.txt /app/
+ADD backend/requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy all application code
-COPY . /app
+COPY ./backend /app
 
 # Convert backend.sh to Unix format and make it executable
 RUN dos2unix backend.sh && \
