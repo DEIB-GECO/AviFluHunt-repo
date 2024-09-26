@@ -5,7 +5,12 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     volumes:
-      - sqlite_data:/app/db  # Mount the shared volume where SQLite db file will be stored
+      - sqlite_data:/app/db  # Shared volume for SQLite
+      - ${fasta_file}:/app/ext_files/fasta.fasta
+      - ${metadata_file}:/app/ext_files/metadata.xls
+    environment:
+      - FASTA_FILE=/app/ext_files/fasta.fasta
+      - METADATA_FILE=/app/ext_files/metadata.xls
     networks:
       - app-network
 
