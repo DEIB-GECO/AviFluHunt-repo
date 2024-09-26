@@ -24,6 +24,9 @@ services:
       - sqlite_data:/app/db  # Frontend can access the same SQLite db if needed
     networks:
       - app-network
+    depends_on:
+      backend:
+        condition: service_completed_successfully
 
 volumes:
   sqlite_data:
