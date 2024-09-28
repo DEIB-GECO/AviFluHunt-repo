@@ -174,3 +174,7 @@ venv/
 identifier.sqlite
 
 .streamlit/secrets.toml
+
+data_backend/mutations_test.py
+
+*.png
