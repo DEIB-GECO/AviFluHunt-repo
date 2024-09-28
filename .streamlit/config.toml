@@ -3,7 +3,7 @@ showErrorDetails = true  # false
 toolbarMode = "viewer"  # "auto"
 
 [theme]
-primaryColor = "black"  # Accent color for interactive elements
+primaryColor = "black"
 backgroundColor = "transparent"
 secondaryBackgroundColor = "transparent"  # Background for sidebar and interactive widgets
 textColor = "black"

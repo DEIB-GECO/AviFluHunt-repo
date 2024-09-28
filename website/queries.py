@@ -475,13 +475,13 @@ get_mutability_peak_months = \
   "SELECT month AS 'Month', year AS 'Year', "
   "COUNT(DISTINCT mutation.mutation_id) AS '# Mutation', "
   "COUNT(DISTINCT SSPM.segment_id) AS '# Samples', "
-  "ROUND((COUNT(DISTINCT mutation.mutation_id) * 1.0 / COUNT(DISTINCT SSPM.segment_id)), 2) AS 'Ratio' "
+  "ROUND((COUNT(DISTINCT mutation.mutation_id) * 1.0 / COUNT(DISTINCT SSPM.segment_id)), 2) AS '#Mutation per Sample' "
   "FROM SelectedSegmentsPerMonths SSPM "
   "JOIN SegmentMutations segmentMutations ON SSPM.segment_id = segmentMutations.segment_id "
   "JOIN Mutation mutation ON segmentMutations.mutation_id = mutation.mutation_id "
   "GROUP BY year, month "
   "HAVING COUNT(DISTINCT SSPM.segment_id) >= :min_n_instances "
-  "ORDER BY Ratio DESC")
+  "ORDER BY '#Mutation per Sample' DESC")
 
 
 # QUERIES ONTOLOGY

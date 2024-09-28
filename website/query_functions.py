@@ -24,6 +24,7 @@ def run_query(query_selection, db, query_col, input_col):
         st.session_state.num_inputs = 1
 
     with input_col:
+
         with st.form(f"query_inputs{query_selection}"):
 
             st.write(strings["query_inputs_label"], unsafe_allow_html=True)
@@ -57,7 +58,8 @@ def run_query(query_selection, db, query_col, input_col):
                 query = get_markers_by_relevance
             if query_selection == 10:
                 params = params10(db)
-                query = with_query10(params["bins"]) + get_segment_mutability_zones
+                if params["bins"] is not None:
+                    query = with_query10(params["bins"]) + get_segment_mutability_zones
             if query_selection == 11:
                 params = params11(db)
                 query = get_mutability_peak_months
@@ -71,8 +73,15 @@ def run_query(query_selection, db, query_col, input_col):
                 params = params14(db)
                 query = get_marker_groups_by_effect
 
-            submitted = st.form_submit_button("Submit", on_click=reset_10)
+            submitted = st.form_submit_button("Submit")
             if submitted:
+
+                if query_selection == 10:
+                    if params["bins"] is None:
+                        params["bins"] = [(st.session_state[f"start_{i + 1}"], st.session_state[f"end_{i + 1}"])
+                                          for i in range(st.session_state.num_inputs)]
+                        query = with_query10(params["bins"]) + get_segment_mutability_zones
+                        reset_10()
 
                 result = db.query(query, params=params)
                 graphs = {}
@@ -90,13 +99,12 @@ def run_query(query_selection, db, query_col, input_col):
                 if query_selection == 9:
                     graphs["Bar Plot"] = graph9(result)
 
-                return result, graphs, strings[f"error{query_selection}"]
+                if query_selection in [1, 12, 14]:
+                    result['DOI'] = 'https://doi.org/' + result['DOI']
+                elif query_selection == 11:
+                    result['Date'] = result['Year'].astype(str) + '-' + result['Month'].astype(str)
 
-    # Custom behaviour
-    if query_selection == 10:
-        def increment_inputs():
-            st.session_state.num_inputs += 1
-        st.button("Add input", on_click=increment_inputs)
+                return result, graphs, strings[f"error{query_selection}"]
 
     return None, {}, None
 
@@ -134,8 +142,8 @@ def params1(db):
     markers = db.query(get_markers)
     selected_markers = st.multiselect(label=strings["param_label1a"], options=markers)
 
-    placeholder = ', '.join(f":{marker.replace(":", "")}" for marker in selected_markers)
-    params = {f"{marker.replace(":", "")}": marker for marker in selected_markers}
+    placeholder = ', '.join(f":{marker.replace(":", "").replace("-", "")}" for marker in selected_markers)
+    params = {f"{marker.replace(":", "").replace("-", "")}": marker for marker in selected_markers}
     return placeholder, params
 
 
@@ -313,10 +321,15 @@ def params6(db):
     markers = db.query(get_markers)
     regions = db.query(get_regions).sort_values("region")
     marker = st.selectbox(label=strings["param_label6a"], options=markers)
-    region = st.selectbox(label=strings["param_label6b"], options=[None] + regions["region"].tolist())
+
+    region_options = {
+        "All Regions": None,
+        **{region: region for region in regions["region"].tolist()}
+    }
+    region = st.selectbox(label=strings["param_label6b"], options=region_options)
     return {
         "marker": marker,
-        "region": region
+        "region": region_options[region]
     }
 
 
@@ -354,15 +367,23 @@ def params7(db):
     with r_col:
         segment = st.selectbox(label=strings["param_label7b"], options=segments)
 
-    location = st.selectbox(label=strings["param_label7c"],
-                            options=[None] + regions['region'].tolist()
-                                    + [f"{row['region']} - {row['state']}" for _, row in states.iterrows()])
-    host = st.selectbox(label=strings["param_label7d"], options=[None] + hosts['host'].tolist())
+    location_options = {
+        "All Locations": None,
+        **{region: region for region in regions['region'].tolist()},
+        **{f"{row['region']} - {row['state']}": f"{row['region']} - {row['state']}" for _, row in states.iterrows()}
+    }
+    location = st.selectbox(label=strings["param_label7c"],options=location_options)
+
+    host_options = {
+        "All Hosts": None,
+        **{host: host for host in hosts['host'].tolist()},
+    }
+    host = st.selectbox(label=strings["param_label7d"], options=host_options)
 
     if location:
         location = location.split(" - ")
-        region = location[0]
-        state = location[1] if len(location) > 1 else None
+        region = location_options[location[0]]
+        state = location_options[location[0]][1] if len(location) > 1 else None
     else:
         region = None
         state = None
@@ -372,7 +393,7 @@ def params7(db):
         "region": region,
         "segment_type": segment,
         "state": state,
-        "host": host
+        "host": host_options[host]
     }
 
 
@@ -382,13 +403,18 @@ def params8(db):
     l_col, r_col = st.columns(2)
     with l_col:
         subtype = st.selectbox(label=strings["param_label8a"],
-                               options=[None, "H5N1"])  # [sub["name"] for _, sub in subtypes.iterrows()])
+                               options=["H5N1"])  # [sub["name"] for _, sub in subtypes.iterrows()])
     with r_col:
-        segment = st.selectbox(label=strings["param_label8b"], options=[None] + segments["segment_type"].tolist())
+
+        segment_options = {
+            "All Segments": None,
+            **{segment: segment for segment in segments['segment_type'].tolist()},
+        }
+        segment = st.selectbox(label=strings["param_label8b"], options=segment_options)
 
     return {
         "subtype": subtype,
-        "segment_type": segment,
+        "segment_type": segment_options[segment],
     }
 
 
@@ -454,7 +480,12 @@ def params10(db):
     segments = db.query(get_segments)
     subtype = st.selectbox(label=strings["param_label10a"],
                            options=[None, "H5N1"])  # [sub["name"] for _, sub in subtypes.iterrows()])
-    segment = st.selectbox(label=strings["param_label10b"], options=[None] + segments["segment_type"].tolist())
+
+    segment_options = {
+        "All Segments": None,
+        **{segment: segment for segment in segments['segment_type'].tolist()},
+    }
+    segment = st.selectbox(label=strings["param_label10b"], options=segment_options)
 
     manual_tab, auto_tab = st.tabs([strings["param_tab10a"], strings["param_tab10b"]])
 
@@ -471,19 +502,17 @@ def params10(db):
                 st.number_input(f"End", key=f"end_{i + 1}", min_value=0, step=1)
 
     with auto_tab:
-
         bin_size = st.number_input(label=strings["param_label10c"], min_value=0, step=10, value=0)
         offset = st.number_input(label=strings["param_label10d"], min_value=0, step=1, value=0)
 
     if bin_size == 0:
-        bins = [(st.session_state[f"start_{i + 1}"], st.session_state[f"end_{i + 1}"])
-                for i in range(st.session_state.num_inputs)]
+        bins = None
     else:
         bins = [(i, i + bin_size) for i in range(offset, 3000 + offset, bin_size)]
 
     return {
         "subtype": subtype,
-        "segment_type": segment,
+        "segment_type": segment_options[segment],
         "bins": bins
     }
 
@@ -500,7 +529,12 @@ def params11(db):
     segments = db.query(get_segments)
     subtype = st.selectbox(label=strings["param_label11a"],
                            options=[None, "H5N1"])  # [sub["name"] for _, sub in subtypes.iterrows()])
-    segment = st.selectbox(label=strings["param_label11b"], options=[None] + segments["segment_type"].tolist())
+
+    segment_options = {
+        "All Segments": None,
+        **{segment: segment for segment in segments['segment_type'].tolist()},
+    }
+    segment = st.selectbox(label=strings["param_label11b"], options=segment_options)
 
     start_date = st.date_input(label=strings["param_label11c"], value=datetime.date(2000, 1, 1))
     end_date = st.date_input(label=strings["param_label11d"], value=datetime.datetime.today())
@@ -509,7 +543,7 @@ def params11(db):
 
     return {
         "subtype": subtype,
-        "segment_type": segment,
+        "segment_type": segment_options[segment],
         "start_month": start_date.month,
         "start_year": start_date.year,
         "end_month": end_date.month,
