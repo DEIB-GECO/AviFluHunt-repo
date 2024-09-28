@@ -90,7 +90,28 @@ custom_css:
             background-color: var(--accent-color) !important;
         }
         
-        [data-testid='stForm'] button, [data-testid='baseButton-secondary'] {
+        [data-testid='stVerticalBlockBorderWrapper'] button {
+            font-weight: bold !important;
+            float: left;
+            border-radius: 0 !important;
+            background-color: var(--secondary-bg-color);
+        }
+
+        [data-testid='stVerticalBlockBorderWrapper'] button > div > p {
+            font-weight: bold !important;
+        }
+
+        [data-testid='stVerticalBlockBorderWrapper'] button:hover {
+            border: 1px solid black !important;
+            border-radius: 0 !important;
+            background-color: var(--accent-color);
+        }
+
+        [data-testid='stVerticalBlock'] > [data-testid='stVerticalBlockBorderWrapper'] > div > [data-testid='stVerticalBlock']:has(#fake) {
+            display: inline-block;
+        }
+        
+        [data-testid='stForm'] button {
             border: 2.5px solid var(--border-color);
             border-radius: 0rem !important;
             padding: 0.1rem 2rem !important;
@@ -98,12 +119,6 @@ custom_css:
             font-weight: bold !important;
             margin: 1rem 0rem !important;
             background: var(--secondary-bg-color) !important;
-        }
-        
-        [data-testid='baseButton-secondary'] {
-            font-weight: bold !important;
-            float: left !important;
-            padding: 0.1rem 1rem !important;
         }
         
         [data-testid='stForm'] button:hover, [data-testid='baseButton-secondary']:hover {
@@ -218,10 +233,6 @@ custom_css:
             background-color: var(--secondary-bg-color) !important;
         }
         
-        [data-testid='stVerticalBlockBorderWrapper'] button {
-            float: right !important;
-        }
-        
         [data-testid='stTabs'] [role='tablist'] {
             gap: 0;
             width: fit-content;
@@ -244,7 +255,8 @@ custom_css:
             border-radius: 1rem;
             border: 2.5px solid var(--border-color);
             padding: 1.5rem !important;
-            background-color: #d20303;
+            background: rgb(210,3,3);
+            background: linear-gradient(270deg, rgb(172, 4, 4) 0%, rgb(142, 0, 0) 100%);
             color: white;
             font-weight: bold;
             text-align: center;
@@ -299,6 +311,20 @@ custom_css:
         #tabs-bui3-tabpanel-2 iframe {
             border: 2.5px solid var(--border-color) !important;
         }
+        
+        /* OTHER */
+        .code {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #000;
+            color: #fff;
+            padding: 1rem 2rem;
+            border: 0px solid #ccc;
+            border-radius: 0px;
+            overflow-x: auto;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
 
     </style>
   "
@@ -425,12 +451,26 @@ error9: "There are no Markers within the specified range of presence in the data
 # QUERY 10
 label10: "Find the Most Mutable Zones"
 explanation10:
-  "<p class='query_text'style='text-align: justify;'>
+  "<p class='query_text' style='text-align: justify;'>
   Find the most mutable zones (compared to a reference) within the dataset.<br>
   For more interesting information it is possible to restrict the search to a specific Subtype and/or Segment.<br><br>
   Furthermore the zone of interest can be provided either by manually inserting start and end positions 
   for each zone or by selecting a uniform size and an offset.
-  </p>"
+  </p>
+  <div class='code'>
+    The following are the coordinates for each segment:
+    <ul>
+      <li>PB2: </li>
+      <li>PB1: </li>
+      <li>PA: </li>
+      <li>HA: </li>
+      <li>NP: </li>
+      <li>NA: </li>
+      <li>MP: </li>
+      <li>NS: </li>
+    </ul>
+  </div>
+  "
 param_label10a: "Subtype:"
 param_label10b: "Segment:"
 param_label10c: "Size:"
@@ -443,7 +483,7 @@ error10: "There is no data for the specified filters"
 label11: "Get the number of mutation found in data submitted for each month"
 explanation11:
   "<p class='query_text'style='text-align: justify;'>
-  Get information on how many mutated samples where found for each month in the given range. <br>
+  Get information on how many mutated segments samples where found for each month in the given range. <br>
   For more interesting information, the total number of samples collected in the same period is reported 
   along a ratio indicating the N. of Mutation for each sample in the same period.<br><br>
   <b>Note: The specified months go from the 1st of the month to its last day included</b>

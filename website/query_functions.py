@@ -112,33 +112,6 @@ def run_query(query_selection, db, query_col, input_col):
 # QUERIES' FUNCTIONS
 def params1(db):
 
-    """def update_markers(selected):
-        marker_names = ', '.join([f"'{marker}'" for marker in selected_markers])
-        query = \
-            ("WITH SelectedMarkersIds AS ("
-             "SELECT DISTINCT marker_id "
-             "FROM Marker "
-             f"WHERE name in ({marker_names})), "
-             ""
-             "PossibleGroups AS ("
-             "SELECT marker_group_id "
-             "FROM MarkerToGroup "
-             "WHERE marker_id IN (SELECT * FROM SelectedMarkersIds) "
-             "GROUP BY marker_group_id "
-             "HAVING COUNT(DISTINCT marker_id) = (SELECT COUNT(DISTINCT marker_id) FROM SelectedMarkersIds)), "
-             ""
-             "SelectableMarkers AS ("
-             "SELECT DISTINCT marker_id "
-             "FROM MarkerToGroup "
-             "WHERE marker_group_id IN (SELECT * FROM PossibleGroups) "
-             "AND marker_id NOT IN (SELECT * FROM SelectedMarkersIds))"
-             ""
-             "SELECT DISTINCT marker.name "
-             "FROM Marker marker "
-             "JOIN SelectableMarkers selectableMarkers ON marker.marker_id = selectableMarkers.marker_id")
-        new_options = db.query(query)
-        return new_options"""
-
     markers = db.query(get_markers)
     selected_markers = st.multiselect(label=strings["param_label1a"], options=markers)
 

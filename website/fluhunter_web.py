@@ -1,13 +1,42 @@
 import hmac
-
 from query_functions import *
 from pygwalker.api.streamlit import StreamlitRenderer
-from extra_streamlit_components import TabBar, tab_bar, TabBarItemData
 
+
+# CONFIG
 st.set_page_config(layout="wide")
-
-# DATABASE
 db = st.connection(name="thesis", type="sql", url="sqlite:///website/data/thesis.db")
+
+if "sort_by" not in st.session_state:
+    st.session_state.sort_by = "Effect"
+if "result" not in st.session_state:
+    st.session_state.result = None
+if "graphs" not in st.session_state:
+    st.session_state.graphs = {}
+if 'current_button' not in st.session_state:
+    st.session_state.current_button = 0
+
+st.markdown(
+    """
+    <style>
+        .code > ul {
+            list-style-type: none;
+            margin: 0rem 0 !important;
+        }
+        .code > ul > li {
+            background-color: transparent !important;
+            margin-left: 0 !important;
+            padding-left: 0 !important;
+            font-weight: normal;
+        }
+        .code > ul > li:hover {
+            background-color: transparent !important;
+            color: white !important;
+        }
+    </style>
+    """
+, unsafe_allow_html=True)
+st.markdown(strings["custom_css"], unsafe_allow_html=True)
 
 
 # PASSWORD CHECK
@@ -36,22 +65,10 @@ def check_password():
 
 
 #if not check_password():
-   # st.stop()  # Do not continue if check_password is not True.
-
-# FRONTEND
-N_QUERIES = 15
-if "sort_by" not in st.session_state:
-    st.session_state.sort_by = "Effect"
-if "result" not in st.session_state:
-    st.session_state.result = None
-if "graphs" not in st.session_state:
-    st.session_state.graphs = {}
-if "current_tab" not in st.session_state:
-    st.session_state.current_tab = 0
-
-st.markdown(strings["custom_css"], unsafe_allow_html=True)
+    #st.stop()  # Do not continue if check_password is not True.
 
 
+# HELPERS
 def order_table():
 
     order_column = st.session_state.get('order_column', None)
@@ -71,24 +88,30 @@ def empty_result():
     st.session_state.graphs = {}
 
 
-st.markdown(strings["custom_css"], unsafe_allow_html=True)
+# FRONTEND
 
 st.write(strings["website_name"], unsafe_allow_html=True)
 
-query_tabs = ["Markers Effects", "Markers", "Markers with Filters", "Mutations"]
-queries_for_tab = [[1, 12, 13, 14], [9, 7, 6], [5, 2, 3, 4, 8], [10, 11]]
-
-tab_id = int(tab_bar(data=[
-    TabBarItemData(id=index, title=title, description="") for index, title in enumerate(query_tabs)
-], default=0))
+query_buttons = ["Markers Effects", "Markers", "Markers with Filters", "Mutations"]
+queries_for_button = [[1, 12, 13, 14], [9, 7, 6], [5, 2, 3, 4, 8], [10, 11]]
 
 
-queries = {strings[f"label{x}"]: x for x in queries_for_tab[tab_id]}
+with st.container():
+    fake = st.html("<div id='fake'></div>")
+    for index, title in enumerate(query_buttons):
+        if st.button(title):
+            st.session_state.current_button = index
+
+
+queries = {strings[f"label{x}"]: x for x in queries_for_button[st.session_state.current_button]}
+
+
 with st.container():
 
-    if tab_id != st.session_state.current_tab:
-        st.session_state.current_tab = tab_id
+    if st.session_state.current_button != st.session_state.get('last_button', -1):
         empty_result()
+
+    st.session_state.last_button = st.session_state.current_button
 
     query_col, space, input_col = st.columns([0.45, 0.025, 0.525])
 
@@ -96,7 +119,7 @@ with st.container():
         query_selection = st.selectbox(label=strings["query_select_label"],
                                        options=queries.keys(),
                                        on_change=lambda: empty_result(),
-                                       key=f"query_selection{tab_id}",
+                                       key=f"query_selection{st.session_state.current_button}",
                                        label_visibility="collapsed")
 
     with input_col:
@@ -128,6 +151,20 @@ if st.session_state.result is not None and not st.session_state.result.empty:
     results_tab, *graph_tabs, explore_tab = (
         st.tabs(["Results"] + [key for key in st.session_state.graphs.keys()] + ["Explore Data"]))
 
+    with results_tab:
+
+        col_order, col_strategy, col_search, col_searchby = st.columns([1, 1, 2, 1])
+
+        col_order.selectbox('Order by', st.session_state.result.columns, key='order_column',
+                            on_change=lambda: order_table())
+        col_strategy.selectbox('Strategy', ['Ascending', 'Descending'], key='order_ascending',
+                               on_change=lambda: order_table())
+
+        if not st.session_state.result.empty:
+            st.download_button(label="Download data as CSV", data=st.session_state.result.to_csv(index=False).encode(),
+                               file_name="data.csv", mime="text/csv")
+            st.table(st.session_state.result.reset_index(drop=True))
+
     for index, graph_tab in enumerate(graph_tabs):
         with graph_tab:
             graph = st.session_state.graphs[[key for key in st.session_state.graphs.keys()][index]]
@@ -146,17 +183,3 @@ if st.session_state.result is not None and not st.session_state.result.empty:
                                          spec_io_mode="r", appearance="dark")
             renderer = get_pyg_renderer()
             renderer.explorer()
-
-    with results_tab:
-
-        col_order, col_strategy, col_search, col_searchby = st.columns([1, 1, 2, 1])
-
-        col_order.selectbox('Order by', st.session_state.result.columns, key='order_column',
-                            on_change=lambda: order_table())
-        col_strategy.selectbox('Strategy', ['Ascending', 'Descending'], key='order_ascending',
-                               on_change=lambda: order_table())
-
-        if not st.session_state.result.empty:
-            st.download_button(label="Download data as CSV", data=st.session_state.result.to_csv(index=False).encode(),
-                               file_name="data.csv", mime="text/csv")
-            st.table(st.session_state.result.reset_index(drop=True))
