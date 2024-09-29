@@ -1,3 +1,4 @@
+import argparse
 import gc
 import itertools
 import os
@@ -6,7 +7,6 @@ import shutil
 import pandas as pd
 
 sys.path.append('helpers')
-import excel_extractor
 import variant_calling
 
 sys.path.append('database')
@@ -447,6 +447,14 @@ class MutationDatabaseHandler:
 
 
 if __name__ == "__main__":
-    fasta = "test/H5N1_Fasta.fasta"
-    meta = "test/H5N1_Metadata.xls"
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-fasta', type=str, required=False)
+    parser.add_argument('-metadata', type=str, required=False)
+
+    # Parse the command-line arguments
+    args = parser.parse_args()
+
+    fasta = args.fasta
+    meta = args.metadata
     MutationDatabaseHandler(meta, fasta)

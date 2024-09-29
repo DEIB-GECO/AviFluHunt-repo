@@ -11,6 +11,7 @@ services:
     environment:
       - FASTA_FILE=/app/ext_files/fasta.fasta
       - METADATA_FILE=/app/ext_files/metadata.xls
+      - UPDATE_ONLY=${update_only}
     networks:
       - app-network
 
