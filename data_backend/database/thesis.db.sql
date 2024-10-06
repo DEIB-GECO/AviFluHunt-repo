@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS "MarkerGroupPaperAndEffect" (
 
 -- CONNECTIONS
 
-CREATE TABLE IF NOT EXISTS "MarkerGroupToSubtype" (
+CREATE TABLE IF NOT EXISTS "MarkerGroupToTestedSubtype" (
     "subtype_id" INTEGER,
     "marker_group_id" INTEGER,
     "notes" TEXT,
@@ -69,7 +69,6 @@ CREATE TABLE IF NOT EXISTS "ReferenceSegment" (
     "subtype_id" INTEGER,
 	"segment_type"	TEXT,
 	"dna_fasta"	TEXT,
-	"protein_fasta"	TEXT,
     FOREIGN KEY("subtype_id") REFERENCES "Subtype"("subtype_id"),
 	PRIMARY KEY("reference_seg_id")
 );
@@ -135,7 +134,7 @@ CREATE TABLE IF NOT EXISTS "SegmentData" (
 
 CREATE TABLE IF NOT EXISTS "Mutation" (
 	"mutation_id" INTEGER,
-    "segment_cds_type" TEXT,
+    "annotation_name_mut" TEXT,
 	"position" INTEGER,
 	"ref" TEXT,
 	"alt" TEXT,
