@@ -1,7 +1,10 @@
 import hmac
+
+import streamlit.components.v1.component_registry
+from sympy.integrals.heurisch import components
+
 from query_functions import *
 from pygwalker.api.streamlit import StreamlitRenderer
-
 
 # CONFIG
 st.set_page_config(layout="wide")
@@ -35,8 +38,10 @@ st.markdown(
         }
     </style>
     """
-, unsafe_allow_html=True)
-st.markdown(strings["custom_css"], unsafe_allow_html=True)
+    , unsafe_allow_html=True)
+
+with open("website/resources/style.css") as css:
+    st.markdown(f'<style>{css.read()}</style>', unsafe_allow_html=True)
 
 
 # PASSWORD CHECK
@@ -65,12 +70,11 @@ def check_password():
 
 
 #if not check_password():
-    #st.stop()  # Do not continue if check_password is not True.
+#st.stop()  # Do not continue if check_password is not True.
 
 
 # HELPERS
 def order_table():
-
     order_column = st.session_state.get('order_column', None)
     order_ascending = st.session_state.get('order_ascending', True)
 
@@ -95,19 +99,15 @@ st.write(strings["website_name"], unsafe_allow_html=True)
 query_buttons = ["Markers Effects", "Markers", "Markers with Filters", "Mutations"]
 queries_for_button = [[1, 12, 13, 14], [9, 7, 6], [5, 2, 3, 4, 8], [10, 11]]
 
-
 with st.container():
     fake = st.html("<div id='fake'></div>")
     for index, title in enumerate(query_buttons):
         if st.button(title):
             st.session_state.current_button = index
 
-
 queries = {strings[f"label{x}"]: x for x in queries_for_button[st.session_state.current_button]}
 
-
 with st.container():
-
     if st.session_state.current_button != st.session_state.get('last_button', -1):
         empty_result()
 
@@ -126,6 +126,8 @@ with st.container():
         if queries[query_selection] == 10:
             def increment_inputs():
                 st.session_state.num_inputs += 1
+
+
             st.button("Add input", on_click=increment_inputs)
 
     result, graphs, error = run_query(queries[query_selection], db,
@@ -144,7 +146,6 @@ with st.container():
                             f"<img id='error_icon' src='https://pngimg.com/uploads/attention/attention_PNG5.png'>"
                             f"{error}!"
                             f"</div>")
-
 
 if st.session_state.result is not None and not st.session_state.result.empty:
 
@@ -181,5 +182,10 @@ if st.session_state.result is not None and not st.session_state.result.empty:
             def get_pyg_renderer() -> "StreamlitRenderer":
                 return StreamlitRenderer(st.session_state.result, spec="./gw_config.json",
                                          spec_io_mode="r", appearance="dark")
+
+
             renderer = get_pyg_renderer()
             renderer.explorer()
+
+with open("website/resources/highlight.css") as css:
+    st.markdown(f'<style>{css.read()}</style>', unsafe_allow_html=True)

@@ -23,6 +23,10 @@ get_states = \
  ("SELECT DISTINCT region, state "
   "FROM Location")
 
+get_annotations = \
+ ("SELECT DISTINCT annotation_name "
+  "FROM Annotation")
+
 
 # QUERIES
 # --------------------------------------------------------------
@@ -427,8 +431,7 @@ get_segment_mutability_zones = \
      "FROM Segment segment  "
      "JOIN Isolate isolate ON segment.isolate_epi = isolate.isolate_epi "
      "JOIN Subtype subtype ON isolate.subtype_id = subtype.subtype_id "
-     "WHERE (segment.segment_type == :segment_type OR :segment_type IS NULL) "
-     "AND (subtype.name = :subtype OR :subtype IS NULL)), "
+     "WHERE (subtype.name = :subtype OR :subtype IS NULL)), "
      ""
      "CountPerBin AS ( "
      "SELECT start_range, end_range, COUNT(DISTINCT mutation.mutation_id) AS bin_count "
@@ -436,6 +439,7 @@ get_segment_mutability_zones = \
      "JOIN Bin bin ON mutation.position BETWEEN bin.start_range AND bin.end_range "
      "JOIN SegmentMutations segmentMutations ON mutation.mutation_id = segmentMutations.mutation_id  "
      "WHERE segmentMutations.segment_id IN SelectedSegments "
+     "AND (mutation.segment_cds_type == :segment_type OR :segment_type IS NULL) "  # TODO CHANGE
      "GROUP BY bin.start_range, bin.end_range "
      "ORDER BY start_range) "
      ""

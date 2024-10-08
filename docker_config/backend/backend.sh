@@ -1,6 +1,6 @@
 ﻿#!/usr/bin/env bash
 
-if [ ! "${UPDATE_ONLY}" ]; then
+if [ ! "${UPDATE_ALSO_KNOWLEDGE}" ]; then
   exec python3 database/handler.py & 
   exec python3 resources/domain_data/insert_domain.py & 
   exec python3 resources/academic_data/insert_academic.py & 

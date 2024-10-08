@@ -1,334 +1,6 @@
 website_name: "<h1>FLUHUNTER</h1>"
 welcome_message: "<p>Welcome to FluHunter</p>"
 
-### GENERAL
-
-custom_css:
-  "
-  <style>
-        
-        /* General Styling */
-        :root {
-            --main-bg-color: #1A1A1A;
-            --secondary-bg-color: white;
-            --main-text-color: white;
-            --accent-color: rgba(6,188,157,1);
-            --border-color: black;
-        }
-    
-        #MainMenu {
-          visibility: hidden;
-        }
-        
-        footer {
-          visibility: hidden;
-        }
-        
-        .ea3mdgi5 {
-          padding-top: 0rem !important;
-        }
-        
-        .ezrtsby2 {
-          height: 0rem;
-        }
-        
-        .stApp {
-            background: rgb(188,6,95);
-            background: linear-gradient(90deg, rgba(6,188,157,1) 0%, rgba(23,6,89,1) 100%); 
-        }
-        
-        .st-emotion-cache-1jicfl2 {
-          padding-left: 3.5rem;
-          padding-right: 3.5rem;
-        }
-        
-        h1 {
-            width: fit-content !important;
-            font-size: 4rem;
-            font-weight: bold;
-            margin-bottom: 2rem;
-            border: 2.5px solid var(--border-color);
-            padding: 0rem 1rem !important;
-            background-color: var(--secondary-bg-color) !important;
-        }
-        
-        data-testid='stTabs'] {
-            min-height: 0vh;
-        }
-        
-        [role='tablist'] {
-            gap: 0;
-            width: fit-content;
-            height: fit-content !important;
-            border: 2.5px solid var(--border-color);
-            background-color: transparent !important;
-            padding-bottom: 0 !important;
-        }
-        
-        [data-baseweb='tab'] p {
-            height: fit-content !important;
-            font-size: 1rem !important;
-            font-weight: bold !important;
-            background-color: transparent !important;
-        }
-        
-        [data-baseweb='tab'] {
-            padding: 0.1rem 1rem !important;
-            height: fit-content !important;
-            background-color: var(--secondary-bg-color) !important;
-        }
-        
-        [data-baseweb='tab']:hover {
-            color: var(--border-color) !important;
-            background-color: var(--accent-color) !important;
-        }
-        
-        [aria-selected='true'] {
-            font-weight: bold !important;
-            color: var(--border-color) !important;
-            padding: 0.1rem 1rem !important !important;
-            background-color: var(--accent-color) !important;
-        }
-        
-        [data-testid='stVerticalBlockBorderWrapper'] button {
-            font-weight: bold !important;
-            float: left;
-            border-radius: 0 !important;
-            background-color: var(--secondary-bg-color);
-        }
-
-        [data-testid='stVerticalBlockBorderWrapper'] button > div > p {
-            font-weight: bold !important;
-        }
-
-        [data-testid='stVerticalBlockBorderWrapper'] button:hover {
-            border: 1px solid black !important;
-            border-radius: 0 !important;
-            background-color: var(--accent-color);
-        }
-
-        [data-testid='stVerticalBlock'] > [data-testid='stVerticalBlockBorderWrapper'] > div > [data-testid='stVerticalBlock']:has(#fake) {
-            display: inline-block;
-        }
-        
-        [data-testid='stForm'] button {
-            border: 2.5px solid var(--border-color);
-            border-radius: 0rem !important;
-            padding: 0.1rem 2rem !important;
-            float: right;
-            font-weight: bold !important;
-            margin: 1rem 0rem !important;
-            background: var(--secondary-bg-color) !important;
-        }
-        
-        [data-testid='stForm'] button:hover, [data-testid='baseButton-secondary']:hover {
-            color: black !important;
-            font-weight: bold;
-            border: 2.5px solid var(--border-color);
-            background-color: var(--accent-color) !important;
-        }
-        
-        [data-testid='stNumberInputContainer'], [data-testid='stDateInput-Input'] {
-            border-radius: 0rem !important;
-            height: fit-content !important;
-            border: 2.5px solid var(--border-color);
-        }
-        
-        [aria-roledescription='datepicker'] {
-            font-weight: bold !important;
-            border: 2.5px solid var(--border-color);
-            background-color: var(--secondary-bg-color) !important;
-        }
-        
-        [data-testid='stDateInput-Input'] {
-            font-weight: bold !important;
-        }
-        
-        [data-testid='stNumberInputContainer'] button {
-            color: black !important;
-            border: 0px solid var(--border-color);
-            margin: 0rem 0rem !important;
-        }
-        
-        [data-testid='stNumberInputContainer'] button:hover {
-            color: black !important;
-            border: 0px solid var(--border-color);
-            margin: 0rem 0rem !important;
-        }
-        
-        [data-testid='stForm'] .stMarkdown p {
-            font-weight: bold !important;
-            font-size: 1.5rem !important;
-        }
-        
-        [data-testid='stForm'] button p {
-            font-weight: bold !important;
-        }
-        
-        [data-baseweb='tab-highlight'] {
-            width: 0rem !important;
-            background-color: var(--secondary-bg-color) !important;
-        }
-        
-        [data-baseweb='tab-border'] {
-            background-color: var(--border-color) !important;
-        }
-        
-        /* Query Tab Styling */
-        
-        .st-ci, .st-cg, .st-ch, .st-cf {
-            border-radius: 0rem !important;
-        }
-        
-        [data-baseweb='select'] {
-            border: 2.5px solid var(--border-color);
-            background-color: var(--secondary-bg-color) !important;
-            font-weight: bold;
-            height: auto !important;
-            padding-left: .5rem;
-            padding-top: .25rem;
-            padding-bottom: .25rem;
-        }
-        
-        [data-baseweb='select'] div {
-            border: 0px solid var(--border-color) !important;
-        }
-        
-        ul {
-            border-radius: 0 !important;
-            border: 2.5px solid var(--border-color) !important;
-        }
-        
-        li {
-            background: var(--secondary-bg-color) !important;
-            font-weight: bold;
-        }
-        
-        li:hover {
-            background: var(--accent-color) !important;
-            color: black !important;
-            font-weight: bold;
-        }
-        
-        .query_text {
-            padding: 1.5rem;
-            font-size: 1.1rem !important;
-            border: 2.5px solid var(--border-color);
-            background-color: var(--secondary-bg-color) !important;
-            border-radius: 0rem !important;
-        }
-        
-        .e10yg2by1 {
-            border: 2.5px solid var(--border-color);
-            border-radius: 0rem;
-            padding: 1.5rem;
-        }
-        
-        label p {
-            font-weight: bold !important;
-            font-size: 1rem !important;
-        }
-        
-        [data-testid='stForm'] {
-            background-color: var(--secondary-bg-color) !important;
-        }
-        
-        [data-testid='stTabs'] [role='tablist'] {
-            gap: 0;
-            width: fit-content;
-            border: 2.5px solid var(--border-color);
-            background-color: transparent !important;
-        }
-        
-        [data-testid='stTabs'] [role='tablist'] button {
-            border: 0 solid var(--border-color);
-            margin: 0rem 0rem !important;
-        }
-        
-        [data-testid='stForm'] [role='tablist'] [aria-selected='true'] {
-            font-weight: bold;
-            color: var(--border-color);
-            background-color: var(--accent-color) !important;
-        }
-        
-        #error_div {
-            border-radius: 1rem;
-            border: 2.5px solid var(--border-color);
-            padding: 1.5rem !important;
-            background: rgb(210,3,3);
-            background: linear-gradient(270deg, rgb(172, 4, 4) 0%, rgb(142, 0, 0) 100%);
-            color: white;
-            font-weight: bold;
-            text-align: center;
-        }
-        
-        #error_icon {
-            height: 3rem;
-            margin-right: 1rem;
-        }
-        
-        /* Table Tab Styling */
-        
-        .table.table-striped.table-hover {
-            background-color: var(--accent-color) !important;
-        }
-        
-        #tabs-bui3-tabpanel-1 {
-            background-color: transparent !important;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            border: 2.5px solid var(--border-color) !important;
-        }
-        
-        table th, table td {
-            padding: 12px;
-            border: 1px solid #ddd;
-        }
-        
-        table th {
-            background-color:  var(--accent-color);
-            color: black !important;
-            font-weight: bold !important;
-        }
-        
-        table tr:nth-child(odd) {
-            background-color: #fff !important;
-        }
-        
-        table tr:nth-child(even) {
-            background-color: #f2f2f2 !important;
-        }
-        
-        table tr:hover {
-            background-color: #ddd !important;
-        }
-        
-        /* Graphs Tab Styling */
-        
-        #tabs-bui3-tabpanel-2 iframe {
-            border: 2.5px solid var(--border-color) !important;
-        }
-        
-        /* OTHER */
-        .code {
-            font-family: 'Courier New', Courier, monospace;
-            background-color: #000;
-            color: #fff;
-            padding: 1rem 2rem;
-            border: 0px solid #ccc;
-            border-radius: 0px;
-            overflow-x: auto;
-            margin: 10px 0;
-            font-weight: bold;
-        }
-
-
-    </style>
-  "
-
 ### QUERY TAB
 
 query_select_label: "Query"
@@ -341,9 +13,10 @@ submit_button: "Run"
 label1: "Obtain the literature associated to a group of Markers"
 explanation1:
   "<p class='query_text' style='text-align: justify;'>
-  Select Markers to obtain all the Groups of markers that contain each of them, 
-  the Doi of the Paper that found the group and the effect that was studied to be
-  associated with it.
+  Select one or more <span class='im'>Markers</span> to retrieve all the <span class='im'>Groups</span>,
+  if any, for which they are all part of. Retrieve also the <span class='im'>DOI</span> for each 
+  <span class='im'>Paper</span> in which the groups were studied and the related 
+  <span class='im'>Effect</span>.
   </p>"
 param_label1a: "Marker Group:"
 error1: "There is no known group for the selected markers"
@@ -352,10 +25,11 @@ error1: "There is no known group for the selected markers"
 label2: "Get Markers by relative percentage of human samples"
 explanation2:
   "<p class='query_text'style='text-align: justify;'>
-  Get information about how often a Marker has infected human hosts.<br>
-  It is possible to restrict the search by specifying a specific subtype and/or segment to consider and 
-  filter the results based on a: range of human host percentage, minimum number of instances 
-  of that marker and maximum number of results.
+  Get information about how often a <span class='im'>Marker</span> has infected human hosts.<br><br>
+  In particular retrieve the percentage of human infections out of the total number of samples available.<br><br>
+  It is possible to restrict the search by specifying a specific subtype and/or segment to be consider and 
+  filter the results based on the range of human host percentage, the minimum number of instances 
+  of that marker and maximum total number of results.
   </p>"
 param_label2a: "Subtype:"
 param_label2b: "Segment:"
@@ -369,35 +43,39 @@ error2: "There are no markers within the specified filters"
 label3: "Get markers by difference in relative presence between two hosts"
 explanation3:
   "<p class='query_text'style='text-align: justify;'>
-  Get information on the difference in infection rate of Markers for the selected two Hosts.<br>
-  It is also possible to specify further hosts (up to 5) to obtain their relative infection rates but results will be 
+  Get information on the difference in infection rate of <span class='im'>Markers</span> for the 
+  selected two <span class='im'>Hosts</span>, i.e. get, for each Marker the difference, 
+  between the presence in Host 1 and Host 2.<br><br>
+  It is also possible to specify other hosts (up to 5) to obtain their relative infection rates but results will be 
   provided ordered by the difference between the first two hosts only.
   </p>"
 param_label3a: "Host 1:"
 param_label3b: "Host 2:"
 param_label3c: "Other Hosts of Interests: "
-error3: "Error: This should not be possible"
+error3: "There's no data for the selected hosts"
 
 # QUERY 4
 label4: "Given a reference host, compare Marker presence other hosts"
 explanation4:
   "<p class='query_text'style='text-align: justify;'>
-  Get information on the presence of Markers in different Hosts. The first host will be used 
-  to order results based on relative rate of infection. Other hosts (up to 5) can be specified to
-  obtain information on their relative rate of infection for each Marker.
+  Get information on the presence of <span class='im'>Markers</span> in different Hosts. 
+  The first host will be used to order results based on percentage of infection. 
+  Other hosts (up to 5) can be specified to obtain information on their relative rate of infection for each Marker.
   </p>"
 param_label4a: "Main Host:"
 param_label4b: "Other Hosts:"
-error4: "Error: This shouldn't happen"
+error4: "Theres's no data for the selected host"
 
 # QUERY 5
-label5: "Given a Marker obtain its host distribution"
+label5: "Given a Marker obtain information on host distribution"
 explanation5:
   "<p class='query_text'style='text-align: justify;'>
-  Get information on the hosts markup of the selected Marker.
+  Get information on the hosts markup of the selected <span class='im'>Marker</span>.
+  This query retrieves, for the selected marker, the absolute number of samples, divided per host 
+  in which they were collected, and orders them from greatest to lowest.
   </p>"
 param_label5a: "Marker:"
-error5: "Error: This shouldn't happen"
+error5: "There is no data for the selected marker"
 
 # QUERY 6
 label6: "Given a Marker obtain the location distribution, normalized"
@@ -409,7 +87,7 @@ explanation6:
   </p>"
 param_label6a: "Marker:"
 param_label6b: "Region:"
-error6: "Error: This shouldn't happen"
+error6: "There is no data for the selected marker"
 
 # QUERY 7
 label7: "Get the most common Marker"
@@ -417,7 +95,7 @@ explanation7:
   "<p class='query_text'style='text-align: justify;'>
   Get information on the most common (in absolute terms) Marker. <br>
   It is possible to restrict the results to a specific Subtype or/and Segment or to markers found in 
-  a specific Country or that have been found in the selected Host.
+  a specific Country or that have been found in a selected Host.
   </p>"
 param_label7a: "Subtype:"
 param_label7b: "Segment:"
@@ -453,26 +131,30 @@ label10: "Find the Most Mutable Zones"
 explanation10:
   "<p class='query_text' style='text-align: justify;'>
   Find the most mutable zones (compared to a reference) within the dataset.<br>
-  For more interesting information it is possible to restrict the search to a specific Subtype and/or Segment.<br><br>
+  For more interesting information it is possible to restrict the search to a specific Subtype and/or Annotation.<br><br>
   Furthermore the zone of interest can be provided either by manually inserting start and end positions 
   for each zone or by selecting a uniform size and an offset.
   </p>
   <div class='code'>
-    The following are the coordinates for each segment:
+    The following are the coordinates for each annotation:
     <ul>
-      <li>PB2: </li>
-      <li>PB1: </li>
-      <li>PA: </li>
-      <li>HA: </li>
-      <li>NP: </li>
-      <li>NA: </li>
-      <li>MP: </li>
-      <li>NS: </li>
+      <li>PB2: 0 - 760</li>
+      <li>PB1: 0 - 758</li>
+      <li>PB1-F2: 0 - 91</li>
+      <li>PA: 0 - 717 </li>
+      <li>PA-X: 0 - 253 </li>
+      <li>HA: 0 - 568</li>
+      <li>NP: 0 - 499</li>
+      <li>NA: 0 - 470</li>
+      <li>M1: 0 - 253</li>
+      <li>M2: 0 - 98</li>
+      <li>NS-1: 0 - 231</li>
+      <li>NS-2: 0 - 122</li>
     </ul>
   </div>
   "
 param_label10a: "Subtype:"
-param_label10b: "Segment:"
+param_label10b: "Annotation:"
 param_label10c: "Size:"
 param_label10d: "Offset:"
 param_tab10a: "Manual"

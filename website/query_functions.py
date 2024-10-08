@@ -81,6 +81,7 @@ def run_query(query_selection, db, query_col, input_col):
                         params["bins"] = [(st.session_state[f"start_{i + 1}"], st.session_state[f"end_{i + 1}"])
                                           for i in range(st.session_state.num_inputs)]
                         query = with_query10(params["bins"]) + get_segment_mutability_zones
+                        print(params)
                         reset_10()
 
                 result = db.query(query, params=params)
@@ -450,13 +451,17 @@ def graph9(result_df):
 
 def params10(db):
 
-    segments = db.query(get_segments)
+    annotations = db.query(get_annotations)
+    annotations = annotations['annotation_name'].tolist()
+    annotations.remove("HA1")
+    annotations.remove("HA2")
+
     subtype = st.selectbox(label=strings["param_label10a"],
                            options=[None, "H5N1"])  # [sub["name"] for _, sub in subtypes.iterrows()])
 
     segment_options = {
-        "All Segments": None,
-        **{segment: segment for segment in segments['segment_type'].tolist()},
+        "All Annotations": None,
+        **{annotation: annotation for annotation in annotations},
     }
     segment = st.selectbox(label=strings["param_label10b"], options=segment_options)
 
