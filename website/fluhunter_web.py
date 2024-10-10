@@ -178,10 +178,8 @@ if st.session_state.result is not None and not st.session_state.result.empty:
 
     with explore_tab:
         if not st.session_state.result.empty:
-            @st.cache_resource
             def get_pyg_renderer() -> "StreamlitRenderer":
-                return StreamlitRenderer(st.session_state.result, spec="./gw_config.json",
-                                         spec_io_mode="r", appearance="dark")
+                return StreamlitRenderer(st.session_state.result, appearance="dark")
 
 
             renderer = get_pyg_renderer()
