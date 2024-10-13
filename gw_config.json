@@ -100,7 +100,7 @@
     "workflow": [{
       "type": "view",
       "query": [{
-        "op": "raw", 
+        "op": "raw",
         "fields": []}
       ]}
     ]}

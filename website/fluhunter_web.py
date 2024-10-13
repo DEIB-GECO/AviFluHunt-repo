@@ -1,8 +1,4 @@
 import hmac
-
-import streamlit.components.v1.component_registry
-from sympy.integrals.heurisch import components
-
 from query_functions import *
 from pygwalker.api.streamlit import StreamlitRenderer
 
@@ -178,9 +174,9 @@ if st.session_state.result is not None and not st.session_state.result.empty:
 
     with explore_tab:
         if not st.session_state.result.empty:
+
             def get_pyg_renderer() -> "StreamlitRenderer":
                 return StreamlitRenderer(st.session_state.result, appearance="dark")
-
 
             renderer = get_pyg_renderer()
             renderer.explorer()
