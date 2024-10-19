@@ -2,8 +2,8 @@ import os
 import re
 import sqlite3
 
-db_file_path = '/app/db/fluhunter.db'
-db_create_file_path = os.path.join(os.path.dirname(__file__), "thesis.db.sql")
+db_file_path = '/app/db/fluhunt.db'
+db_create_file_path = os.path.join(os.path.dirname(__file__), "fluhunt.db.sql")
 
 
 class DatabaseHandler:

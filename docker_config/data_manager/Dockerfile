@@ -25,15 +25,15 @@ RUN conda install -y mafft python=3.12 && \
     conda clean --all --yes
 
 # Install Python dependencies
-ADD backend/requirements.txt /app/
+ADD data_manager/requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy all application code
-COPY ./backend /app
+COPY ./data_manager /app
 
 # Convert backend.sh to Unix format and make it executable
-RUN dos2unix backend.sh && \
-    chmod +x backend.sh
+RUN dos2unix data_manager_init.sh && \
+    chmod +x data_manager_init.sh
 
 # Run the backend script
-CMD ["./backend.sh"]
+CMD ["./data_manager_init.sh"]

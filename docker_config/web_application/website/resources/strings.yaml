@@ -1,31 +1,6 @@
 website_name: "<h1>FLUHUNTER</h1>"
 welcome_message: "<p>Welcome to FluHunter</p>"
 
-### GENERAL
-
-custom_css:
-  "
-  <style>
-    #MainMenu {
-      visibility: hidden;
-    }
-    footer {
-      visibility: hidden;
-    }
-    .ea3mdgi5 {
-      padding-top: 2rem;
-    }
-    .ezrtsby2 {
-      height: 0rem;
-    }
-    .stApp {      
-    }
-    table {
-    
-    }
-  </style>
-  "
-
 ### QUERY TAB
 
 query_select_label: "Query"
@@ -38,9 +13,10 @@ submit_button: "Run"
 label1: "Obtain the literature associated to a group of Markers"
 explanation1:
   "<p class='query_text' style='text-align: justify;'>
-  Select Markers to obtain all the Groups of markers that contain each of them, 
-  the Doi of the Paper that found the group and the effect that was studied to be
-  associated with it.
+  Select one or more <span class='im'>Markers</span> to retrieve all the <span class='im'>Groups</span>,
+  if any, for which they are all part of. Retrieve also the <span class='im'>DOI</span> for each 
+  <span class='im'>Paper</span> in which the groups were studied and the related 
+  <span class='im'>Effect</span>.
   </p>"
 param_label1a: "Marker Group:"
 error1: "There is no known group for the selected markers"
@@ -49,10 +25,11 @@ error1: "There is no known group for the selected markers"
 label2: "Get Markers by relative percentage of human samples"
 explanation2:
   "<p class='query_text'style='text-align: justify;'>
-  Get information about how often a Marker has infected human hosts.<br>
-  It is possible to restrict the search by specifying a specific subtype and/or segment to consider and 
-  filter the results based on a: range of human host percentage, minimum number of instances 
-  of that marker and maximum number of results.
+  Get information about how often a <span class='im'>Marker</span> has infected human hosts.<br><br>
+  In particular retrieve the percentage of human infections out of the total number of samples available.<br><br>
+  It is possible to restrict the search by specifying a specific subtype and/or segment to be consider and 
+  filter the results based on the range of human host percentage, the minimum number of instances 
+  of that marker and maximum total number of results.
   </p>"
 param_label2a: "Subtype:"
 param_label2b: "Segment:"
@@ -66,35 +43,39 @@ error2: "There are no markers within the specified filters"
 label3: "Get markers by difference in relative presence between two hosts"
 explanation3:
   "<p class='query_text'style='text-align: justify;'>
-  Get information on the difference in infection rate of Markers for the selected two Hosts.<br>
-  It is also possible to specify further hosts (up to 5) to obtain their relative infection rates but results will be 
+  Get information on the difference in infection rate of <span class='im'>Markers</span> for the 
+  selected two <span class='im'>Hosts</span>, i.e. get, for each Marker the difference, 
+  between the presence in Host 1 and Host 2.<br><br>
+  It is also possible to specify other hosts (up to 5) to obtain their relative infection rates but results will be 
   provided ordered by the difference between the first two hosts only.
   </p>"
 param_label3a: "Host 1:"
 param_label3b: "Host 2:"
 param_label3c: "Other Hosts of Interests: "
-error3: "Error: This should not be possible"
+error3: "There's no data for the selected hosts"
 
 # QUERY 4
 label4: "Given a reference host, compare Marker presence other hosts"
 explanation4:
   "<p class='query_text'style='text-align: justify;'>
-  Get information on the presence of Markers in different Hosts. The first host will be used 
-  to order results based on relative rate of infection. Other hosts (up to 5) can be specified to
-  obtain information on their relative rate of infection for each Marker.
+  Get information on the presence of <span class='im'>Markers</span> in different Hosts. 
+  The first host will be used to order results based on percentage of infection. 
+  Other hosts (up to 5) can be specified to obtain information on their relative rate of infection for each Marker.
   </p>"
 param_label4a: "Main Host:"
 param_label4b: "Other Hosts:"
-error4: "Error: This shouldn't happen"
+error4: "Theres's no data for the selected host"
 
 # QUERY 5
-label5: "Given a Marker obtain its host distribution"
+label5: "Given a Marker obtain information on host distribution"
 explanation5:
   "<p class='query_text'style='text-align: justify;'>
-  Get information on the hosts markup of the selected Marker.
+  Get information on the hosts markup of the selected <span class='im'>Marker</span>.
+  This query retrieves, for the selected marker, the absolute number of samples, divided per host 
+  in which they were collected, and orders them from greatest to lowest.
   </p>"
 param_label5a: "Marker:"
-error5: "Error: This shouldn't happen"
+error5: "There is no data for the selected marker"
 
 # QUERY 6
 label6: "Given a Marker obtain the location distribution, normalized"
@@ -106,7 +87,7 @@ explanation6:
   </p>"
 param_label6a: "Marker:"
 param_label6b: "Region:"
-error6: "Error: This shouldn't happen"
+error6: "There is no data for the selected marker"
 
 # QUERY 7
 label7: "Get the most common Marker"
@@ -114,7 +95,7 @@ explanation7:
   "<p class='query_text'style='text-align: justify;'>
   Get information on the most common (in absolute terms) Marker. <br>
   It is possible to restrict the results to a specific Subtype or/and Segment or to markers found in 
-  a specific Country or that have been found in the selected Host.
+  a specific Country or that have been found in a selected Host.
   </p>"
 param_label7a: "Subtype:"
 param_label7b: "Segment:"
@@ -148,14 +129,32 @@ error9: "There are no Markers within the specified range of presence in the data
 # QUERY 10
 label10: "Find the Most Mutable Zones"
 explanation10:
-  "<p class='query_text'style='text-align: justify;'>
+  "<p class='query_text' style='text-align: justify;'>
   Find the most mutable zones (compared to a reference) within the dataset.<br>
-  For more interesting information it is possible to restrict the search to a specific Subtype and/or Segment.<br><br>
+  For more interesting information it is possible to restrict the search to a specific Subtype and/or Annotation.<br><br>
   Furthermore the zone of interest can be provided either by manually inserting start and end positions 
   for each zone or by selecting a uniform size and an offset.
-  </p>"
+  </p>
+  <div class='code'>
+    The following are the coordinates for each annotation:
+    <ul>
+      <li>PB2: 0 - 760</li>
+      <li>PB1: 0 - 758</li>
+      <li>PB1-F2: 0 - 91</li>
+      <li>PA: 0 - 717 </li>
+      <li>PA-X: 0 - 253 </li>
+      <li>HA: 0 - 568</li>
+      <li>NP: 0 - 499</li>
+      <li>NA: 0 - 470</li>
+      <li>M1: 0 - 253</li>
+      <li>M2: 0 - 98</li>
+      <li>NS-1: 0 - 231</li>
+      <li>NS-2: 0 - 122</li>
+    </ul>
+  </div>
+  "
 param_label10a: "Subtype:"
-param_label10b: "Segment:"
+param_label10b: "Annotation:"
 param_label10c: "Size:"
 param_label10d: "Offset:"
 param_tab10a: "Manual"
@@ -166,7 +165,7 @@ error10: "There is no data for the specified filters"
 label11: "Get the number of mutation found in data submitted for each month"
 explanation11:
   "<p class='query_text'style='text-align: justify;'>
-  Get information on how many mutated samples where found for each month in the given range. <br>
+  Get information on how many mutated segments samples where found for each month in the given range. <br>
   For more interesting information, the total number of samples collected in the same period is reported 
   along a ratio indicating the N. of Mutation for each sample in the same period.<br><br>
   <b>Note: The specified months go from the 1st of the month to its last day included</b>

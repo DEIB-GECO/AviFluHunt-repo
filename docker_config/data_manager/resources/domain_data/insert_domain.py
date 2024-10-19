@@ -1,4 +1,4 @@
-import os
+import os.path
 import sys
 
 sys.path.append('helpers')

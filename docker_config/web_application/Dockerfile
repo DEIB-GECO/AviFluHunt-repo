@@ -4,10 +4,10 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y build-essential
 RUN pip install --upgrade pip
-ADD frontend/requirements.txt /app/
+ADD web_application/requirements.txt /app/
 RUN pip install -r requirements.txt
 
-COPY ./frontend /app/
+COPY ./web_application /app/
 
 EXPOSE 8501
 

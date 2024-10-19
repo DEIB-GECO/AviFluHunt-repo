@@ -1,16 +1,12 @@
-import hmac
 import json
 from json import JSONDecodeError
-
-from numpy.lib.user_array import container
-from pwnlib.tubes.remote import connect
 
 from query_functions import *
 from pygwalker.api.streamlit import StreamlitRenderer
 
 # CONFIG
 st.set_page_config(layout="wide")
-db = st.connection(name="thesis", type="sql", url="sqlite:///website/data/thesis.db")
+db = st.connection(name="fluhunt", type="sql", url="sqlite:///db/fluhunt.db")
 
 if "sort_by" not in st.session_state:
     st.session_state.sort_by = "Effect"
@@ -23,35 +19,6 @@ if 'current_button' not in st.session_state:
 
 with open("website/resources/style.css") as css:
     st.markdown(f'<style>{css.read()}</style>', unsafe_allow_html=True)
-
-
-# PASSWORD CHECK
-def check_password():
-    """Returns `True` if the user had the correct password."""
-
-    def password_entered():
-        """Checks whether a password entered by the user is correct."""
-        if hmac.compare_digest(st.session_state["password"], st.secrets["password"]):
-            st.session_state["password_correct"] = True
-            del st.session_state["password"]  # Don't store the password.
-        else:
-            st.session_state["password_correct"] = False
-
-    # Return True if the password is validated.
-    if st.session_state.get("password_correct", False):
-        return True
-
-    # Show input for password.
-    st.text_input(
-        "Password", type="password", on_change=password_entered, key="password"
-    )
-    if "password_correct" in st.session_state:
-        st.error("😕 Password incorrect")
-    return False
-
-
-#if not check_password():
-#st.stop()  # Do not continue if check_password is not True.
 
 
 # HELPERS

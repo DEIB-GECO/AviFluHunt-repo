@@ -1,9 +1,9 @@
 version: '3.8'
 services:
-  backend:
+  data_manager:
     build:
       context: .
-      dockerfile: backend/Dockerfile
+      dockerfile: data_manager/Dockerfile
     volumes:
       - sqlite_data:/app/db  # Shared volume for SQLite
       - ${fasta_file}:/app/ext_files/fasta.fasta
@@ -15,10 +15,10 @@ services:
     networks:
       - app-network
 
-  frontend:
+  web_application:
     build:
       context: .
-      dockerfile: frontend/Dockerfile
+      dockerfile: web_application/Dockerfile
     ports:
       - "8501:8501"
     volumes:
@@ -26,7 +26,7 @@ services:
     networks:
       - app-network
     depends_on:
-      backend:
+      data_manager:
         condition: service_completed_successfully
 
 volumes:

@@ -139,6 +139,8 @@ class MutationDatabaseHandler:
             insertions_csv = pd.read_csv(insertions_file, on_bad_lines='skip', low_memory=False)
         except FileNotFoundError:
             insertions_file, insertions_csv = None, None
+        except TypeError:
+            insertions_file, insertions_csv = None, None
 
         coding_sequences_fasta = []
 
@@ -195,20 +197,20 @@ class MutationDatabaseHandler:
         return f"{path}{file_name}.fasta"
 
     """ --- DATABASE FUNCTIONS --- """
-    def create_mutation(self, subtype_name, segment_cds_type, mutation):
+    def create_mutation(self, subtype_name, annotation_name_mut, mutation):
 
         position = int(mutation[:mutation.find('_')]) + 1
         ref = mutation[mutation.find('|') - 1:mutation.find('|')]
         alt = mutation[mutation.find('|') + 1:]
-        mutation_name = f"{subtype_name}:{segment_cds_type}:{ref}{position}{alt}"
+        mutation_name = f"{subtype_name}:{annotation_name_mut}:{ref}{position}{alt}"
 
         mutations_in_db = self.database_handler.get_rows("Mutation", ["name"], (mutation_name,))
         if mutations_in_db:
             return mutations_in_db[0]["mutation_id"]
 
         return self.database_handler.insert_row("Mutation",
-                                                ["segment_cds_type", "position", "ref", "alt", "name"],
-                                                (segment_cds_type, position, ref, alt, mutation_name, ), commit=True)
+                                                ["annotation_name_mut", "position", "ref", "alt", "name"],
+                                                (annotation_name_mut, position, ref, alt, mutation_name, ), commit=True)
 
     def create_segment_mutation(self, segment_id, reference_id, mutation_id):
         self.database_handler.insert_row("SegmentMutations",
@@ -217,7 +219,7 @@ class MutationDatabaseHandler:
 
     """ GET FUNCTIONS """
     def get_subtype(self, subtype_name):
-        subtypes = self.database_handler.get_rows("subtype", ["name"], (subtype_name,))
+        subtypes = self.database_handler.get_rows("Subtype", ["name"], (subtype_name,))
         if subtypes:
             return subtypes[0]
         return None
