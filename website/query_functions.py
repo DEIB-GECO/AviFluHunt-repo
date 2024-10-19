@@ -81,7 +81,6 @@ def run_query(query_selection, db, query_col, input_col):
                         params["bins"] = [(st.session_state[f"start_{i + 1}"], st.session_state[f"end_{i + 1}"])
                                           for i in range(st.session_state.num_inputs)]
                         query = with_query10(params["bins"]) + get_segment_mutability_zones
-                        print(params)
                         reset_10()
 
                 result = db.query(query, params=params)
@@ -99,6 +98,8 @@ def run_query(query_selection, db, query_col, input_col):
                     graphs["Bar Plot"] = graph6(result)
                 if query_selection == 9:
                     graphs["Bar Plot"] = graph9(result)
+                if query_selection == 10:
+                    result['Range'] = result.apply(lambda row: f"{row['Start']} - {row['End']}", axis=1)
 
                 if query_selection in [1, 12, 14]:
                     result['DOI'] = 'https://doi.org/' + result['DOI']

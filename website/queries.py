@@ -443,7 +443,7 @@ get_segment_mutability_zones = \
      "GROUP BY bin.start_range, bin.end_range "
      "ORDER BY start_range) "
      ""
-     "SELECT start_range AS 'From', end_range AS 'To', bin_count AS 'Total Mutations' "
+     "SELECT start_range AS 'Start', end_range AS 'End', bin_count AS 'Total Mutations' "
      "FROM CountPerBin")
 
 

@@ -179,4 +179,3 @@ data_backend/mutations_test.py
 
 *.png
 
-website/resources/pygwalker_configs/

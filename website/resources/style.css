@@ -406,3 +406,24 @@ table tr:hover {
     margin: 10px 0;
     font-weight: bold;
 }
+
+.code > ul {
+    list-style-type: none;
+    margin: 0rem 0 !important;
+}
+.code > ul > li {
+    background-color: transparent !important;
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+    font-weight: normal;
+}
+.code > ul > li:hover {
+    background-color: transparent !important;
+    color: white !important;
+}
+[data-testid="stVerticalBlock"] > div > div > [data-testid='stVerticalBlockBorderWrapper'] > div > div > div > div > button {
+    position: absolute;
+    margin-top: 310px !important;
+    margin-left: 25px !important;
+    z-index: 10000 !important;
+}

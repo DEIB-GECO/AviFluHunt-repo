@@ -1,4 +1,10 @@
 import hmac
+import json
+from json import JSONDecodeError
+
+from numpy.lib.user_array import container
+from pwnlib.tubes.remote import connect
+
 from query_functions import *
 from pygwalker.api.streamlit import StreamlitRenderer
 
@@ -18,20 +24,7 @@ if 'current_button' not in st.session_state:
 st.markdown(
     """
     <style>
-        .code > ul {
-            list-style-type: none;
-            margin: 0rem 0 !important;
-        }
-        .code > ul > li {
-            background-color: transparent !important;
-            margin-left: 0 !important;
-            padding-left: 0 !important;
-            font-weight: normal;
-        }
-        .code > ul > li:hover {
-            background-color: transparent !important;
-            color: white !important;
-        }
+        
     </style>
     """
     , unsafe_allow_html=True)
@@ -87,6 +80,56 @@ def empty_result():
     st.session_state.result = None
     st.session_state.graphs = {}
 
+
+def enhance_pygwalker(selection, dataframe_columns, pyg_json_config):
+
+    if selection == 3:
+        host_1_name = dataframe_columns[1]
+        host_2_name = dataframe_columns[2]
+        rows = [
+            {
+                "fid": host_1_name,
+                "name": host_1_name,
+                "basename": host_1_name,
+                "analyticType": "measure",
+                "semanticType": "quantitative",
+                "aggName": "sum",
+                "offset": 0
+            },
+            {
+                "fid": host_2_name,
+                "name": host_2_name,
+                "basename": host_2_name,
+                "analyticType": "measure",
+                "semanticType": "quantitative",
+                "aggName": "sum",
+                "offset": 0
+            }
+        ]
+        pyg_json_config[0]['encodings']['rows'] = rows
+
+    elif selection == 4:
+        host_1_name = dataframe_columns[1]
+        host_2_name = dataframe_columns[2]
+        host_3_name = dataframe_columns[2]
+        host_4_name = dataframe_columns[2]
+        host_5_name = dataframe_columns[2]
+        host_6_name = dataframe_columns[2]
+        host_names = [host_1_name, host_2_name, host_3_name, host_4_name, host_5_name, host_6_name]
+        rows = [
+            {
+                "fid": host_name,
+                "name": host_name,
+                "basename": host_name,
+                "analyticType": "measure",
+                "semanticType": "quantitative",
+                "aggName": "sum",
+                "offset": 0
+            } for host_name in host_names
+        ]
+        pyg_json_config[0]['encodings']['rows'] = rows
+
+    return pyg_json_config
 
 # FRONTEND
 
@@ -173,10 +216,23 @@ if st.session_state.result is not None and not st.session_state.result.empty:
             st.pyplot(graph)
 
     with explore_tab:
+
         if not st.session_state.result.empty:
 
+            try:
+                query_pyg_config_file = json.loads(open((f"website/resources/pygwalker_configs/"
+                                                         f"query_{queries[query_selection]}_config.json")).read())
+            except FileNotFoundError as e:
+                query_pyg_config_file = ""
+            except JSONDecodeError:
+                query_pyg_config_file = ""
+
+            # TODO: further, query-specific, modifications
+            enhance_pygwalker(queries[query_selection], st.session_state.result.columns, query_pyg_config_file)
+
             def get_pyg_renderer() -> "StreamlitRenderer":
-                return StreamlitRenderer(st.session_state.result, appearance="dark")
+                return StreamlitRenderer(st.session_state.result, appearance="dark",
+                                         spec_io_mode="r", spec=query_pyg_config_file)
 
             renderer = get_pyg_renderer()
             renderer.explorer()
