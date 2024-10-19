@@ -1,3 +1,4 @@
+import os
 import re
 import sqlite3
 import sys
@@ -70,7 +71,7 @@ def create_marker(marker_string):
 
 if __name__ == '__main__':
 
-    file_path = 'data_markers_aggregated.xlsx'
+    file_path = os.path.join(os.path.dirname(__file__), 'data_markers_aggregated.xlsx')
     df = pd.read_excel(file_path)
 
     database_handler = handler.DatabaseHandler()
@@ -109,7 +110,7 @@ if __name__ == '__main__':
                                             [marker_group_id, paper_id, effect_id])
 
                 # Create Entry in MarkerGroupToSubtype
-                database_handler.insert_row("MarkerGroupToSubtype",
+                database_handler.insert_row("MarkerGroupToTestedSubtype",
                                             ["subtype_id", "marker_group_id"],
                                             [subtype_id, marker_group_id])
 

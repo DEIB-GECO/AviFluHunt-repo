@@ -1,3 +1,4 @@
+import os
 import sys
 
 sys.path.append('../../helpers')
@@ -10,10 +11,10 @@ import handler
 if __name__ == "__main__":
 
     academic_dict = {
-        "ReferenceSegment": "data_reference_segment.xlsx",
-        "Annotation": "data_annotation.xlsx",
-        "Subtype": "data_subtype.xlsx",
-        "Intein": "data_intein.xlsx"
+        "ReferenceSegment": os.path.join(os.path.dirname(__file__), "data_reference_segment.xlsx"),
+        "Annotation": os.path.join(os.path.dirname(__file__), "data_annotation.xlsx"),
+        "Subtype": os.path.join(os.path.dirname(__file__), "data_subtype.xlsx"),
+        "Intein": os.path.join(os.path.dirname(__file__), "data_intein.xlsx")
     }
 
     database_handler = handler.DatabaseHandler()

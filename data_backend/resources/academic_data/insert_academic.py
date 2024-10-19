@@ -1,3 +1,4 @@
+import os
 import sys
 
 sys.path.append('../../helpers')
@@ -10,8 +11,8 @@ import handler
 if __name__ == "__main__":
 
     academic_dict = {
-        "Paper": "data_papers.xlsx",
-        "Effect": "data_effects.xlsx",
+        "Paper": os.path.join(os.path.dirname(__file__), "data_papers.xlsx"),
+        "Effect": os.path.join(os.path.dirname(__file__), "data_effects.xlsx"),
     }
 
     database_handler = handler.DatabaseHandler()

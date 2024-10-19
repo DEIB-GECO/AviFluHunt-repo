@@ -110,7 +110,7 @@ if __name__ == '__main__':
                                             [marker_group_id, paper_id, effect_id])
 
                 # Create Entry in MarkerGroupToSubtype
-                database_handler.insert_row("MarkerGroupToSubtype",
+                database_handler.insert_row("MarkerGroupToTestedSubtype",
                                             ["subtype_id", "marker_group_id"],
                                             [subtype_id, marker_group_id])
 

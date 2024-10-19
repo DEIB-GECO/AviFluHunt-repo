@@ -139,6 +139,8 @@ class MutationDatabaseHandler:
             insertions_csv = pd.read_csv(insertions_file, on_bad_lines='skip', low_memory=False)
         except FileNotFoundError:
             insertions_file, insertions_csv = None, None
+        except TypeError:
+            insertions_file, insertions_csv = None, None
 
         coding_sequences_fasta = []
 
@@ -217,7 +219,7 @@ class MutationDatabaseHandler:
 
     """ GET FUNCTIONS """
     def get_subtype(self, subtype_name):
-        subtypes = self.database_handler.get_rows("subtype", ["name"], (subtype_name,))
+        subtypes = self.database_handler.get_rows("Subtype", ["name"], (subtype_name,))
         if subtypes:
             return subtypes[0]
         return None
