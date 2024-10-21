@@ -1,16 +1,12 @@
 import hmac
 import json
 from json import JSONDecodeError
-
-from numpy.lib.user_array import container
-from pwnlib.tubes.remote import connect
-
 from query_functions import *
 from pygwalker.api.streamlit import StreamlitRenderer
 
 # CONFIG
 st.set_page_config(layout="wide")
-db = st.connection(name="thesis", type="sql", url="sqlite:///website/data/thesis.db")
+db = st.connection(name="thesis", type="sql", url="sqlite:///website/data/fluhunt.db")
 
 if "sort_by" not in st.session_state:
     st.session_state.sort_by = "Effect"
@@ -50,8 +46,8 @@ def check_password():
     return False
 
 
-#if not check_password():
-#st.stop()  # Do not continue if check_password is not True.
+if not check_password():
+    st.stop()  # Do not continue if check_password is not True.
 
 
 # HELPERS
