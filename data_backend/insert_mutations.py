@@ -25,13 +25,13 @@ class MutationDatabaseHandler:
             pass
 
         try:
-            os.mkdir("tmp_mutations")
-            os.mkdir("tmp_mutations/dna")
-            os.mkdir("tmp_mutations/protein")
+            os.mkdir("tmp_mutation")
+            os.mkdir("tmp_mutation/dna")
+            os.mkdir("tmp_mutation/protein")
         except FileExistsError:
             pass
 
-        self.log_file = open("tmp_mutations/bad_sequences.log", "w")
+        self.log_file = open("tmp_mutation/bad_sequences.log", "w")
 
         self.fasta_file = None
         self.metadata_file = None
@@ -49,7 +49,6 @@ class MutationDatabaseHandler:
         for key in self.dna_fasta_by_ref.keys():
 
             subtype_name, segment_type = key.split('_', 1)
-
             reference = self.get_reference(subtype_name, segment_type)
             if not reference: continue
 
@@ -107,14 +106,16 @@ class MutationDatabaseHandler:
         for line in self.fasta_file.readlines():
             if line.startswith('>'):
                 if header:
-                    self.add_to_dna_fasta_by_ref_dict(header, dna_sequence)
+                    if self.is_valid_sequence(dna_sequence):
+                        self.add_to_dna_fasta_by_ref_dict(header, dna_sequence)
                 header = line.strip()
                 dna_sequence = ""
             else:
                 dna_sequence += line.strip()
 
         if header:
-            self.add_to_dna_fasta_by_ref_dict(header, dna_sequence)
+            if self.is_valid_sequence(dna_sequence):
+                self.add_to_dna_fasta_by_ref_dict(header, dna_sequence)
 
     def align_sequences(self, path, base_name, reference_fasta, target_fasta):
 
@@ -147,6 +148,8 @@ class MutationDatabaseHandler:
         for aligned_header, aligned_dna_fasta in aligned_dna_fastas.items():
 
             aligned_dna_fasta = aligned_dna_fasta.upper().replace("T", "U").replace("\n", "")
+            if self.is_bad_sequence(aligned_dna_fasta, aligned_header):
+                continue
 
             insertions = []
             if insertions_file:
@@ -358,7 +361,7 @@ class MutationDatabaseHandler:
         if len(sequence) % 3 != 0:
             log_entry = f"CDS not divisible by 3: {header}\n"
             self.log_file.write(log_entry)
-            return None
+            raise ValueError("Sequence length must be a multiple of 3")
 
         protein_sequence = ""
         for i in range(0, len(sequence), 3):
@@ -369,9 +372,26 @@ class MutationDatabaseHandler:
             else:
                 log_entry = f"Invalid Codon: {header}\n"
                 self.log_file.write(log_entry)
-                return None
+                raise NameError("Invalid codon: " + codon)
 
         return protein_sequence
+
+    @staticmethod
+    def is_valid_sequence(s):
+        valid = {'a', 'c', 't', 'g', 'u'}
+        return all(letter in valid for letter in s)
+
+    def is_bad_sequence(self, s, header):
+        hyphen_count = s.count('-')
+        total_length = len(s)
+        hyphen_percentage = (hyphen_count / total_length) * 100 if total_length > 0 else 0
+
+        if hyphen_percentage > 95:
+            log_entry = f"Bad sequence, too few nucleotides: {header}\n"
+            self.log_file.write(log_entry)
+            return True
+
+        return False
 
     def reinsert_insertions(self, aligned_header, aligned_fasta, intein, dna_insertions_file, total_insertions):
 
