@@ -439,7 +439,7 @@ get_segment_mutability_zones = \
      "JOIN Bin bin ON mutation.position BETWEEN bin.start_range AND bin.end_range "
      "JOIN SegmentMutations segmentMutations ON mutation.mutation_id = segmentMutations.mutation_id  "
      "WHERE segmentMutations.segment_id IN SelectedSegments "
-     "AND (mutation.segment_cds_type == :segment_type OR :segment_type IS NULL) "  # TODO CHANGE
+     "AND (mutation.annotation_name_mut == :segment_type OR :segment_type IS NULL) "  # TODO CHANGE
      "GROUP BY bin.start_range, bin.end_range "
      "ORDER BY start_range) "
      ""
@@ -485,7 +485,7 @@ get_mutability_peak_months = \
   "JOIN Mutation mutation ON segmentMutations.mutation_id = mutation.mutation_id "
   "GROUP BY year, month "
   "HAVING COUNT(DISTINCT SSPM.segment_id) >= :min_n_instances "
-  "ORDER BY '#Mutation per Sample' DESC")
+  "ORDER BY ROUND((COUNT(DISTINCT mutation.mutation_id) * 1.0 / COUNT(DISTINCT SSPM.segment_id)), 2) DESC")
 
 
 # QUERIES ONTOLOGY

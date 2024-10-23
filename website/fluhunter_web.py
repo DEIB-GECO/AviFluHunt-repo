@@ -1,6 +1,10 @@
 import hmac
 import json
 from json import JSONDecodeError
+
+from pwnlib.rop.rop import DescriptiveStack
+from pygments.lexer import default
+
 from query_functions import *
 from pygwalker.api.streamlit import StreamlitRenderer
 
@@ -119,8 +123,31 @@ def enhance_pygwalker(selection, dataframe_columns, pyg_json_config):
 
     return pyg_json_config
 
-# FRONTEND
 
+def choose_default_order(selection, columns):
+    if selection == 2:
+        default_column = "Percentage"
+    elif selection == 3:
+        default_column = "Diff"
+    elif selection == 5:
+        default_column = "#"
+    elif selection == 6:
+        default_column = "Normalized Percentage"
+    elif selection == 7:
+        default_column = "Found in #Isolates"
+    elif selection == 8:
+        default_column = "Distinct Markers Per Host"
+    elif selection == 9:
+        default_column = "Percentage"
+    elif selection == 11:
+        default_column = "#Mutation per Sample"
+    else:
+        return columns
+
+    return [x for x in columns if default_column in x] + [x for x in columns if x != default_column]
+
+
+# FRONTEND
 st.write(strings["website_name"], unsafe_allow_html=True)
 
 query_buttons = ["Markers Effects", "Markers", "Markers with Filters", "Mutations"]
@@ -155,7 +182,7 @@ with st.container():
                 st.session_state.num_inputs += 1
 
 
-            st.button("Add input", on_click=increment_inputs)
+            st.button("Add Manual Zone", on_click=increment_inputs)
 
     result, graphs, error = run_query(queries[query_selection], db,
                                       query_col, input_col)
@@ -183,9 +210,9 @@ if st.session_state.result is not None and not st.session_state.result.empty:
 
         col_order, col_strategy, col_search, col_searchby = st.columns([1, 1, 2, 1])
 
-        col_order.selectbox('Order by', st.session_state.result.columns, key='order_column',
-                            on_change=lambda: order_table())
-        col_strategy.selectbox('Strategy', ['Ascending', 'Descending'], key='order_ascending',
+        col_order.selectbox('Order by', choose_default_order(queries[query_selection], st.session_state.result.columns),
+                            key='order_column', on_change=lambda: order_table())
+        col_strategy.selectbox('Strategy', ['Descending', 'Ascending'], key='order_ascending',
                                on_change=lambda: order_table())
 
         if not st.session_state.result.empty:

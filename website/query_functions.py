@@ -170,8 +170,9 @@ def params3(db):
 
 def manip_result3(results_pre, params):
     pivot_result = results_pre.pivot(index='Marker', columns='host', values='percentage').reset_index()
-    pivot_result['Diff'] = pivot_result[params["host2"]] - pivot_result[params["host1"]]
-    sorted_result = pivot_result.sort_values(by='Diff', ascending=False)
+    pivot_result[f'Diff {params["host1"]} - {params["host2"]}'] = (
+            pivot_result[params["host1"]] - pivot_result[params["host2"]])
+    sorted_result = pivot_result.sort_values(by=f'Diff {params["host1"]} - {params["host2"]}', ascending=False)
     columns = list(sorted_result.columns)
     columns.remove(params["host1"])
     columns.insert(1, params["host1"])
@@ -187,7 +188,7 @@ def graph3(result_df, params):
     names = df_sorted['Marker']
     host1_values = df_sorted[params["host1"]]
     host2_values = df_sorted[params["host2"]]
-    diff_values = df_sorted["Diff"]
+    diff_values = df_sorted[f'Diff {params["host1"]} - {params["host2"]}']
 
     # Bar width and positions
     bar_width = 0.25
@@ -199,7 +200,7 @@ def graph3(result_df, params):
     # Plot bars for host1, host2, and difference
     bars1 = ax.bar(index - bar_width, host1_values, bar_width, label=params["host1"], color='skyblue')
     bars2 = ax.bar(index, host2_values, bar_width, label=params["host2"], color='lightgreen')
-    bars3 = ax.bar(index + bar_width, diff_values, bar_width, label='Diff', color='lightcoral')
+    bars3 = ax.bar(index + bar_width, diff_values, bar_width, label=f'Diff {params["host1"]} - {params["host2"]}', color='lightcoral')
 
     # Set the x-axis labels and title
     ax.set_xlabel('Marker')
@@ -298,7 +299,7 @@ def params6(db):
     marker = st.selectbox(label=strings["param_label6a"], options=markers)
 
     region_options = {
-        "All Regions": None,
+        "All Locations": None,
         **{region: region for region in regions["region"].tolist()}
     }
     region = st.selectbox(label=strings["param_label6b"], options=region_options)
@@ -345,9 +346,9 @@ def params7(db):
     location_options = {
         "All Locations": None,
         **{region: region for region in regions['region'].tolist()},
-        **{f"{row['region']} - {row['state']}": f"{row['region']} - {row['state']}" for _, row in states.iterrows()}
+        **{f"{row['state']} ({row['region']})": f"{row['region']} - {row['state']}" for _, row in states.iterrows()}
     }
-    location = st.selectbox(label=strings["param_label7c"],options=location_options)
+    location = st.selectbox(label=strings["param_label7c"], options=location_options)
 
     host_options = {
         "All Hosts": None,
@@ -356,9 +357,10 @@ def params7(db):
     host = st.selectbox(label=strings["param_label7d"], options=host_options)
 
     if location:
-        location = location.split(" - ")
-        region = location_options[location[0]]
-        state = location_options[location[0]][1] if len(location) > 1 else None
+        location = location
+        region = location_options[location].split(" - ")[0] if location_options[location] is not None else None
+        state = location_options[location].split(" - ")[1] if (location_options[location] is not None and
+                                                               len(location_options[location].split(" - ")) > 1) else None
     else:
         region = None
         state = None
@@ -481,13 +483,14 @@ def params10(db):
                 st.number_input(f"End", key=f"end_{i + 1}", min_value=0, step=1)
 
     with auto_tab:
+
         bin_size = st.number_input(label=strings["param_label10c"], min_value=0, step=10, value=0)
         offset = st.number_input(label=strings["param_label10d"], min_value=0, step=1, value=0)
 
     if bin_size == 0:
         bins = None
     else:
-        bins = [(i, i + bin_size) for i in range(offset, 3000 + offset, bin_size)]
+        bins = [(i, i + bin_size) for i in range(offset, 1000 + offset, bin_size)][0:500]
 
     return {
         "subtype": subtype,

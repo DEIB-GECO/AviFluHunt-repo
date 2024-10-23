@@ -86,7 +86,7 @@ explanation6:
   <b>Note: The results are normalized to account for the number of samples available for each location</b>
   </p>"
 param_label6a: "Marker:"
-param_label6b: "Region:"
+param_label6b: "Location:"
 error6: "There is no data for the selected marker"
 
 # QUERY 7
@@ -157,8 +157,8 @@ param_label10a: "Subtype:"
 param_label10b: "Annotation:"
 param_label10c: "Size:"
 param_label10d: "Offset:"
-param_tab10a: "Manual"
-param_tab10b: "Auto"
+param_tab10a: "Manual Zones"
+param_tab10b: "Fixed Size Zones"
 error10: "There is no data for the specified filters"
 
 # QUERY 11

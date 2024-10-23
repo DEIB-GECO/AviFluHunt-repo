@@ -423,7 +423,7 @@ table tr:hover {
 }
 [data-testid="stVerticalBlock"] > div > div > [data-testid='stVerticalBlockBorderWrapper'] > div > div > div > div > button {
     position: absolute;
-    margin-top: 310px !important;
-    margin-left: 25px !important;
+    margin-top: 322.5px !important;
+    margin-left: 26.5px !important;
     z-index: 10000 !important;
 }
