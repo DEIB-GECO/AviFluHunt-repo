@@ -2,15 +2,12 @@ import hmac
 import json
 from json import JSONDecodeError
 
-from pwnlib.rop.rop import DescriptiveStack
-from pygments.lexer import default
-
 from query_functions import *
 from pygwalker.api.streamlit import StreamlitRenderer
 
 # CONFIG
 st.set_page_config(layout="wide")
-db = st.connection(name="thesis", type="sql", url="sqlite:///website/data/fluhunt.db")
+db = st.connection(name="fluhunt", type="sql", url="sqlite:///website/data/fluhunt.db")
 
 if "sort_by" not in st.session_state:
     st.session_state.sort_by = "Effect"
