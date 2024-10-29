@@ -72,6 +72,9 @@ def run_query(query_selection, db, query_col, input_col):
             if query_selection == 14:
                 params = params14(db)
                 query = get_marker_groups_by_effect
+            if query_selection == 15:
+                placeholder, params = params15(db)
+                query = get_markers_over_time.replace("placeholder", placeholder)
 
             submitted = st.form_submit_button("Submit")
             if submitted:
@@ -100,6 +103,8 @@ def run_query(query_selection, db, query_col, input_col):
                     graphs["Bar Plot"] = graph9(result)
                 if query_selection == 10:
                     result['Range'] = result.apply(lambda row: f"{row['Start']} - {row['End']}", axis=1)
+                if query_selection == 15:
+                    graphs["Line Plot"] = graph15(result)
 
                 if query_selection in [1, 12, 14]:
                     result['DOI'] = 'https://doi.org/' + result['DOI']
@@ -561,3 +566,32 @@ def params14(db):
     effect_full = st.selectbox(label=strings["param_label14a"],
                                options=effects)
     return {"effect_full": effect_full}
+
+
+def params15(db):
+
+    markers = db.query(get_markers)
+    selected_markers = st.multiselect(label=strings["param_label1a"], options=markers)
+
+    placeholder = ', '.join(f":{marker.replace(":", "").replace("-", "")}" for marker in selected_markers)
+    params = {f"{marker.replace(":", "").replace("-", "")}": marker for marker in selected_markers}
+    return placeholder, params
+
+
+def graph15(result_df):
+    plt.figure(figsize=(10, 6))
+    markers = result_df['Marker'].unique()
+    result_df['Year'] = result_df['Year'].str[-2:]
+
+    for marker in markers:
+        subset = result_df[result_df['Marker'] == marker]
+        plt.plot(subset['Year'], subset['Percentage'], marker='o', label=marker)
+
+    # Customizing the plot
+    plt.xlabel('Year')
+    plt.ylabel('Percentage')
+    plt.title('Percentage of Markers Over Years')
+    plt.legend(title='Marker')
+    plt.grid(True)
+
+    return plt.gcf()

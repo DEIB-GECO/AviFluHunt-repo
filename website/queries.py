@@ -487,6 +487,48 @@ get_mutability_peak_months = \
   "HAVING COUNT(DISTINCT SSPM.segment_id) >= :min_n_instances "
   "ORDER BY ROUND((COUNT(DISTINCT mutation.mutation_id) * 1.0 / COUNT(DISTINCT SSPM.segment_id)), 2) DESC")
 
+# --------------------------------------------------------------
+# QUERY 15: Given a set of Markers, get data over time
+# GRAPH
+# --------------------------------------------------------------
+#
+# Inputs:
+#   -
+#
+# Outputs:
+#   -
+#
+# --------------------------------------------------------------
+
+get_markers_over_time = \
+    (f"WITH SelectedMarkers AS  ("
+     f"SELECT name, marker_id FROM Marker "
+     f"WHERE name IN (placeholder)), "
+     f""
+     f"MarkerOverTimeInformation AS ( "
+     f"SELECT SM.marker_id, name, COUNT(*) AS count, "
+     f"strftime('%Y', I.collection_date) AS year "
+     f"FROM SelectedMarkers SM "
+     f"JOIN SegmentMarkers SegM ON SM.marker_id == SegM.marker_id "
+     f"JOIN Segment S ON SegM.segment_id == S.segment_id "
+     f"JOIN Isolate I ON S.isolate_epi == I.isolate_epi "
+     f"WHERE CAST(year AS INT) BETWEEN 2000 AND 2024 "
+     f"GROUP BY SM.marker_id, name, year "
+     f"),"
+     f""
+     f"TotalOverTime AS ( "
+     f"SELECT COUNT(*) AS total_for_year, "
+     f"strftime('%Y', I.collection_date) AS year "
+     f"FROM SegmentMarkers SegM "
+     f"JOIN Segment S ON SegM.segment_id == S.segment_id "
+     f"JOIN Isolate I ON S.isolate_epi == I.isolate_epi "
+     f"GROUP BY year"
+     f") "
+     f""
+     f"SELECT name AS 'Marker', MOTI.year AS 'Year', count AS '# per Year', count * 1.0/total_for_year AS Percentage "
+     f"FROM MarkerOverTimeInformation MOTI "
+     f"JOIN TotalOverTime TOT ON MOTI.year = TOT.year")
+
 
 # QUERIES ONTOLOGY
 

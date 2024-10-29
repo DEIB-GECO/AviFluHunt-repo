@@ -134,6 +134,8 @@ explanation10:
   For more interesting information it is possible to restrict the search to a specific Subtype and/or Annotation.<br><br>
   Furthermore the zone of interest can be provided either by manually inserting start and end positions 
   for each zone or by selecting a uniform size and an offset.
+  <br><br>
+  Used for reference: A/goose/Guangdong/1/1996 (H5N1)
   </p>
   <div class='code'>
     The following are the coordinates for each annotation:
@@ -206,6 +208,15 @@ explanation14:
   </p>"
 param_label14a: "Effect:"
 error14: "No group of marker was found associated to the given effect"
+
+# QUERY 15
+label15: "Markers over time"
+explanation15:
+  "<p class='query_text' style='text-align: justify;'>
+  TODO
+  </p>"
+param_label15a: "Marker Group:"
+error15: "TODO"
 
 ### README TAB
 

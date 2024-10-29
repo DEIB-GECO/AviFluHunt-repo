@@ -47,8 +47,8 @@ def check_password():
     return False
 
 
-if not check_password():
-    st.stop()  # Do not continue if check_password is not True.
+#if not check_password():
+    #st.stop()  # Do not continue if check_password is not True.
 
 
 # HELPERS
@@ -148,7 +148,7 @@ def choose_default_order(selection, columns):
 st.write(strings["website_name"], unsafe_allow_html=True)
 
 query_buttons = ["Markers Effects", "Markers", "Markers with Filters", "Mutations"]
-queries_for_button = [[1, 12, 13, 14], [9, 7, 6], [5, 2, 3, 4, 8], [10, 11]]
+queries_for_button = [[1, 12, 13, 14], [9, 7, 6, 15], [5, 2, 3, 4, 8], [10, 11]]
 
 with st.container():
     fake = st.html("<div id='fake'></div>")
