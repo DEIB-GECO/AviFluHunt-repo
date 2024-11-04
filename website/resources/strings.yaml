@@ -210,12 +210,14 @@ param_label14a: "Effect:"
 error14: "No group of marker was found associated to the given effect"
 
 # QUERY 15
-label15: "Markers over time"
+label15: "Trends in Marker Presence Over Time"
 explanation15:
   "<p class='query_text' style='text-align: justify;'>
-  TODO
+  Explore trends in marker prevalence with this time-series visualization, showing how 
+  the relative presence of key markers evolves over time. Identify shifts, peaks, and 
+  patterns at a glance to gain insights into changes across time.
   </p>"
-param_label15a: "Marker Group:"
+param_label15a: "Markers"
 error15: "TODO"
 
 ### README TAB

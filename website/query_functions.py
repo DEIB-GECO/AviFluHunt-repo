@@ -564,7 +564,7 @@ def params14(db):
 def params15(db):
 
     markers = db.query(get_markers)
-    selected_markers = st.multiselect(label=strings["param_label1a"], options=markers)
+    selected_markers = st.multiselect(label=strings["param_label15a"], options=markers)
 
     placeholder = ', '.join(f":{marker.replace(":", "").replace("-", "")}" for marker in selected_markers)
     params = {f"{marker.replace(":", "").replace("-", "")}": marker for marker in selected_markers}
@@ -583,7 +583,7 @@ def graph15(result_df):
     # Customizing the plot
     plt.xlabel('Year')
     plt.ylabel('Percentage')
-    plt.title('Percentage of Markers Over Years')
+    plt.title('Presence of Markers Over Years')
     plt.legend(title='Marker')
     plt.grid(True)
 
