@@ -47,8 +47,8 @@ def check_password():
     return False
 
 
-#if not check_password():
-    #st.stop()  # Do not continue if check_password is not True.
+if not check_password():
+    st.stop()  # Do not continue if check_password is not True.
 
 
 # HELPERS
@@ -147,8 +147,8 @@ def choose_default_order(selection, columns):
 # FRONTEND
 st.write(strings["website_name"], unsafe_allow_html=True)
 
-query_buttons = ["Markers Effects", "Markers", "Markers with Filters", "Mutations"]
-queries_for_button = [[1, 12, 13, 14], [9, 7, 6, 15], [5, 2, 3, 4, 8], [10, 11]]
+query_buttons = ["Markers Effects", "Markers", "Markers with Filters", "Mutations", "About"]
+queries_for_button = [[1, 12, 13, 14], [9, 7, 6, 15], [5, 2, 3, 4, 8], [10, 11], []]
 
 with st.container():
     fake = st.html("<div id='fake'></div>")
@@ -159,44 +159,51 @@ with st.container():
 queries = {strings[f"label{x}"]: x for x in queries_for_button[st.session_state.current_button]}
 
 with st.container():
+
     if st.session_state.current_button != st.session_state.get('last_button', -1):
         empty_result()
 
     st.session_state.last_button = st.session_state.current_button
 
-    query_col, space, input_col = st.columns([0.45, 0.025, 0.525])
+    if st.session_state.current_button != len(query_buttons) - 1:
 
-    with query_col:
-        query_selection = st.selectbox(label=strings["query_select_label"],
-                                       options=queries.keys(),
-                                       on_change=lambda: empty_result(),
-                                       key=f"query_selection{st.session_state.current_button}",
-                                       label_visibility="collapsed")
+        query_col, space, input_col = st.columns([0.45, 0.025, 0.525])
 
-    with input_col:
-        if queries[query_selection] == 10:
-            def increment_inputs():
-                st.session_state.num_inputs += 1
+        with query_col:
+            query_selection = st.selectbox(label=strings["query_select_label"],
+                                           options=queries.keys(),
+                                           on_change=lambda: empty_result(),
+                                           key=f"query_selection{st.session_state.current_button}",
+                                           label_visibility="collapsed")
+
+        with input_col:
+            if queries[query_selection] == 10:
+                def increment_inputs():
+                    st.session_state.num_inputs += 1
 
 
-            st.button("Add Manual Zone", on_click=increment_inputs)
+                st.button("Add Manual Zone", on_click=increment_inputs)
 
-    result, graphs, error = run_query(queries[query_selection], db,
-                                      query_col, input_col)
+        result, graphs, error = run_query(queries[query_selection], db,
+                                          query_col, input_col)
 
-    if result is not None:
-        empty_result()
-        st.session_state.result = result
-        st.session_state.graphs = graphs
+        if result is not None:
+            empty_result()
+            st.session_state.result = result
+            st.session_state.graphs = graphs
 
-    if result is None or result.empty:
-        if error is not None:
-            with query_col:
-                with st.container():
-                    st.html(f"<div id='error_div'>"
-                            f"<img id='error_icon' src='https://pngimg.com/uploads/attention/attention_PNG5.png'>"
-                            f"{error}!"
-                            f"</div>")
+        if result is None or result.empty:
+            if error is not None:
+                with query_col:
+                    with st.container():
+                        st.html(f"<div id='error_div'>"
+                                f"<img id='error_icon' src='https://pngimg.com/uploads/attention/attention_PNG5.png'>"
+                                f"{error}!"
+                                f"</div>")
+
+    else:
+        with open("website/resources/about.html") as about_html:
+            st.html(about_html.read())
 
 if st.session_state.result is not None and not st.session_state.result.empty:
 
@@ -212,20 +219,32 @@ if st.session_state.result is not None and not st.session_state.result.empty:
         col_strategy.selectbox('Strategy', ['Descending', 'Ascending'], key='order_ascending',
                                on_change=lambda: order_table())
 
+        limit = st.number_input(label=strings["param_label9c"], key=strings["param_label9c"],
+                                min_value=1, step=1, value=10000)
+
         if not st.session_state.result.empty:
             st.download_button(label="Download data as CSV", data=st.session_state.result.to_csv(index=False).encode(),
                                file_name="data.csv", mime="text/csv")
-            st.table(st.session_state.result.reset_index(drop=True))
+            st.table(st.session_state.result.reset_index(drop=True).head(limit))
 
     for index, graph_tab in enumerate(graph_tabs):
         with graph_tab:
+
             graph = st.session_state.graphs[[key for key in st.session_state.graphs.keys()][index]]
             fn = 'results.png'
             graph.savefig(fn)
+
             with open(fn, "rb") as img:
+                st.text("")
                 btn = st.download_button(label="Download Plot", data=img,
                                          file_name=fn, mime="image/png")
-            st.pyplot(graph)
+
+            img_col, explain_col = st.columns([0.7, 0.3])
+            with img_col:
+                st.pyplot(graph)
+
+            with explain_col:
+                st.text("Possible text here")
 
     with explore_tab:
 
@@ -239,7 +258,6 @@ if st.session_state.result is not None and not st.session_state.result.empty:
             except JSONDecodeError:
                 query_pyg_config_file = ""
 
-            # TODO: further, query-specific, modifications
             enhance_pygwalker(queries[query_selection], st.session_state.result.columns, query_pyg_config_file)
 
             def get_pyg_renderer() -> "StreamlitRenderer":

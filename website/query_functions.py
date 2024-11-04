@@ -135,8 +135,6 @@ def params2(db):
                                options=["H5N1"])  # [sub["name"] for _, sub in subtypes.iterrows()])
         min_perc = st.number_input(label=strings["param_label2c"], key=strings["param_label2c"],
                                    min_value=0.0, step=0.1, max_value=100.0)
-        limit = st.number_input(label=strings["param_label2e"], key=strings["param_label2e"],
-                                min_value=1, step=1, value=10000)
     with r_col:
         segment = st.selectbox(label=strings["param_label2b"],
                                options=segments)
@@ -150,7 +148,6 @@ def params2(db):
         "segment_type": segment,
         "min_perc": min_perc,
         "max_perc": max_perc,
-        "limit": limit,
         "min_n_instances": min_n_instances
     }
 
@@ -429,13 +426,9 @@ def params9(db):
         max_perc = st.number_input(label=strings["param_label9b"], key=strings["param_label9b"],
                                    min_value=0.0, step=0.1, max_value=100.0, value=100.0)
 
-    limit = st.number_input(label=strings["param_label9c"], key=strings["param_label9c"],
-                            min_value=1, step=1, value=10000)
-
     return {
         "min_perc": min_perc,
-        "max_perc": max_perc,
-        "limit": limit
+        "max_perc": max_perc
     }
 
 

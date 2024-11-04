@@ -83,7 +83,6 @@ get_markers_literature = \
 #   - (Optional) subtype: subtype
 #   - (Optional) segment_type: Segment type
 #   - (Optional Filter) min_perc, max_perc: Percentage range (default = (0, 100))
-#   - (Optional Filter) limit: Limit in the number of results (default = 10000)
 #   - (Optional Filter) min_n_instance: Min number of Segments that must contain the Marker (default = 1)
 #
 # Outputs:
@@ -138,8 +137,7 @@ get_markers_by_human_percentage = \
      "WHERE ROUND(COALESCE(HMC.human_marker_count, 0) * 100.0 / TMC.total_marker_count, 2) "
      "BETWEEN :min_perc AND :max_perc "
      "AND TMC.total_marker_count >= :min_n_instances "
-     "GROUP BY marker.marker_id "
-     "LIMIT :limit), "
+     "GROUP BY marker.marker_id), "
      ""
      "OtherHostInfo AS ( "
      "SELECT marker_id, GROUP_CONCAT((host || ': ' || host_marker_count), ';       ') as host_info "
@@ -274,6 +272,8 @@ get_markers_location_distribution = \
      "WHERE (location.region = :region OR :region IS NULL)) "
      ""
      "SELECT SBS.state as 'State', "
+     "COUNT(DISTINCT segmentMarkers.segment_id) AS '# Found in Location',"
+     "(SELECT COUNT(*) FROM SegmentsByState WHERE state = SBS.state) AS 'Total Markers in Location', "
      "COUNT(DISTINCT segmentMarkers.segment_id) * 100.0 / "
      "(SELECT COUNT(*) FROM SegmentsByState WHERE state = SBS.state) AS 'Normalized Percentage' "
      "FROM SegmentMarkers segmentMarkers "
@@ -381,7 +381,6 @@ get_host_by_n_of_markers = \
 #
 # Inputs:
 #   - (Optional Filter) min_perc, max_perc: Percentage range (default = (0, 100))
-#   - (Optional Filter) limit: Limit in the number of results (default = 10000)
 #
 # Outputs:
 #   - Markers and percentage of appearance sorted
@@ -404,8 +403,7 @@ get_markers_by_relevance = \
      "JOIN MarkerCount markerCount ON marker.marker_id = markerCount.marker_id "
      "CROSS JOIN TotalCount totalCount "
      "WHERE (markerCount.marker_count * 100.0) / totalCount.total_count BETWEEN :min_perc AND :max_perc "
-     "ORDER BY ROUND((markerCount.marker_count * 100.0) / totalCount.total_count, 2) DESC "
-     "LIMIT :limit")
+     "ORDER BY ROUND((markerCount.marker_count * 100.0) / totalCount.total_count, 2) DESC")
 
 # --------------------------------------------------------------
 # QUERY 10: Given a Segment Type find the Most Mutable Zones

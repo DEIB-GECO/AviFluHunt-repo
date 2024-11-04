@@ -427,3 +427,19 @@ table tr:hover {
     margin-left: 26.5px !important;
     z-index: 10000 !important;
 }
+
+/*[data-testid="stNumberInputContainer"] {
+    max-width: 50%;
+}*/
+
+[aria-label="Limit:"] {
+    border-radius: 0 !important;
+    background-color: white !important;
+}
+
+[data-testid="stVerticalBlockBorderWrapper"] > div > div > div > div > div > div > img {
+    border-radius: 10px;
+    border: 2.5px solid black;
+    padding: 1.5%;
+    background: white;
+}
