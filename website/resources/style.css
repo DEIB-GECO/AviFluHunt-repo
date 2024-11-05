@@ -142,12 +142,33 @@ h1 {
     border-left: 2.5px solid black;
 }
 
+[data-testid="stVerticalBlock"] > div:nth-of-type(2) > div > button  {
+    background-color: black;
+    color: white;
+}
+
+[data-testid="stVerticalBlock"] > div:nth-of-type(2) > div > button:hover  {
+    background-color: black !important;
+    color: white !important;
+}
+
+[data-testid="stVerticalBlock"] > div:nth-of-type(2) > div > button:focus  {
+    background-color: black !important;
+    color: white !important;
+}
+
 [data-testid='stVerticalBlockBorderWrapper'] button > div > p {
     font-weight: bold !important;
     font-family: Poppins, sans-serif !important;
 }
 
 [data-testid='stVerticalBlockBorderWrapper'] button:hover {
+    border-radius: 0 !important;
+    background-color: var(--accent-color);
+    font-family: Poppins, sans-serif !important;
+}
+
+[data-testid='stVerticalBlockBorderWrapper'] button:focus {
     border-radius: 0 !important;
     background-color: var(--accent-color);
     font-family: Poppins, sans-serif !important;

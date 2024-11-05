@@ -6,7 +6,7 @@ from query_functions import *
 from pygwalker.api.streamlit import StreamlitRenderer
 
 # CONFIG
-st.set_page_config(layout="wide")
+st.set_page_config(layout="wide", page_title="AviFluHunt")
 db = st.connection(name="fluhunt", type="sql", url="sqlite:///website/data/fluhunt.db")
 
 if "sort_by" not in st.session_state:
@@ -24,6 +24,7 @@ with open("website/resources/style.css") as css:
 
 # PASSWORD CHECK
 def check_password():
+    #return True
     """Returns `True` if the user had the correct password."""
 
     def password_entered():
@@ -147,8 +148,8 @@ def choose_default_order(selection, columns):
 # FRONTEND
 st.write(strings["website_name"], unsafe_allow_html=True)
 
-query_buttons = ["Markers Effects", "Markers", "Markers with Filters", "Mutations", "About"]
-queries_for_button = [[1, 12, 13, 14], [9, 7, 6, 15], [5, 2, 3, 4, 8], [10, 11], []]
+query_buttons = ["About", "Markers Effects", "Markers", "Markers with Filters", "Mutations"]
+queries_for_button = [[], [1, 12, 13, 14], [9, 7, 6, 15], [5, 2, 3, 4, 8], [10, 11]]
 
 with st.container():
     fake = st.html("<div id='fake'></div>")
@@ -165,7 +166,7 @@ with st.container():
 
     st.session_state.last_button = st.session_state.current_button
 
-    if st.session_state.current_button != len(query_buttons) - 1:
+    if st.session_state.current_button != 0:
 
         query_col, space, input_col = st.columns([0.45, 0.025, 0.525])
 
@@ -239,12 +240,9 @@ if st.session_state.result is not None and not st.session_state.result.empty:
                 btn = st.download_button(label="Download Plot", data=img,
                                          file_name=fn, mime="image/png")
 
-            img_col, explain_col = st.columns([0.7, 0.3])
+            empty1, img_col, empty2 = st.columns([0.025, 0.9, 0.025])
             with img_col:
                 st.pyplot(graph)
-
-            with explain_col:
-                st.text("Possible text here")
 
     with explore_tab:
 

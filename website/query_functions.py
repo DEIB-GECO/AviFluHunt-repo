@@ -572,9 +572,14 @@ def params15(db):
 
 
 def graph15(result_df):
-    plt.figure(figsize=(10, 6))
+
+    result_df = result_df.sort_values(by='Year')
+
+    # Set a 2:1 aspect ratio for the figure
+    plt.figure(figsize=(12, 6))  # Width is twice the height
+
     markers = result_df['Marker'].unique()
-    result_df['Year'] = result_df['Year'].str[-2:]
+    result_df['Year'] = result_df['Year']
 
     for marker in markers:
         subset = result_df[result_df['Marker'] == marker]
@@ -584,7 +589,8 @@ def graph15(result_df):
     plt.xlabel('Year')
     plt.ylabel('Percentage')
     plt.title('Presence of Markers Over Years')
-    plt.legend(title='Marker')
+    plt.legend(title='Markers', loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=7, frameon=False)
     plt.grid(True)
 
     return plt.gcf()
+
