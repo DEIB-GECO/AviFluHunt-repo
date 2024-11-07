@@ -6,7 +6,6 @@ from matplotlib import pyplot as plt
 from queries import *
 import streamlit as st
 
-
 # RESOURCES
 with open('website/resources/strings.yaml', 'r') as yaml_file:
     strings = yaml.safe_load(yaml_file)
@@ -563,23 +562,55 @@ def params14(db):
 
 def params15(db):
 
+    regions = db.query(get_regions).sort_values("region")
+    states = db.query(get_states).sort_values("state")
     markers = db.query(get_markers)
-    selected_markers = st.multiselect(label=strings["param_label15a"], options=markers)
+    selected_markers = st.multiselect(label=strings["param_label15a"], options=markers, max_selections=10)
+
+    start_date = st.date_input(label=strings["param_label11c"], value=datetime.date(2000, 1, 1),
+                               min_value=datetime.date(2000, 1, 1), max_value=datetime.datetime.today())
+    end_date = st.date_input(label=strings["param_label11d"], value=datetime.datetime.today(),
+                             min_value=datetime.date(2000, 1, 1), max_value=datetime.datetime.today())
+
+    location_options = {
+        "All Locations": None,
+        **{region: region for region in regions['region'].tolist()},
+        **{f"{row['state']} ({row['region']})": f"{row['region']} - {row['state']}" for _, row in states.iterrows()}
+    }
+    location = st.selectbox(label=strings["param_label7c"], options=location_options)
+
+    if location:
+        location = location
+        region = location_options[location].split(" - ")[0] if location_options[location] is not None else None
+        state = location_options[location].split(" - ")[1] if (location_options[location] is not None and
+                                                               len(location_options[location].split(" - ")) > 1) else None
+    else:
+        region = None
+        state = None
 
     placeholder = ', '.join(f":{marker.replace(":", "").replace("-", "")}" for marker in selected_markers)
     params = {f"{marker.replace(":", "").replace("-", "")}": marker for marker in selected_markers}
+
+    params["start_month"] = start_date.month
+    params["start_year"] = start_date.year
+    params["end_month"] = end_date.month
+    params["end_year"] = end_date.year
+    params["region"] = region
+    params["state"] = state
+
     return placeholder, params
 
 
 def graph15(result_df):
 
-    result_df = result_df.sort_values(by='Year')
+    print(result_df)
+    result_df['Year'] = result_df['Year'].astype(int)
+    result_df = result_df.sort_values(by=['Year', 'Marker']).reset_index(drop=True)
 
     # Set a 2:1 aspect ratio for the figure
     plt.figure(figsize=(12, 6))  # Width is twice the height
 
     markers = result_df['Marker'].unique()
-    result_df['Year'] = result_df['Year']
 
     for marker in markers:
         subset = result_df[result_df['Marker'] == marker]
@@ -589,8 +620,11 @@ def graph15(result_df):
     plt.xlabel('Year')
     plt.ylabel('Percentage')
     plt.title('Presence of Markers Over Years')
-    plt.legend(title='Markers', loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=7, frameon=False)
+    plt.legend(title='Markers', loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=5, frameon=False)
     plt.grid(True)
+
+    years = result_df['Year'].unique()
+    plt.xticks(years, rotation=45)
 
     return plt.gcf()
 
