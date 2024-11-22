@@ -4,7 +4,7 @@ welcome_message: "<p>Welcome to AviFluHunt</p>"
 ### QUERY TAB
 
 query_select_label: "Query"
-query_inputs_label: "Inputs"
+query_inputs_label: "<h3 id='inputs_title'>Inputs</h3>"
 submit_button: "Run"
 
 ## QUERIES
@@ -121,8 +121,8 @@ explanation9:
   Get information on the relative percentage of markers in the dataset.<br>
   It is possible to restrict the search within a specified range and up to a limited number of results.
   </p>"
-param_label9a: "Min Perc:"
-param_label9b: "Max Perc:"
+param_label9a: "Min %"
+param_label9b: "Max %"
 param_label9c: "Limit:"
 error9: "There are no markers within the specified range of presence in the dataset"
 

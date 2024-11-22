@@ -35,9 +35,15 @@ def build_query_bar(query_types):
 def build_main_page(global_config):
 
     with st.container(key="main_page"):
+        selected_query_index = build_left_column(global_config)
+        build_results_container(selected_query_index)
+
+
+def build_left_column(global_config):
+    with st.container(key="left_column"):
         selected_query_index = build_query_selector(global_config)
         build_query_input_form(selected_query_index, global_config)
-        build_results_container(selected_query_index)
+        return selected_query_index
 
 
 def build_query_selector(global_config):
@@ -100,10 +106,10 @@ def build_table_settings(selected_query_index):
     with st.container(key="table_settings"):
 
         col_order, col_strategy = st.columns([1, 1])
-        col_order.selectbox('Order by', set_default_table_order(selected_query_index, st.session_state.result.columns),
+        """col_order.selectbox('Order by', set_default_table_order(selected_query_index, st.session_state.result.columns),
                             key='order_column', on_change=lambda: order_table(st.session_state.result))
         col_strategy.selectbox('Strategy', ['Descending', 'Ascending'], key='order_ascending',
-                               on_change=lambda: order_table(st.session_state.result))
+                               on_change=lambda: order_table(st.session_state.result))"""
 
 
 def build_table():
