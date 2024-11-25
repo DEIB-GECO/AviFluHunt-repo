@@ -9,20 +9,45 @@ def build_top_bar(global_config):
 def build_global_container(global_config):
 
     with st.container(key="global_container"):
-        build_global_filters_overlay_container()
+        build_global_filters_overlay_container(global_config)
         build_query_bar(global_config.queries.keys())
 
 
-def build_global_filters_overlay_container():
+def build_global_filters_overlay_container(global_config):
     with st.container(key="global_filters_overlay_container"):
         if st.button("TEST GLOBAL FILTERS"):
-            filters_overlay_container()
+            filters_overlay_container(global_config)
 
 
 @st.dialog("global_settings")
-def filters_overlay_container():
+def filters_overlay_container(global_config):
     with st.container(key="global_filters_overlay"):
         st.markdown("Hello World 👋")
+        build_location_global_filter(global_config)
+
+
+def build_location_global_filter(global_config):
+    with st.container(key="location_global_filter"):
+        regions = {
+            "All regions": None,
+            "Europe": "Europe",
+            "Asia": "Asia"
+        }  # global_config.database_connection.query(get_regions())
+        region = st.selectbox(
+            label="Region",  # TODO: global strings
+            options=regions, # TODO UGLY
+            key="global_region"
+            )
+        build_location_state_filter(region)
+
+
+def build_location_state_filter(region):
+    location = st.selectbox(
+            label="Location",  # TODO: global strings
+            options=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", region],
+            on_change=lambda: None,
+            # #key=f"query_selection{st.session_state.current_query_type}",
+            )
 
 
 def build_query_bar(query_types):

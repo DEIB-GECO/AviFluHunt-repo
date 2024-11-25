@@ -39,6 +39,8 @@ def init_session():
         st.session_state.graphs = {}
     if 'current_query_type' not in st.session_state:
         st.session_state.current_query_type = "Markers"
+    if 'global_region' not in st.session_state:
+        st.session_state.global_region = None
 
 
 def set_default_table_order(selection, columns):
@@ -75,7 +77,15 @@ def order_table(dataframe):
 
 
 def run_query(database_connection, query, params):
+    params.update(get_global_params())
     st.session_state.result = database_connection.query(query, params=params)
+    print(query, params)
+
+
+def get_global_params():
+    return {
+        "global_region": st.session_state.global_region,
+    }  # TODO
 
 
 def replace_query_placeholders(selected_query_index, query, params):

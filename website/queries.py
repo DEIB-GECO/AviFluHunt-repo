@@ -389,8 +389,12 @@ get_host_by_n_of_markers = \
 
 get_markers_by_relevance = \
     ("WITH MarkerCount AS ( "
-     "SELECT marker_id, COUNT(DISTINCT segment_id) AS marker_count "
+     "SELECT marker_id, COUNT(DISTINCT SegmentMarkers.segment_id) AS marker_count "
      "FROM SegmentMarkers "
+     "JOIN Segment ON SegmentMarkers.segment_id = Segment.segment_id "
+     "JOIN Isolate ON Isolate.isolate_epi = Segment.isolate_epi "
+     "JOIN Location ON Location.location_id = Isolate.location_id "
+     "WHERE (Location.region = :global_region OR :global_region IS NULL) "
      "GROUP BY marker_id), "
      ""
      "TotalCount AS ("

@@ -123,6 +123,12 @@ h1 {
     background-color: black;
 }
 
+[aria-label="dialog"] {
+    width: 80%;
+    height: auto !important;
+    background-color: green;
+}
+
 .st-key-query_type_selector {
     display: flex;
     flex-direction: row;
@@ -291,6 +297,6 @@ h1 {
 """
 }</style>', unsafe_allow_html=True)
 
-#build_top_bar(global_config)
+build_top_bar(global_config)
 build_global_container(global_config)
 build_main_page(global_config)
