@@ -77,14 +77,25 @@ def order_table(dataframe):
 
 
 def run_query(database_connection, query, params):
-    params.update(get_global_params())
+    run_global_filters_on_isolates(database_connection)
     st.session_state.result = database_connection.query(query, params=params)
-    print(query, params)
 
 
-def get_global_params():
+def run_global_filters_on_isolates(database_connection):
+
+    database_connection.execute(drop_isolates_with_global_filters_view)
+    database_connection.query(create_isolates_with_global_filters_view, params=get_global_isolates_params())
+
+    # TEST
+    test = "SELECT COUNT(*) FROM IsolatesFiltered"
+    res_test = database_connection.query(test)
+    print("Filtered Isolates Are: " + str(res_test))
+
+
+def get_global_isolates_params():
     return {
         "global_region": st.session_state.global_region,
+        "global_state": None
     }  # TODO
 
 

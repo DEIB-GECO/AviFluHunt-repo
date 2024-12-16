@@ -8,6 +8,7 @@ import pandas as pd
 sys.path.append('helpers')
 import excel_extractor
 import variant_calling
+import taxonomer
 
 sys.path.append('database')
 import handler

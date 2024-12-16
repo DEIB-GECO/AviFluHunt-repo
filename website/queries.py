@@ -27,6 +27,15 @@ get_annotations = \
  ("SELECT DISTINCT annotation_name "
   "FROM Annotation")
 
+drop_isolates_with_global_filters_view = "DROP VIEW IF EXISTS IsolatesFiltered"
+create_isolates_with_global_filters_view = \
+ ("CREATE VIEW IsolatesFiltered AS "
+  "SELECT * FROM Isolate isolate "
+  "JOIN Location location ON isolate.location_id = location.location_id "
+  "WHERE "
+  "(location.region == :global_region OR :global_region IS NULL) AND "
+  "(location.state == :global_state OR :global_state IS NULL)")
+
 
 # QUERIES
 # --------------------------------------------------------------
