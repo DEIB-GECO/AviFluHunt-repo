@@ -1,3 +1,4 @@
+from streamlit_option_menu import option_menu
 from fluhunter_web_helpers import *
 from pygwalker.api.streamlit import StreamlitRenderer
 
@@ -10,13 +11,39 @@ def build_global_container(global_config):
 
     with st.container(key="global_container"):
         build_global_filters_overlay_container(global_config)
-        build_query_bar(global_config.queries.keys())
 
 
 def build_global_filters_overlay_container(global_config):
     with st.container(key="global_filters_overlay_container"):
-        if st.button("TEST GLOBAL FILTERS"):
-            filters_overlay_container(global_config)
+
+        selected = build_settings_menu()
+
+        if selected == "Settings" and st.session_state["menu_selected"]:
+            pass#filters_overlay_container(global_config)
+        if selected == "About":
+            pass# TODO
+        else:
+            st.session_state["menu_selected"] = True
+
+
+def build_settings_menu():
+    return option_menu(
+            menu_title=None,
+            options=["Settings", "About"],
+            icons=["gear", "info-circle"],
+            menu_icon="cast",
+            default_index=0,
+            orientation="horizontal",
+            styles={
+                "container": {"padding": "0!important", "margin": "0", "float": "right",
+                              "background-color": "transparent"},
+                "nav": {"justify-content": "flex-end"},
+                "nav-item": {"flex-basis": "auto!important", "flex-grow": "0!important", "float": "right"},
+                "nav-link": {"font-size": "16px", "text-align": "left", "margin": "0px",
+                             "font-weight": "bold", "color": "white"},
+                "nav-link-selected": {"background-color": "transparent", "color": "white"},
+            }
+        )
 
 
 @st.dialog("global_settings")
@@ -52,14 +79,35 @@ def build_location_state_filter(region):
 
 def build_query_bar(query_types):
     with st.container(key="query_type_selector"):
-        for query_type in query_types:
-            if st.button(query_type):
-                st.session_state.current_query_type = query_type
+        query_type = build_query_type_menu([*query_types])
+        if query_type:
+            st.session_state.current_query_type = query_type
+
+
+def build_query_type_menu(query_types):
+    return option_menu(
+            menu_title=None,
+            options=query_types,
+            icons=["file-earmark-richtext-fill", "", "funnel", "arrow-left-right"],
+            menu_icon="cast",
+            default_index=0,
+            orientation="horizontal",
+            styles={
+                "container": {"padding": "0!important", "margin": "0", "float": "right",
+                              "background-color": "transparent"},
+                "nav": {"justify-content": "flex-end"},
+                "nav-item": {"flex-basis": "auto!important", "flex-grow": "0!important", "float": "right"},
+                "nav-link": {"font-size": "14px", "text-align": "left", "margin": "0px",
+                             "font-weight": "bold", "color": "white"},
+                "nav-link-selected": {"background-color": "white", "color": "black"},
+            }
+        )
 
 
 def build_main_page(global_config):
 
     with st.container(key="main_page"):
+        build_query_bar(global_config.queries.keys())
         selected_query_index = build_left_column(global_config)
         build_results_container(selected_query_index)
 
@@ -68,7 +116,7 @@ def build_left_column(global_config):
     with st.container(key="left_column"):
         selected_query_index = build_query_selector(global_config)
         build_query_input_form(selected_query_index, global_config)
-        return selected_query_index
+        #return selected_query_index
 
 
 def build_query_selector(global_config):
@@ -79,6 +127,7 @@ def build_query_selector(global_config):
     }
 
     with st.container(key="query_selector"):
+        st.html("<h3 id='query_sel_label'>Query</h3>")
         return options[st.selectbox(
             label=global_config.text_resources["query_select_label"],
             options=options,
@@ -108,12 +157,12 @@ def get_query_and_params(selected_query_index, db):
 def build_results_container(selected_query_index):
     with (st.container(key="results_container")):
         graph_tab, table_tab, explore_tab = st.tabs(["Graph"] + ["Tabular"] + ["Explore Data"])
-        with graph_tab:
+        """with graph_tab:
             build_graph_tab()
         with table_tab:
             build_table_tab(selected_query_index)
         with explore_tab:
-            build_explore_tab(selected_query_index)
+            build_explore_tab(selected_query_index)"""
 
 
 def build_graph_tab():

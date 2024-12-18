@@ -41,6 +41,8 @@ def init_session():
         st.session_state.current_query_type = "Markers"
     if 'global_region' not in st.session_state:
         st.session_state.global_region = None
+    if "menu_selected" not in st.session_state:
+        st.session_state.menu_selected = False
 
 
 def set_default_table_order(selection, columns):
@@ -83,13 +85,14 @@ def run_query(database_connection, query, params):
 
 def run_global_filters_on_isolates(database_connection):
 
-    database_connection.execute(drop_isolates_with_global_filters_view)
-    database_connection.query(create_isolates_with_global_filters_view, params=get_global_isolates_params())
+    pass
+    #database_connection.execute(drop_isolates_with_global_filters_view)
+    #database_connection.query(create_isolates_with_global_filters_view, params=get_global_isolates_params())
 
     # TEST
-    test = "SELECT COUNT(*) FROM IsolatesFiltered"
-    res_test = database_connection.query(test)
-    print("Filtered Isolates Are: " + str(res_test))
+    #test = "SELECT COUNT(*) FROM IsolatesFiltered"
+    #res_test = database_connection.query(test)
+    #print("Filtered Isolates Are: " + str(res_test))
 
 
 def get_global_isolates_params():

@@ -28,8 +28,8 @@ st.markdown(f'<style>{
 /* General Styling */
 
 :root {
-    --main-color: white;
-    --secondary-color: white;
+    --main-color: #09090B;
+    --secondary-color: #131313;
     --main-text-color: white;
     --accent-color: #6164F4;
     --border-color: black;
@@ -100,27 +100,33 @@ body {
 h1 {
 
     margin: 0;
-    margin-left: 2vh;
+    margin-left: 2vw;
     width: 100% !important;
-    padding-bottom: 1.5rem !important;
+    padding-bottom: 0.5rem !important;
 
     color: white;
-    font-size: 20px;
+    font-size: 24px;
     font-weight: bold;
     background-color: transparent;
     font-family: Poppins, sans-serif !important;
 }
 
 .st-key-global_container {
-    width: 95vw;
+    width: 96vw;
     margin: 0 3vw 0 2vw;
     margin-top: 2.5vh;
     margin-bottom: 1.5vh;
+    height: 0 !important;
+}
+
+.st-key-global_container > div > div {
+    height: 0 !important;
 }
 
 .st-key-global_filters_overlay_container {
-    height: auto !important;
-    background-color: black;
+    height: 0 !important;
+    align-items: right;
+    background-color: green;
 }
 
 [aria-label="dialog"] {
@@ -129,13 +135,36 @@ h1 {
     background-color: green;
 }
 
+.st-key-main_page {
+    width: 98vw;
+    margin: 4vh 1vw;
+    padding: 0 1vw 3vh 1vw !important;
+    display: inline-block !important;
+    
+    background-color: var(--secondary-color);
+    border-radius: 10px !important;
+}
+
+.st-key-main_page > div:nth-child(2) {
+    width: 20%;
+    float: left !important;
+}
+
+.st-key-main_page > div:nth-child(3) {
+    width: 78%;
+    margin-left: 1.5%;
+    float: left;
+}
+
 .st-key-query_type_selector {
     display: flex;
     flex-direction: row;
     justify-content: flex-end;
     flex-wrap: wrap;
     gap: 0;
-    margin-top: 5vh;
+    margin-top: 2vh;
+    margin-bottom: 2vh;
+    padding-right: 1vw;
 }
 
 .st-key-query_type_selector > .stElementContainer {
@@ -144,13 +173,10 @@ h1 {
 }
 
 .st-key-query_type_selector .stButton {
-
-    margin-left: 1vw;
-    padding: 0.75vh 1.5vw !important;
     width: auto !important;
     
     border-radius: 5px !important;
-    background-color: var(--accent-color);
+    background-color: transparent;
 }
 
 .st-key-query_type_selector .stButton > button {
@@ -166,27 +192,25 @@ h1 {
     font-size: 14px !important;
 }
 
-.st-key-main_page {
-    width: 96vw;
-    margin: 0 2vw;
-    display: inline-block !important;
+.st-key-left_column {
+    padding-top: 2vh;
+    padding-left: 1vw;
+    margin-bottom: 2vh;
+    background-color: transparent;
 }
 
-.st-key-main_page > div:nth-child(1) {
-    width: 25%;
-    float: left !important;
-}
-
-.st-key-main_page > div:nth-child(2) {
-    width: 73%;
-    margin-left: 1.5%;
-    float: left;
+.st-key-left_column svg * {
+    color: black;
 }
 
 .st-key-query_container,
 .st-key-results_container {
-    width: 100%;                    /* Ensure containers span the full width of their wrappers */
-    flex: 1;                        /* Allow them to grow within their allocated space */
+    width: 100%;
+    flex: 1;
+}
+
+#query_sel_label {
+    font-size: 18px;
 }
 
 .st-key-query_selector {
@@ -195,14 +219,9 @@ h1 {
 }
 
 .st-key-query_selector .stSelectbox {
-    padding: 3%;
+    margin-top: -0.5vh;
     max-height: 30vh;
-    margin-top: 5vh;
-    border-radius: 10px !important;
-    background-color: var(--accent-color);
-    box-shadow: 0px 7.5px 15px 0px rgba(0,0,0,0.55);
-    -webkit-box-shadow: 0px 7.5px 15px 0px rgba(0,0,0,0.55);
-    -moz-box-shadow: 0px 7.5px 15px 0px rgba(0,0,0,0.55);
+    background-color: white;
 }
 
 .st-key-query_selector .stSelectbox div {
@@ -210,22 +229,22 @@ h1 {
     max-height: 30vh;
     white-space: wrap !important;
     font-weight: bold;
+    color: black;
     font-size: 14px !important;
 }
 
 .st-key-query_inputs_container {
-    padding: 5%;
-    margin-top: 2vh;
-    border-radius: 10px !important;
-    background-color: var(--accent-color);
-    box-shadow: 0px 7.5px 15px 0px rgba(0,0,0,0.55);
-    -webkit-box-shadow: 0px 7.5px 15px 0px rgba(0,0,0,0.55);
-    -moz-box-shadow: 0px 7.5px 15px 0px rgba(0,0,0,0.55);
+    padding: 0 !important;
+    margin-bottom: 2vh;
+}
+
+.st-key-query_inputs_container > .stForm {
+    padding: 0 !important;
 }
 
 #inputs {
     margin-bottom: 4vh;
-    font-size: 24px !important;
+    font-size: 18px !important;
 }
 
 .st-key-query_inputs_container [data-testid="stWidgetLabel"] > div {
@@ -233,32 +252,39 @@ h1 {
 } 
 
 .st-key-query_inputs_container [data-testid="stWidgetLabel"] p {
-    float: right !important;
     font-weight: bold;
-    font-size: 16px !important;
-} 
-
-.st-key-query_inputs_container [data-testid="stNumberInputContainer"] {
-    height: auto;
-    background-color: var(--main-color);
-    box-shadow: 10px 5px 15px 0px rgba(0,0,0,0.3);
-    -webkit-box-shadow: 10px 5px 15px 0px rgba(0,0,0,0.3);
-    -moz-box-shadow: 10px 5px 15px 0px rgba(0,0,0,0.3);
+    font-size: 13px !important;
 }
 
-.st-key-query_inputs_container [data-testid="stNumberInputContainer"] input {
-    text-align: right;
-    font-weight: semi-bold;
-    padding: 0.25rem 0.5rem !important;
+.st-key-query_inputs_container .stSelectbox > div,
+.st-key-query_inputs_container .stMultiSelect > div,
+.st-key-query_inputs_container .stNumberInput > div 
+{
+    height: auto !important;
+    max-height: 30vh;
+    white-space: wrap !important;
+    background-color: white;
+}
+
+.st-key-query_inputs_container .stSelectbox > div div,
+.st-key-query_inputs_container .stMultiSelect > div div,
+.st-key-query_inputs_container .stNumberInput > div input
+{
+    height: auto !important;
+    color: black;
+    font-size: 14px !important;
 }
 
 .st-key-query_inputs_container button {
-    margin-top: 5vh;
+    margin-top: 2.5vh;
     float: right !important;
-    background-color: var(--main-color);
-    box-shadow: 10px 5px 15px 0px rgba(0,0,0,0.3);
-    -webkit-box-shadow: 10px 5px 15px 0px rgba(0,0,0,0.3);
-    -moz-box-shadow: 10px 5px 15px 0px rgba(0,0,0,0.3);
+    background-color: white;
+    border-radius: 0; 
+    font-size: 14px !important;
+}
+
+.st-key-query_inputs_container button p {
+    font-size: 14px !important;
 }
 
 .st-key-query_inputs_container button div {
@@ -272,6 +298,7 @@ h1 {
 }
 
 .st-key-results_container {
+background: white;
     min-height: 70vh !important;
     padding: 0 1vw;
     border-radius: 10px !important;

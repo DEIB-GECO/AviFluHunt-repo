@@ -7,6 +7,7 @@ import pandas as pd
 sys.path.append('helpers')
 sys.path.append('database')
 import handler
+import taxonomer
 
 
 class MutationDatabaseHandler:
@@ -32,6 +33,7 @@ class MutationDatabaseHandler:
         self.fasta_file = None
         self.metadata_file = None
         self.database_handler = handler.DatabaseHandler()
+        self.taxonomy_handler = taxonomer.Taxonomer()
         self.dna_fasta_by_ref = {}
 
         self.organize_files(metadata_file, fasta_file)
@@ -73,11 +75,11 @@ class MutationDatabaseHandler:
 
                     header_dict = self.get_header_dict(aligned_protein_header)
                     segment_id = self.create_segment(header_dict)
-                    self.create_segment_data(segment_id, annotation["annotation_id"], aligned_protein_fasta)
+                    #self.create_segment_data(segment_id, annotation["annotation_id"], aligned_protein_fasta)
 
-                self.database_handler.commit_changes()
+                #self.database_handler.commit_changes()
 
-        self.database_handler.commit_changes()
+        #self.database_handler.commit_changes()
 
     """ --- EXECUTION FUNCTIONS --- """
     # TODO: ugly
@@ -187,6 +189,11 @@ class MutationDatabaseHandler:
             return -1
 
         host = isolate_metadata[17]
+
+        # TODO: TEST
+        scientific_name_host = self.taxonomy_handler.retrieve_scientific_name_from_ncbi(host)
+        print("Taxonomy: ", self.taxonomy_handler.retrieve_taxonomy_from_scientific_name(scientific_name_host))
+
         collection_date = isolate_metadata[25]
         location_id = self.get_location_id(isolate_metadata[16])
         subtype_id = self.get_subtype(isolate_metadata[12].split("/")[-1].strip())["subtype_id"]
@@ -475,6 +482,6 @@ class MutationDatabaseHandler:
 
 
 if __name__ == "__main__":
-    fasta = "resources/segments_data/H5/H5N1/H5N1_Fasta.fasta"
+    fasta = "resources/segments_data/H5/H5N1/test.fasta"
     meta = "resources/segments_data/H5/H5N1/H5N1_Metadata.xls"
     MutationDatabaseHandler(meta, fasta)
