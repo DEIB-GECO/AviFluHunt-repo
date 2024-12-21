@@ -179,3 +179,5 @@ data_backend/mutations_test.py
 
 *.png
 
+
+*.dmp

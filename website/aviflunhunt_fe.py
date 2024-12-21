@@ -156,13 +156,13 @@ def get_query_and_params(selected_query_index, db):
 
 def build_results_container(selected_query_index):
     with (st.container(key="results_container")):
-        graph_tab, table_tab, explore_tab = st.tabs(["Graph"] + ["Tabular"] + ["Explore Data"])
-        """with graph_tab:
-            build_graph_tab()
+        table_tab, graph_tab, explore_tab = st.tabs(["Tabular"] + ["Graph"] + ["Explore Data"])
         with table_tab:
             build_table_tab(selected_query_index)
+        with graph_tab:
+            build_graph_tab()
         with explore_tab:
-            build_explore_tab(selected_query_index)"""
+            build_explore_tab(selected_query_index)
 
 
 def build_graph_tab():

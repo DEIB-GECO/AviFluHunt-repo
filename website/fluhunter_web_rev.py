@@ -193,7 +193,6 @@ h1 {
 }
 
 .st-key-left_column {
-    padding-top: 2vh;
     padding-left: 1vw;
     margin-bottom: 2vh;
     background-color: transparent;
@@ -258,7 +257,8 @@ h1 {
 
 .st-key-query_inputs_container .stSelectbox > div,
 .st-key-query_inputs_container .stMultiSelect > div,
-.st-key-query_inputs_container .stNumberInput > div 
+.st-key-query_inputs_container .stNumberInput > div,
+.st-key-query_inputs_container .stDateInput > div 
 {
     height: auto !important;
     max-height: 30vh;
@@ -268,7 +268,8 @@ h1 {
 
 .st-key-query_inputs_container .stSelectbox > div div,
 .st-key-query_inputs_container .stMultiSelect > div div,
-.st-key-query_inputs_container .stNumberInput > div input
+.st-key-query_inputs_container .stNumberInput > div input,
+.st-key-query_inputs_container .stDateInput > div input
 {
     height: auto !important;
     color: black;
@@ -298,11 +299,9 @@ h1 {
 }
 
 .st-key-results_container {
-background: white;
-    min-height: 70vh !important;
-    padding: 0 1vw;
+    background: white;
+    padding: 3vh 2vw 1vh 2vw;
     border-radius: 10px !important;
-    border: 2px solid var(--accent-color);
 }
 
 .st-key-results_container [data-testid="stTab"]{
@@ -312,13 +311,27 @@ background: white;
 .st-key-results_container [data-testid="stTab"] p {
     font-weight: bold;
     font-size: 14px !important;
-    color: var(--accent-color);
+    color: var(--main-color);
     text-transform: uppercase;
 }
 
 .st-key-results_container [data-baseweb="tab-highlight"] {
     height: 3px;
-    background-color: var(--accent-color);
+    background-color: var(--main-color);
+}
+
+.stDownloadButton button {
+    border: 1px solid black !important;
+    margin-bottom: 2vh;
+}
+
+.st-key-results_container button p {
+    color: black;
+}
+
+.stTable * {
+    color: black;
+    border: 1px solid rgba(0, 0, 0, 0.3) !important;
 }
 
 """
