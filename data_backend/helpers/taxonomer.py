@@ -116,6 +116,22 @@ def is_vertebrate(taxon_id):
         return False
 
 
+def is_host_avian(host_name, taxonomy):
+
+    # Find taxon
+    taxon = None
+    try:
+        taxon = taxoniq.Taxon(scientific_name=host_name)
+    except KeyError:
+        for k in taxonomy.keys():
+            if host_name in taxonomy[k]["common_names"]:
+                taxon = taxoniq.Taxon(scientific_name=taxonomy[k]["scientific_name"])
+                break
+
+    if taxon is None: return False
+    return "Aves" in [t.scientific_name for t in taxon.lineage]
+
+
 def retrieve_taxonomy_data_ncbi_dmp(file_path):
 
     taxon_data = {}
@@ -146,7 +162,7 @@ def retrieve_taxonomy_data_ncbi_dmp(file_path):
 
             # Add to common_names if it's a synonym or a genbank common name
             elif name_type in ["synonym", "genbankcommonname", "commonname"]:
-                taxon_data[tax_id]["common_names"].append(name)
+                taxon_data[tax_id]["common_names"].append(name[:-1] if name.endswith("s") else name)
 
     taxon_data = {
         tax_id: data
@@ -173,6 +189,37 @@ if __name__ == '__main__':
     for host in hosts.split(","):
         scientific_host_name = taxonomer.retrieve_scientific_name_from_ncbi(host)
         if isinstance(scientific_host_name, type):
-            scientific_matches = process.extract(host, taxonomy_names, limit=10)
-            print(host)
-            print(scientific_matches)
+
+            host = host
+
+            try:
+                partial_match = [match for match in process.extract(host.lower(), taxonomy_names)
+                                 if is_host_avian(match[0], taxonomy_data)][0]
+            except IndexError:
+                partial_match = []
+
+            try:
+                fuzzy_match = [match for match in process.extract(host.lower(), taxonomy_names, scorer=fuzz.partial_ratio)
+                               if is_host_avian(match[0], taxonomy_data)][0]
+            except IndexError:
+                fuzzy_match = []
+
+            if partial_match and partial_match[1] > 90:
+                match = partial_match
+            else:
+                match = fuzzy_match
+
+            if match:
+
+                match = list(match)
+                try:
+                   taxoniq.Taxon(scientific_name=match[0])
+                except KeyError:
+                    for key in taxonomy_data.keys():
+                        if match[0] in taxonomy_data[key]["common_names"]:
+                            match[0] = taxonomy_data[key]["scientific_name"]
+                            break
+
+                print(host)
+                print(match)
+                print(partial_match, fuzzy_match)
