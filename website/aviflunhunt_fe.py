@@ -108,13 +108,13 @@ def build_main_page(global_config):
 
     with st.container(key="main_page"):
         build_query_bar(global_config.queries.keys())
-        selected_query_index = build_left_column(global_config)
+        selected_query_index = build_query_selector(global_config)
+        build_left_column(global_config, selected_query_index)
         build_results_container(selected_query_index)
 
 
-def build_left_column(global_config):
+def build_left_column(global_config, selected_query_index):
     with st.container(key="left_column"):
-        selected_query_index = build_query_selector(global_config)
         build_query_input_form(selected_query_index, global_config)
         #return selected_query_index
 
@@ -172,26 +172,43 @@ def build_graph_tab():
 
 def build_table_tab(selected_query_index):
     with st.container(key="table_tab"):
-        build_table_settings(selected_query_index)
-        build_table()
+        batch_size, current_page = build_table_settings(selected_query_index)
+        build_table(batch_size, current_page)
+        build_download_button()
 
 
 def build_table_settings(selected_query_index):
     with st.container(key="table_settings"):
 
-        col_order, col_strategy = st.columns([1, 1])
-        """col_order.selectbox('Order by', set_default_table_order(selected_query_index, st.session_state.result.columns),
+        col_order, col_strategy, res_per_page_col, current_page_col = st.columns([1, 1, 1, 1])
+
+        col_order.selectbox('Order by', set_default_table_order(selected_query_index, st.session_state.result.columns),
                             key='order_column', on_change=lambda: order_table(st.session_state.result))
+
         col_strategy.selectbox('Strategy', ['Descending', 'Ascending'], key='order_ascending',
-                               on_change=lambda: order_table(st.session_state.result))"""
+                               on_change=lambda: order_table(st.session_state.result))
+        with res_per_page_col:
+            batch_size = st.selectbox("Page Size", options=[10, 25, 50])
+
+        with current_page_col:
+            total_pages = max(int(len(st.session_state.result) / batch_size) + 1, 1)
+            current_page = st.number_input("Page", min_value=1, max_value=total_pages, step=1)
+
+        return batch_size, current_page
 
 
-def build_table():
+def build_table(batch_size, current_page):
     with st.container(key="table_container"):
         if st.session_state.result is not None and not st.session_state.result.empty:
-            st.download_button(label="Download data as CSV", data=st.session_state.result.to_csv(index=False).encode(),
-                               file_name="data.csv", mime="text/csv")
-            st.table(st.session_state.result.reset_index(drop=True))
+            pagination = st.container()
+            pages = split_frame(st.session_state.result, batch_size)
+            pagination.table(pages[current_page - 1])
+
+
+def build_download_button():
+    with st.container(key="download_button"):
+        st.download_button(label="Download data as CSV", data=st.session_state.result.to_csv(index=False).encode(),
+                           file_name="data.csv", mime="text/csv")
 
 
 def build_explore_tab(selected_query_index):

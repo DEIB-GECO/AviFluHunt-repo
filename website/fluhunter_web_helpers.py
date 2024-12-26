@@ -123,6 +123,12 @@ def get_pygwalker_default_config(selected_query_index):
     return query_pyg_config_file
 
 
+@st.cache_data(show_spinner=False)
+def split_frame(df, rows):
+    df = [df.loc[i: i + rows - 1, :] for i in range(0, len(df), rows)]
+    return df
+
+
 query_mapping = {
         1: {
             'query': get_markers_literature,

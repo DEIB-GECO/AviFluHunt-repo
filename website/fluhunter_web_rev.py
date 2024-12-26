@@ -52,6 +52,10 @@ body {
     background-color: var(--main-color);
 }
 
+input {
+    caret-color: transparent;
+}
+
 /* Webkit-based browsers (Chrome, Safari) */
 ::-webkit-scrollbar {
     width: 10px; /* Width of the scrollbar */
@@ -93,8 +97,27 @@ body {
     background-color: var(--main-color);
 }
 
+[data-baseweb="popover"] ul {
+    border-radius: 5px !important;
+}
+
 [data-baseweb="popover"] li {
-    border-bottom: 1px solid white;
+    background-color: white;
+}
+
+[data-baseweb="popover"] li * {
+    color: black;
+    background-color: transparent;
+}
+
+[data-baseweb="popover"] li:hover * {
+    color: white;
+    background-color: transparent;
+}
+
+[data-baseweb="popover"] li:hover {
+    color: white;
+    background-color: var(--accent-color);
 }
 
 h1 {
@@ -145,12 +168,12 @@ h1 {
     border-radius: 10px !important;
 }
 
-.st-key-main_page > div:nth-child(2) {
+.st-key-main_page > div:nth-child(3) {
     width: 20%;
     float: left !important;
 }
 
-.st-key-main_page > div:nth-child(3) {
+.st-key-main_page > div:nth-child(4) {
     width: 78%;
     margin-left: 1.5%;
     float: left;
@@ -215,12 +238,22 @@ h1 {
 .st-key-query_selector {
     padding-bottom: 1vh;
     margin-bottom: 1vh;
+    margin-left: 1vw !important;
+}
+
+.st-key-query_selector * {
+    max-width: 94.6vw !important;
 }
 
 .st-key-query_selector .stSelectbox {
     margin-top: -0.5vh;
     max-height: 30vh;
     background-color: white;
+    border-radius: 5px !important;
+}
+
+svg * {
+    color: black;
 }
 
 .st-key-query_selector .stSelectbox div {
@@ -242,7 +275,7 @@ h1 {
 }
 
 #inputs {
-    margin-bottom: 4vh;
+    margin-bottom: 1vh;
     font-size: 18px !important;
 }
 
@@ -276,26 +309,45 @@ h1 {
     font-size: 14px !important;
 }
 
-.st-key-query_inputs_container button {
-    margin-top: 2.5vh;
-    float: right !important;
-    background-color: white;
-    border-radius: 0; 
-    font-size: 14px !important;
+.stNumberInputContainer {
+    background-radius: 0!important;
 }
 
-.st-key-query_inputs_container button p {
-    font-size: 14px !important;
-}
-
-.st-key-query_inputs_container button div {
-    padding: 0 1vw;
+.st-key-query_inputs_container [data-baseweb="tab-list"] {
+    margin-top: 2vh;
+    margin-bottom: -2vh;
     width: 100% !important;
 }
 
-.st-key-query_inputs_container button p {
-    color: black;
+.st-key-query_inputs_container [data-baseweb="tab-list"] > div {
+    background-color: white;
+}
+
+.st-key-query_inputs_container [data-baseweb="tab-list"] button {
+    float: right !important;
+    background-color: transparent;
+    border-radius: 5px;
+    padding: 0 !important;
+}
+
+.st-key-query_inputs_container [data-baseweb="tab-list"] button p {
+    color: white;
     font-weight: bold;
+    font-size: 13px !important;
+}
+
+.st-key-query_inputs_container .stFormSubmitButton > button {
+    margin-top: 5vh;
+    background-color: var(--accent-color);
+    border-radius: 0;
+    padding: 0vh 2vw;
+    width: 100% !important;
+}
+
+.st-key-query_inputs_container .stFormSubmitButton > button p {
+    color: white;
+    font-weight: bold;
+    font-size: 14px !important;
 }
 
 .st-key-results_container {
@@ -305,7 +357,7 @@ h1 {
 }
 
 .st-key-results_container [data-testid="stTab"]{
-    margin-right: 0.5vw;
+    margin-right: 0.5vw
 }
 
 .st-key-results_container [data-testid="stTab"] p {
@@ -329,9 +381,42 @@ h1 {
     color: black;
 }
 
+.st-key-table_settings {
+    margin-bottom: 2.5vh;
+}
+
+.st-key-table_settings * {
+    color: black;
+}
+
+.st-key-table_settings .stSelectbox > div,
+.st-key-table_settings .stNumberInput > div {
+    border-radius: 0.5rem;
+    border: 1px solid var(--main-color) !important;
+}
+
+[data-baseweb="popover"] div {
+    background-color: transparent !important;
+}
+
+.stTable, table {
+    border-radius: 5px !important;
+}
+
 .stTable * {
     color: black;
     border: 1px solid rgba(0, 0, 0, 0.3) !important;
+}
+
+thead * {
+    font-weight: bold !important;
+    color: white !important;
+    text-align: left !important;
+    background-color: var(--accent-color);
+}
+
+th {
+    padding-left: 0.5vw !important;
 }
 
 """
