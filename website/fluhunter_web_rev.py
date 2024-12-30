@@ -140,22 +140,42 @@ h1 {
     margin-top: 2.5vh;
     margin-bottom: 1.5vh;
     height: 0 !important;
+    padding-left: 83vw;
 }
 
 .st-key-global_container > div > div {
     height: 0 !important;
 }
 
-.st-key-global_filters_overlay_container {
-    height: 0 !important;
-    align-items: right;
-    background-color: green;
+.st-key-global_container .stButton {
+    width: auto;
 }
 
-[aria-label="dialog"] {
+.st-key-global_container button {
+    padding: 0 !important;
+    margin-left: 1vw;
+}
+
+.st-key-global_container button * {
+    min-width: auto;
+    text-align: right;
+    font-size: 16px;
+    font-weight: bold;
+    margin-left: auto;
+    margin-right: 0;
+    padding: 0 !important;
+}
+
+.st-key-global_container div {
+    width: max-content;
+    flex: content !important;
+}
+
+.stDialog [aria-label="dialog"] {
     width: 80%;
     height: auto !important;
-    background-color: green;
+    background-color: red;
+    border-radius: 5px !important;
 }
 
 .st-key-main_page {
@@ -180,13 +200,14 @@ h1 {
 }
 
 .st-key-query_type_selector {
+    z-index: 10;
     display: flex;
     flex-direction: row;
     justify-content: flex-end;
     flex-wrap: wrap;
     gap: 0;
     margin-top: 2vh;
-    margin-bottom: 2vh;
+    margin-bottom: -1vh;
     padding-right: 1vw;
 }
 
@@ -236,6 +257,7 @@ h1 {
 }
 
 .st-key-query_selector {
+    margin-top: -3vh;
     padding-bottom: 1vh;
     margin-bottom: 1vh;
     margin-left: 1vw !important;
@@ -397,6 +419,10 @@ svg * {
 
 [data-baseweb="popover"] div {
     background-color: transparent !important;
+}
+
+button:hover > svg * {
+    color: white;
 }
 
 .stTable, table {

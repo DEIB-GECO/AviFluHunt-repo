@@ -13,68 +13,101 @@ def build_global_container(global_config):
         build_global_filters_overlay_container(global_config)
 
 
+def handle_global_button_click(button_name, global_config):
+    if button_name == "Settings":
+        filters_overlay_container(global_config)
+    elif button_name == "About":
+        about_overlay_container()
+
+
 def build_global_filters_overlay_container(global_config):
-    with st.container(key="global_filters_overlay_container"):
 
-        selected = build_settings_menu()
-
-        if selected == "Settings" and st.session_state["menu_selected"]:
-            pass#filters_overlay_container(global_config)
-        if selected == "About":
-            pass# TODO
-        else:
-            st.session_state["menu_selected"] = True
+    with st.container():
+        build_settings_menu(global_config)
 
 
-def build_settings_menu():
-    return option_menu(
-            menu_title=None,
-            options=["Settings", "About"],
-            icons=["gear", "info-circle"],
-            menu_icon="cast",
-            default_index=0,
-            orientation="horizontal",
-            styles={
-                "container": {"padding": "0!important", "margin": "0", "float": "right",
-                              "background-color": "transparent"},
-                "nav": {"justify-content": "flex-end"},
-                "nav-item": {"flex-basis": "auto!important", "flex-grow": "0!important", "float": "right"},
-                "nav-link": {"font-size": "16px", "text-align": "left", "margin": "0px",
-                             "font-weight": "bold", "color": "white"},
-                "nav-link-selected": {"background-color": "transparent", "color": "white"},
-            }
-        )
+def build_settings_menu(global_config):
+
+    col1, col2 = st.columns([1, 1])
+
+    with col1:
+        if st.button("Settings", key="settings_button"):
+            handle_global_button_click("Settings", global_config)
+
+    with col2:
+        if st.button("About", key="about_button"):
+            handle_global_button_click("About", global_config)
 
 
-@st.dialog("global_settings")
+@st.dialog("Settings")
 def filters_overlay_container(global_config):
     with st.container(key="global_filters_overlay"):
-        st.markdown("Hello World 👋")
-        build_location_global_filter(global_config)
+
+        left_col, right_col = st.columns(2)
+
+        with left_col:
+            build_location_global_filter(global_config)
+
+        with right_col:
+            build_date_global_filter(global_config)
+
+        build_isolates_remaining_information(global_config)
 
 
 def build_location_global_filter(global_config):
     with st.container(key="location_global_filter"):
-        regions = {
-            "All regions": None,
-            "Europe": "Europe",
-            "Asia": "Asia"
-        }  # global_config.database_connection.query(get_regions())
-        region = st.selectbox(
-            label="Region",  # TODO: global strings
-            options=regions, # TODO UGLY
-            key="global_region"
-            )
-        build_location_state_filter(region)
+
+        st.write("🌍 Location")
+        build_location_region_filter(global_config)
 
 
-def build_location_state_filter(region):
-    location = st.selectbox(
-            label="Location",  # TODO: global strings
-            options=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", region],
-            on_change=lambda: None,
-            # #key=f"query_selection{st.session_state.current_query_type}",
-            )
+def build_location_region_filter(global_config):
+
+    db_regions = fe_get_regions(global_config.database_connection)['region'].tolist()
+
+    regions = {
+        "All regions": None,
+        **({region: region for region in db_regions} if db_regions else {})
+    }
+
+    selected_regions = st.multiselect(label="Region", options=regions.values())
+    st.session_state.global_region = selected_regions[0]
+    build_location_state_filter(global_config, selected_regions)
+
+
+def build_location_state_filter(global_config, regions):
+
+    db_locations = get_locations_from_regions(global_config.database_connection, regions)['state'].tolist()
+
+    locations = {
+        "All locations": None,
+        **({location: location for location in db_locations} if db_locations else {})
+    }
+
+    selected_locations = st.multiselect(label="Location", options=locations.values(),
+                                        on_change=lambda: None)
+
+
+def build_date_global_filter(global_config):
+    with st.container(key="date_global_filter"):
+
+        st.write("📅 Timeframe")
+        start_date = st.date_input('start date', datetime.date(2011, 1, 1))
+        end_date = st.date_input('end date', datetime.date(2011, 1, 1))
+
+
+def build_isolates_remaining_information(global_config):
+    with st.container(key="isolates_remaining"):
+
+        filtered_isolates = fe_get_filtered_isolates_count(global_config.database_connection)["count"].tolist()[0]
+        all_isolates = fe_get_all_isolates_count(global_config.database_connection)["count"].tolist()[0]
+        st.write(f"Considering {filtered_isolates} isolates out of {all_isolates}")
+
+
+@st.dialog("About")
+def about_overlay_container():
+    with st.container(key="about_overlay"):
+        pass
 
 
 def build_query_bar(query_types):
@@ -116,7 +149,6 @@ def build_main_page(global_config):
 def build_left_column(global_config, selected_query_index):
     with st.container(key="left_column"):
         build_query_input_form(selected_query_index, global_config)
-        #return selected_query_index
 
 
 def build_query_selector(global_config):

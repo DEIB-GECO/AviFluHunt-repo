@@ -41,8 +41,8 @@ def init_session():
         st.session_state.current_query_type = "Markers"
     if 'global_region' not in st.session_state:
         st.session_state.global_region = None
-    if "menu_selected" not in st.session_state:
-        st.session_state.menu_selected = False
+    if 'global_locs' not in st.session_state:
+        st.session_state.global_locs = None
 
 
 def set_default_table_order(selection, columns):
@@ -78,9 +78,9 @@ def order_table(dataframe):
         dataframe.sort_values(by=[order_column], ascending=order_ascending, inplace=True)
 
 
-def run_query(database_connection, query, params):
+def run_query(database_connection, query, local_params):
     run_global_filters_on_isolates(database_connection)
-    st.session_state.result = database_connection.query(query, params=params)
+    st.session_state.result = database_connection.query(query, params=local_params | get_global_isolates_params())
 
 
 def run_global_filters_on_isolates(database_connection):
@@ -127,6 +127,26 @@ def get_pygwalker_default_config(selected_query_index):
 def split_frame(df, rows):
     df = [df.loc[i: i + rows - 1, :] for i in range(0, len(df), rows)]
     return df
+
+
+def fe_get_filtered_isolates_count(database_connection):
+    return database_connection.query(get_filtered_isolates_count, params=get_global_isolates_params())
+
+
+def fe_get_all_isolates_count(database_connection):
+    return database_connection.query(get_isolates_count)
+
+
+def fe_get_regions(database_connection):
+    return database_connection.query(get_regions)
+
+
+def get_locations_from_regions(database_connection, regions):
+
+    locations_from_regions = \
+        ("SELECT state FROM Location "
+         "WHERE region IN (" + ",".join([f":{reg.strip()}" for reg in regions]) + ")")
+    return database_connection.query(locations_from_regions, params={f"{reg.strip()}": reg for reg in regions})
 
 
 query_mapping = {
