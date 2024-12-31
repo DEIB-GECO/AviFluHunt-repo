@@ -1,3 +1,5 @@
+import datetime
+
 from streamlit_option_menu import option_menu
 from fluhunter_web_helpers import *
 from pygwalker.api.streamlit import StreamlitRenderer
@@ -65,13 +67,10 @@ def build_location_region_filter(global_config):
 
     db_regions = fe_get_regions(global_config.database_connection)['region'].tolist()
 
-    regions = {
-        "All regions": None,
-        **({region: region for region in db_regions} if db_regions else {})
-    }
+    regions = {region: region for region in db_regions} if db_regions else {}
 
-    selected_regions = st.multiselect(label="Region", options=regions.values())
-    st.session_state.global_region = selected_regions[0]
+    selected_regions = st.multiselect(label="Region", options=regions.values(), default=regions.values())
+    st.session_state.global_regions = {f"{region.replace(" ", "")}": region for region in selected_regions}
     build_location_state_filter(global_config, selected_regions)
 
 
@@ -92,8 +91,13 @@ def build_date_global_filter(global_config):
     with st.container(key="date_global_filter"):
 
         st.write("📅 Timeframe")
-        start_date = st.date_input('start date', datetime.date(2011, 1, 1))
-        end_date = st.date_input('end date', datetime.date(2011, 1, 1))
+        start_date = st.date_input('start date', datetime.date(1959, 1, 1))
+        end_date = st.date_input('end date', datetime.date.today())
+
+        st.session_state.global_start_year = start_date.year
+        st.session_state.global_end_year = end_date.year
+        st.session_state.global_start_month = start_date.month
+        st.session_state.global_end_month = end_date.month
 
 
 def build_isolates_remaining_information(global_config):
@@ -107,7 +111,8 @@ def build_isolates_remaining_information(global_config):
 @st.dialog("About")
 def about_overlay_container():
     with st.container(key="about_overlay"):
-        pass
+        with open("website/resources/about.html", "r") as about:
+            st.html(about.read())
 
 
 def build_query_bar(query_types):

@@ -178,6 +178,10 @@ h1 {
     border-radius: 5px !important;
 }
 
+.stDialog svg * {
+    color: white;
+}
+
 .st-key-main_page {
     width: 98vw;
     margin: 4vh 1vw;

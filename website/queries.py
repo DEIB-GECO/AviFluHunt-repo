@@ -43,8 +43,14 @@ get_filtered_isolates_count = \
  ("SELECT COUNT(DISTINCT isolate_epi) as count FROM Isolate isolate "
   "JOIN Location location ON isolate.location_id = location.location_id "
   "WHERE "
-  "(location.region == :global_region OR :global_region IS NULL) AND "
-  "(location.state == :global_state OR :global_state IS NULL)")
+  "(location.region IN (global_regions)) AND "
+  "(location.state == :global_state OR :global_state IS NULL) AND "
+  "CASE "
+    "WHEN length(isolate.collection_date) = 4 THEN isolate.collection_date * 100 "
+    "WHEN length(isolate.collection_date) = 7 THEN strftime('%Y', isolate.collection_date) * 100 + substr(isolate.collection_date, 6, 2) "
+    "ELSE strftime('%Y', isolate.collection_date) * 100 + strftime('%m', isolate.collection_date) "
+  "END "
+  "BETWEEN (:global_start_year * 100 + :global_start_month) AND (:global_end_year * 100 + :global_end_month)")
 
 
 # QUERIES

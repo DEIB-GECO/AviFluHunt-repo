@@ -79,26 +79,17 @@ def order_table(dataframe):
 
 
 def run_query(database_connection, query, local_params):
-    run_global_filters_on_isolates(database_connection)
     st.session_state.result = database_connection.query(query, params=local_params | get_global_isolates_params())
-
-
-def run_global_filters_on_isolates(database_connection):
-
-    pass
-    #database_connection.execute(drop_isolates_with_global_filters_view)
-    #database_connection.query(create_isolates_with_global_filters_view, params=get_global_isolates_params())
-
-    # TEST
-    #test = "SELECT COUNT(*) FROM IsolatesFiltered"
-    #res_test = database_connection.query(test)
-    #print("Filtered Isolates Are: " + str(res_test))
 
 
 def get_global_isolates_params():
     return {
-        "global_region": st.session_state.global_region,
-        "global_state": None
+        **st.session_state.global_regions,
+        "global_state": None,
+        "global_start_year": st.session_state.global_start_year,
+        "global_end_year": st.session_state.global_end_year,
+        "global_start_month": st.session_state.global_start_month,
+        "global_end_month": st.session_state.global_end_month,
     }  # TODO
 
 
@@ -130,7 +121,11 @@ def split_frame(df, rows):
 
 
 def fe_get_filtered_isolates_count(database_connection):
-    return database_connection.query(get_filtered_isolates_count, params=get_global_isolates_params())
+
+    print(get_global_isolates_params())
+    p_r_query = get_filtered_isolates_count.replace("global_regions",
+                                                    ", ".join(f":{region.replace(" ", "")}" for region in st.session_state.global_regions.values()))
+    return database_connection.query(p_r_query, params=get_global_isolates_params())
 
 
 def fe_get_all_isolates_count(database_connection):
@@ -145,8 +140,8 @@ def get_locations_from_regions(database_connection, regions):
 
     locations_from_regions = \
         ("SELECT state FROM Location "
-         "WHERE region IN (" + ",".join([f":{reg.strip()}" for reg in regions]) + ")")
-    return database_connection.query(locations_from_regions, params={f"{reg.strip()}": reg for reg in regions})
+         "WHERE region IN (" + ",".join([f":{reg.replace(" ", "")}" for reg in regions]) + ")")
+    return database_connection.query(locations_from_regions, params={f"{reg.replace(" ", "")}": reg for reg in regions})
 
 
 query_mapping = {
