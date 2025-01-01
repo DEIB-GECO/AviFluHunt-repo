@@ -137,7 +137,7 @@ h1 {
 .st-key-global_container {
     width: 96vw;
     margin: 0 3vw 0 2vw;
-    margin-top: 2.5vh;
+    margin-top: .5vh;
     margin-bottom: 1.5vh;
     height: 0 !important;
     padding-left: 83vw;
@@ -172,14 +172,46 @@ h1 {
 }
 
 .stDialog [aria-label="dialog"] {
+    padding: 1.5%;
     width: 80%;
     height: auto !important;
-    background-color: red;
+    background-color: white;
     border-radius: 5px !important;
 }
 
-.stDialog svg * {
-    color: white;
+.stDialog span svg * {
+    color: white !important;
+}
+
+.stDialog label, 
+.stDialog p{
+    color: black;
+    font-weight: bold;
+    margin-top: 1vh;
+}
+
+.stDialog .stMultiSelect > div {
+    padding: 1%;
+    border: 1px solid black !important;
+    border-radius: 5px !important;
+}
+
+.stDialog .stDateInput > div {
+    border: 1px solid black !important;
+    border-radius: 5px !important;
+}
+
+.stDialog .stMultiSelect svg * {
+    color: black;
+}
+
+hr {
+    background-color: #777;
+}
+
+#isolates_filtered_h4 {
+    color: black;
+    margin-top: -2vh;
 }
 
 .st-key-main_page {
@@ -294,6 +326,10 @@ svg * {
 .st-key-query_inputs_container {
     padding: 0 !important;
     margin-bottom: 2vh;
+}
+
+.st-key-query_inputs_container svg * {
+    color: white;
 }
 
 .st-key-query_inputs_container > .stForm {
@@ -449,6 +485,34 @@ th {
     padding-left: 0.5vw !important;
 }
 
+#about_page_html * {
+    color: black;
+    text-align: justify !important;
+}
+
+#about_page_html p {
+    font-size: 16px !important;
+}
+
+#bottom_about_container {
+    display: flex; /* Enables flexbox layout */
+    width: 100%; /* Ensure it takes the full width of its parent */
+    box-sizing: border-box; /* Include padding and border in width calculations */
+}
+
+#bottom_about_container > div {
+    flex: 0 0 50%; /* Set each child to take 50% of the parent's width */
+    box-sizing: border-box; /* Include padding and border in width calculations */
+}
+
+#bottom_about_container > div * {
+    padding: 0;
+    padding-bottom: 0.5vh;
+}
+
+#bottom_about_container > div h6 {
+    font-weight: normal;
+}
 """
 }</style>', unsafe_allow_html=True)
 

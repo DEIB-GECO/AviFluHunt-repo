@@ -29,8 +29,8 @@ def run_query(query_selection, db, query_col, input_col):
             st.write(strings["query_inputs_label"], unsafe_allow_html=True)
 
             if query_selection == 1:
-                placeholder, params = params1(db)
-                query = get_markers_literature.replace("placeholder", placeholder)
+                params = params1(db)
+                query = get_markers_literature.replace("placeholder", params["placeholder"])
             if query_selection == 2:
                 params = params2(db)
                 query = get_markers_by_human_percentage
@@ -72,8 +72,8 @@ def run_query(query_selection, db, query_col, input_col):
                 params = params14(db)
                 query = get_marker_groups_by_effect
             if query_selection == 15:
-                placeholder, params = params15(db)
-                query = get_markers_over_time.replace("placeholder", placeholder)
+                params = params15(db)
+                query = get_markers_over_time.replace("placeholder", params["placeholder"])
 
             submitted = st.form_submit_button("Submit")
             if submitted:
@@ -123,7 +123,8 @@ def params1(db):
 
     placeholder = ', '.join(f":{marker.replace(":", "").replace("-", "")}" for marker in selected_markers)
     params = {f"{marker.replace(":", "").replace("-", "")}": marker for marker in selected_markers}
-    return placeholder, params
+    params["placeholder"] = placeholder
+    return params
 
 
 def params2(db):
@@ -597,8 +598,9 @@ def params15(db):
     params["end_year"] = end_date.year
     params["region"] = region
     params["state"] = state
+    params["placeholder"] = placeholder
 
-    return placeholder, params
+    return params
 
 
 def graph15(result_df):

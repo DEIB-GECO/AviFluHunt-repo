@@ -1,5 +1,6 @@
 import hmac
 import json
+import re
 
 from query_functions import *
 
@@ -39,10 +40,18 @@ def init_session():
         st.session_state.graphs = {}
     if 'current_query_type' not in st.session_state:
         st.session_state.current_query_type = "Markers"
-    if 'global_region' not in st.session_state:
-        st.session_state.global_region = None
-    if 'global_locs' not in st.session_state:
-        st.session_state.global_locs = None
+    if 'global_regions' not in st.session_state:
+        st.session_state.global_regions = None
+    if 'global_states' not in st.session_state:
+        st.session_state.global_states = None
+    if 'global_start_year' not in st.session_state:
+        st.session_state.global_start_year = None
+    if 'global_end_year' not in st.session_state:
+        st.session_state.global_end_year = None
+    if 'global_start_month' not in st.session_state:
+        st.session_state.global_start_month = None
+    if 'global_end_month' not in st.session_state:
+        st.session_state.global_end_month = None
 
 
 def set_default_table_order(selection, columns):
@@ -84,20 +93,37 @@ def run_query(database_connection, query, local_params):
 
 def get_global_isolates_params():
     return {
-        **st.session_state.global_regions,
-        "global_state": None,
         "global_start_year": st.session_state.global_start_year,
         "global_end_year": st.session_state.global_end_year,
         "global_start_month": st.session_state.global_start_month,
         "global_end_month": st.session_state.global_end_month,
-    }  # TODO
+        **(st.session_state.global_regions if st.session_state.global_regions else {}),
+        **(st.session_state.global_states | {"global_states": "NotNull"}
+           if st.session_state.global_states
+           else {"global_states": None}
+           )
+    }
 
 
 def replace_query_placeholders(selected_query_index, query, params):
+
     if selected_query_index in {1, 15}:
         query = query.replace("placeholder", params["placeholder"])
     if selected_query_index in {3, 4}:
         query = query.replace("hosts", params["hosts"])
+
+    global_regions = ", ".join(f":{region.replace(' ', '')}" for region in st.session_state.global_regions.values())
+    query = query.replace("global_regions_placeholder", global_regions)
+
+    if st.session_state.global_states:
+        global_states = ", ".join(
+            f":{re.sub(r'[^a-zA-Z]', '', state)}" for state in st.session_state.global_states.values())
+    else:
+        global_states = ""
+
+    query = query.replace("global_states_placeholder", global_states)
+
+    print(query, params)
 
     return query
 
@@ -122,10 +148,8 @@ def split_frame(df, rows):
 
 def fe_get_filtered_isolates_count(database_connection):
 
-    print(get_global_isolates_params())
-    p_r_query = get_filtered_isolates_count.replace("global_regions",
-                                                    ", ".join(f":{region.replace(" ", "")}" for region in st.session_state.global_regions.values()))
-    return database_connection.query(p_r_query, params=get_global_isolates_params())
+    query = replace_query_placeholders(-1, get_filtered_isolates_count, {})
+    return database_connection.query(query, params=get_global_isolates_params())
 
 
 def fe_get_all_isolates_count(database_connection):
@@ -139,7 +163,7 @@ def fe_get_regions(database_connection):
 def get_locations_from_regions(database_connection, regions):
 
     locations_from_regions = \
-        ("SELECT state FROM Location "
+        ("SELECT DISTINCT state FROM Location "
          "WHERE region IN (" + ",".join([f":{reg.replace(" ", "")}" for reg in regions]) + ")")
     return database_connection.query(locations_from_regions, params={f"{reg.replace(" ", "")}": reg for reg in regions})
 

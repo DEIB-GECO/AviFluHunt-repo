@@ -51,7 +51,7 @@ def filters_overlay_container(global_config):
             build_location_global_filter(global_config)
 
         with right_col:
-            build_date_global_filter(global_config)
+            build_date_global_filter()
 
         build_isolates_remaining_information(global_config)
 
@@ -61,38 +61,30 @@ def build_location_global_filter(global_config):
 
         st.write("🌍 Location")
         build_location_region_filter(global_config)
+        build_location_state_filter(global_config)
 
 
 def build_location_region_filter(global_config):
 
-    db_regions = fe_get_regions(global_config.database_connection)['region'].tolist()
-
-    regions = {region: region for region in db_regions} if db_regions else {}
-
-    selected_regions = st.multiselect(label="Region", options=regions.values(), default=regions.values())
+    regions = fe_get_regions(global_config.database_connection)['region'].tolist()
+    selected_regions = st.multiselect(label="Region", options=regions, default=regions)
     st.session_state.global_regions = {f"{region.replace(" ", "")}": region for region in selected_regions}
-    build_location_state_filter(global_config, selected_regions)
 
 
-def build_location_state_filter(global_config, regions):
+def build_location_state_filter(global_config):
 
-    db_locations = get_locations_from_regions(global_config.database_connection, regions)['state'].tolist()
-
-    locations = {
-        "All locations": None,
-        **({location: location for location in db_locations} if db_locations else {})
-    }
-
-    selected_locations = st.multiselect(label="Location", options=locations.values(),
-                                        on_change=lambda: None)
+    states = get_locations_from_regions(global_config.database_connection,
+                                        st.session_state.global_regions)['state'].tolist()
+    selected_states = st.multiselect(label="Location", options=states)
+    st.session_state.global_states = {f"{re.sub(r'[^a-zA-Z]', '', state)}": state for state in selected_states}
 
 
-def build_date_global_filter(global_config):
+def build_date_global_filter():
     with st.container(key="date_global_filter"):
 
         st.write("📅 Timeframe")
-        start_date = st.date_input('start date', datetime.date(1959, 1, 1))
-        end_date = st.date_input('end date', datetime.date.today())
+        start_date = st.date_input('Start Date', datetime.date(1959, 1, 1))
+        end_date = st.date_input('End Date', datetime.date.today())
 
         st.session_state.global_start_year = start_date.year
         st.session_state.global_end_year = end_date.year
@@ -105,7 +97,7 @@ def build_isolates_remaining_information(global_config):
 
         filtered_isolates = fe_get_filtered_isolates_count(global_config.database_connection)["count"].tolist()[0]
         all_isolates = fe_get_all_isolates_count(global_config.database_connection)["count"].tolist()[0]
-        st.write(f"Considering {filtered_isolates} isolates out of {all_isolates}")
+        st.html(f"<hr><h4 id='isolates_filtered_h4'>Considering {filtered_isolates} isolates out of {all_isolates}</h4>")
 
 
 @st.dialog("About")
@@ -209,9 +201,10 @@ def build_graph_tab():
 
 def build_table_tab(selected_query_index):
     with st.container(key="table_tab"):
-        batch_size, current_page = build_table_settings(selected_query_index)
-        build_table(batch_size, current_page)
-        build_download_button()
+        if st.session_state.result is not None:
+            batch_size, current_page = build_table_settings(selected_query_index)
+            build_table(batch_size, current_page)
+            build_download_button()
 
 
 def build_table_settings(selected_query_index):
