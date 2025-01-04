@@ -1,8 +1,6 @@
-from aviflunhunt_fe import *
-
-# CONFIG
+import streamlit as st
 st.set_page_config(layout="wide", page_title="AviFluHunt")
-db = st.connection(name="fluhunt", type="sql", url="sqlite:///website/data/fluhunt.db")
+from aviflunhunt_fe import *
 
 
 class GlobalConfig:

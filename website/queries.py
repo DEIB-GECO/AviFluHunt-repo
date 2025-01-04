@@ -30,15 +30,6 @@ get_annotations = \
 get_isolates_count = ("SELECT COUNT(DISTINCT isolate_epi) as count "
                 "FROM Isolate")
 
-"""drop_isolates_with_global_filters_view = "DROP VIEW IF EXISTS IsolatesFiltered"
-create_isolates_with_global_filters_view = \
- ("CREATE VIEW IsolatesFiltered AS "
-  "SELECT * FROM Isolate isolate "
-  "JOIN Location location ON isolate.location_id = location.location_id "
-  "WHERE "
-  "(location.region == :global_region OR :global_region IS NULL) AND "
-  "(location.state == :global_state OR :global_state IS NULL)")"""
-
 get_filtered_isolates_count = \
  ("SELECT COUNT(DISTINCT isolate_epi) as count FROM Isolate isolate "
   "JOIN Location location ON isolate.location_id = location.location_id "

@@ -36,8 +36,8 @@ def init_session():
         st.session_state.sort_by = "Effect"
     if "result" not in st.session_state:
         st.session_state.result = None
-    if "graphs" not in st.session_state:
-        st.session_state.graphs = {}
+    if "graph" not in st.session_state:
+        st.session_state.graph = None
     if 'current_query_type' not in st.session_state:
         st.session_state.current_query_type = "Markers"
     if 'global_regions' not in st.session_state:
@@ -84,11 +84,21 @@ def order_table(dataframe):
         order_ascending = False
 
     if order_column:
-        dataframe.sort_values(by=[order_column], ascending=order_ascending, inplace=True)
+        dataframe.sort_values(by=[order_column], ascending=order_ascending, inplace=True, ignore_index=True)
+        dataframe.reset_index(drop=True, inplace=True)
 
 
 def run_query(database_connection, query, local_params):
     st.session_state.result = database_connection.query(query, params=local_params | get_global_isolates_params())
+
+
+def get_result_graph(selection):
+    if st.session_state.result is not None:
+        plot_params = query_mapping[selection]["plot_params"]
+        if plot_params:
+            st.session_state.graph = plot_data(st.session_state.result, **plot_params)
+        else:
+            st.session_state.graph = None
 
 
 def get_global_isolates_params():
@@ -112,8 +122,11 @@ def replace_query_placeholders(selected_query_index, query, params):
     if selected_query_index in {3, 4}:
         query = query.replace("hosts", params["hosts"])
 
-    global_regions = ", ".join(f":{region.replace(' ', '')}" for region in st.session_state.global_regions.values())
-    query = query.replace("global_regions_placeholder", global_regions)
+    if st.session_state.global_regions:
+        global_regions = ", ".join(f":{region.replace(' ', '')}" for region in st.session_state.global_regions.values())
+        query = query.replace("global_regions_placeholder", global_regions)
+    else:
+        query = query.replace("global_regions_placeholder", "")
 
     if st.session_state.global_states:
         global_states = ", ".join(
@@ -122,9 +135,6 @@ def replace_query_placeholders(selected_query_index, query, params):
         global_states = ""
 
     query = query.replace("global_states_placeholder", global_states)
-
-    print(query, params)
-
     return query
 
 
@@ -171,63 +181,110 @@ def get_locations_from_regions(database_connection, regions):
 query_mapping = {
         1: {
             'query': get_markers_literature,
-            'params_func': params1
+            'params_func': params1,
+            'plot_params': {}
         },
         2: {
             'query': get_markers_by_human_percentage,
-            'params_func': params2
+            'params_func': params2,
+            'plot_params': {}
         },
         3: {
             'query': get_markers_id_by_host_relative_presence,
-            'params_func': params3
+            'params_func': params3,
+            'plot_params': {}
         },
         4: {
             'query': get_markers_id_by_host_relative_presence,
-            'params_func': params4
+            'params_func': params4,
+            'plot_params': {}
         },
         5: {
             'query': get_marker_host_distribution,
-            'params_func': params5
+            'params_func': get_marker,
+            'plot_params': {
+                        'top_n': 20,
+                        'title': 'Top Hosts',
+                        'xlabel': '#',
+                        'ylabel': 'Host',
+                        'color': 'skyblue'
+                    }
         },
         6: {
             'query': get_markers_location_distribution,
-            'params_func': params6
+            'params_func': get_marker,
+            'plot_params': {
+                'top_n': 20,
+                'title': 'Top States',
+                'xlabel': 'Normalized Percentage',
+                'ylabel': 'State',
+                'color': 'skyblue'
+            }
         },
         7: {
             'query': get_most_common_markers_by_filters,
-            'params_func': params7
+            'params_func': params7,
+            'plot_params': {}
         },
         8: {
             'query': get_host_by_n_of_markers,
-            'params_func': params8
+            'params_func': params8,
+            'plot_params': {
+                'top_n': 10,
+                'title': 'Top 10 Hosts by Distinct Markers',
+                'xlabel': 'Host',
+                'ylabel': 'Distinct Markers Per Host',
+                'color': 'skyblue',
+                'show_values': True,
+                'sort_column': 'Distinct Markers Per Host',
+                'plot_column': 'Distinct Markers Per Host',
+                'label_column': 'Host'
+            }
         },
         9: {
             'query': get_markers_by_relevance,
-            'params_func': params9
+            'params_func': params9,
+            'plot_params': {
+                'top_n': 10,
+                'title': 'Top 10 Markers by Percentage',
+                'xlabel': 'Marker',
+                'ylabel': 'Markers By Percentage',
+                'color': 'skyblue',
+                'show_values': True,
+                'sort_column': 'Percentage',
+                'plot_column': 'Percentage',
+                'label_column': 'Marker'
+            }
         },
         10: {
             'query': get_segment_mutability_zones,
-            'params_func': params10
+            'params_func': params10,
+            'plot_params': {}
         },
         11: {
             'query': get_mutability_peak_months,
-            'params_func': params11
+            'params_func': params11,
+            'plot_params': {}
         },
         12: {
             'query': get_group_of_marker,
-            'params_func': params12
+            'params_func': get_marker,
+            'plot_params': {}
         },
         13: {
             'query': get_effects_by_effect_metadata,
-            'params_func': params13
+            'params_func': params13,
+            'plot_params': {}
         },
         14: {
             'query': get_marker_groups_by_effect,
-            'params_func': params14
+            'params_func': params14,
+            'plot_params': {}
         },
         15: {
             'query': get_markers_over_time,
-            'params_func': params15
+            'params_func': params15,
+            'plot_params': {}
         }
     }
 

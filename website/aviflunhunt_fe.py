@@ -1,5 +1,4 @@
 import datetime
-
 from streamlit_option_menu import option_menu
 from fluhunter_web_helpers import *
 from pygwalker.api.streamlit import StreamlitRenderer
@@ -170,15 +169,16 @@ def build_query_input_form(query_selection, global_config):
     with st.container(key="query_inputs_container"):
         with st.form(f"query_inputs_{query_selection}"):
             st.write(global_config.text_resources["query_inputs_label"], unsafe_allow_html=True)
-            query, params = get_query_and_params(query_selection, global_config.database_connection)
+            query, params = get_query_and_params(query_selection)
             if st.form_submit_button("Submit"):
                 run_query(global_config.database_connection, query, params)
+                get_result_graph(query_selection)
 
 
-def get_query_and_params(selected_query_index, db):
+def get_query_and_params(selected_query_index):
     query_data = query_mapping[selected_query_index]
     query = query_data['query']
-    params = query_data['params_func'](db)
+    params = query_data['params_func']()
     query = replace_query_placeholders(selected_query_index, query, params)
     return query, params
 
@@ -196,7 +196,10 @@ def build_results_container(selected_query_index):
 
 def build_graph_tab():
     with st.container(key="graph_tab"):
-        pass
+        if st.session_state.graph is not None:
+            empty1, img_col, empty2 = st.columns([0.025, 0.9, 0.025])
+            with img_col:
+                st.pyplot(st.session_state.graph)
 
 
 def build_table_tab(selected_query_index):
