@@ -1,10 +1,11 @@
 import os
 import re
-import pandas
-import taxoniq
 from xml.etree import ElementTree
+import pandas
+import requests
+import taxoniq
 from rapidfuzz import process, fuzz
-from requests import HTTPError, get
+from requests import HTTPError
 
 
 class Taxonomer:
@@ -38,12 +39,12 @@ class Taxonomer:
         # 1) HOST NAME IS SCIENTIFICALLY CORRECT ALREADY
         scientific_host_name = self.retrieve_scientific_name_from_ncbi(host)
         if not isinstance(scientific_host_name, type):
-            return None#scientific_host_name
+            return scientific_host_name
 
         # 2) MANUAL PAIRING
         id_from_manual_pairing = self.get_manual_pairing(host)
         if id_from_manual_pairing is not None:
-            return None#taxoniq.Taxon(id_from_manual_pairing).scientific_name
+            return taxoniq.Taxon(id_from_manual_pairing).scientific_name
 
         # 3) MATCHING
         return self.match_host(host, preferred_parent_tax_id)
@@ -116,7 +117,7 @@ class Taxonomer:
     @staticmethod
     def __search_taxonomy_by_common_name(common_name):
         search_url = f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=taxonomy&term={common_name}&retmode=xml"
-        response = get(search_url)
+        response = requests.get(search_url)
 
         if response.status_code != 200:
             raise HTTPError
@@ -140,7 +141,7 @@ class Taxonomer:
     def __fetch_scientific_name_from_taxid(taxid):
         """Fetch the scientific name from NCBI using the TaxID."""
         summary_url = f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=taxonomy&id={taxid}&retmode=xml"
-        response = get(summary_url)
+        response = requests.get(summary_url)
 
         if response.status_code != 200:
             raise HTTPError
