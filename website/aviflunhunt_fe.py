@@ -63,10 +63,16 @@ def build_location_global_filter(global_config):
         build_location_state_filter(global_config)
 
 
+def update_g_regions():
+    st.session_state["g_regions"] = st.session_state["g_reg_ms"]
+
+
 def build_location_region_filter(global_config):
 
     regions = fe_get_regions(global_config.database_connection)['region'].tolist()
-    selected_regions = st.multiselect(label="Region", options=regions, default=regions)
+    selected_regions = st.multiselect(label="Region", options=regions, default=st.session_state["g_regions"])
+
+    st.session_state.g_regions = selected_regions
     st.session_state.global_regions = {f"{region.replace(" ", "")}": region for region in selected_regions}
 
 
@@ -82,8 +88,11 @@ def build_date_global_filter():
     with st.container(key="date_global_filter"):
 
         st.write("📅 Timeframe")
-        start_date = st.date_input('Start Date', datetime.date(1959, 1, 1))
-        end_date = st.date_input('End Date', datetime.date.today())
+        start_date = st.date_input('Start Date', datetime.date(1959, 1, 1),
+                                   min_value=datetime.date(1900, 1, 1),
+                                   max_value=datetime.date.today())
+        end_date = st.date_input('End Date', datetime.date.today(),
+                                 min_value=datetime.date(1900, 1, 1))
 
         st.session_state.global_start_year = start_date.year
         st.session_state.global_end_year = end_date.year

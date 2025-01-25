@@ -42,6 +42,8 @@ def init_session():
         st.session_state.current_query_type = "Markers"
     if 'global_regions' not in st.session_state:
         st.session_state.global_regions = None
+    if 'g_regions' not in st.session_state:
+        st.session_state.g_regions = []
     if 'global_states' not in st.session_state:
         st.session_state.global_states = None
     if 'global_start_year' not in st.session_state:

@@ -118,6 +118,20 @@ input {
     background-color: var(--accent-color);
 }
 
+[data-baseweb="popover"] [data-baseweb="calendar"] {
+    border-radius: 5px;
+}
+
+[data-baseweb="popover"] [data-baseweb="calendar"] div {
+    background-color: black !important;
+    color: white;
+}
+
+[data-baseweb="popover"] [data-baseweb="calendar"] * {
+    color: white;
+}
+
+
 h1 {
 
     margin: 0;
