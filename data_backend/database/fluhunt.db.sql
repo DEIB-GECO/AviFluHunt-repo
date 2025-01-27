@@ -119,6 +119,12 @@ CREATE TABLE IF NOT EXISTS "Host" (
 	PRIMARY KEY("host_id")
 );
 
+CREATE TABLE IF NOT EXISTS "HostCommonName" (
+	"host_id"	INTEGER,
+	"common_name"	TEXT NOT NULL UNIQUE,
+	FOREIGN KEY("host_id") REFERENCES "Host"("host_id")
+);
+
 CREATE TABLE IF NOT EXISTS "Taxonomy" (
 	"host_id"	INTEGER NOT NULL,
 	"parent_id"	INTEGER NOT NULL,

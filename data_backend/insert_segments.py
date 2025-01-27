@@ -75,11 +75,11 @@ class MutationDatabaseHandler:
 
                     header_dict = self.get_header_dict(aligned_protein_header)
                     segment_id = self.create_segment(header_dict)
-                    #self.create_segment_data(segment_id, annotation["annotation_id"], aligned_protein_fasta)
+                    self.create_segment_data(segment_id, annotation["annotation_id"], aligned_protein_fasta)
 
-                #self.database_handler.commit_changes()
+                self.database_handler.commit_changes()
 
-        #self.database_handler.commit_changes()
+        self.database_handler.commit_changes()
 
     """ --- EXECUTION FUNCTIONS --- """
     # TODO: ugly
@@ -112,6 +112,8 @@ class MutationDatabaseHandler:
             insertions_file = open(dna_insertions_file, "r")
             insertions_csv = pd.read_csv(insertions_file, on_bad_lines='skip', low_memory=False)
         except FileNotFoundError:
+            insertions_file, insertions_csv = None, None
+        except TypeError:
             insertions_file, insertions_csv = None, None
 
         coding_sequences_fasta = []
@@ -190,9 +192,12 @@ class MutationDatabaseHandler:
 
         host = isolate_metadata[17]
 
-        # TODO: TEST
-        scientific_name_host = self.taxonomy_handler.retrieve_scientific_name_from_ncbi(host)
-        print("Taxonomy: ", self.taxonomy_handler.retrieve_taxonomy_from_scientific_name(scientific_name_host))
+        host_id = self.search_host_id_in_common_names(host)
+        if host_id is None:
+
+            host_taxonomy = [taxon.scientific_name for taxon in self.taxonomy_handler.retrieve_taxonomy(host, 8782)]
+            host_id = self.create_host_in_db(host_taxonomy)
+            self.create_common_host(host_id, host)
 
         collection_date = isolate_metadata[25]
         location_id = self.get_location_id(isolate_metadata[16])
@@ -200,9 +205,53 @@ class MutationDatabaseHandler:
 
         self.database_handler.insert_row("Isolate",
                                          ["isolate_id", "isolate_epi", "subtype_id",
-                                          "host", "collection_date", "location_id"],
-                                         (None, isolate_epi, subtype_id, host, collection_date, location_id,))
+                                          "host_id", "collection_date", "location_id"],
+                                         (None, isolate_epi, subtype_id, host_id, collection_date, location_id,))
         return 0
+
+    def search_host_id_in_common_names(self, host_name):
+        hosts = self.database_handler.get_rows("HostCommonName", ["common_name"], (host_name,))
+        if hosts: return hosts[0]["host_id"]
+        return None
+
+    def search_host_id_in_scientific_names(self, host_name):
+        hosts = self.database_handler.get_rows("Host", ["host_name"], (host_name,))
+        if hosts: return hosts[0]["host_id"]
+        return None
+
+    def create_host_in_db(self, taxonomy):
+
+        if "Aves" in taxonomy:
+            return self.insert_taxonomy_recursively(taxonomy[:taxonomy.index("Aves")+1])
+
+        return None
+
+    def insert_taxonomy_recursively(self, taxonomy):
+
+        current_host_name = taxonomy[0]
+
+        # Step 1: Check if the current level is already in the database
+        current_id = self.search_host_id_in_scientific_names(current_host_name)
+
+        if current_id is not None:
+            return current_id
+
+        # Step 2: Process the parent level (remaining taxonomy)
+        parent_id = self.insert_taxonomy_recursively(taxonomy[1:])
+
+        # Step 3: Insert the current level and link it to the parent
+        return self.create_host_and_taxonomy_link(current_host_name, parent_id)
+
+    def create_host_and_taxonomy_link(self, host_name, parent_id):
+        host_id = self.database_handler.insert_row("Host", ["host_id", "host_name"],
+                                                   (None, host_name), commit=True)
+        self.database_handler.insert_row("Taxonomy", ["host_id", "parent_id"],
+                                         (host_id, parent_id), commit=True)
+        return host_id
+
+    def create_common_host(self, host_id, common_name):
+        self.database_handler.insert_row("HostCommonName", ["host_id", "common_name"],
+                                         (host_id, common_name), commit=True)
 
     def create_segment(self, header_dict):
 

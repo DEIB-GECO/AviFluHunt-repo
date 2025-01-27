@@ -209,7 +209,10 @@ query_mapping = {
                         'title': 'Top Hosts',
                         'xlabel': '#',
                         'ylabel': 'Host',
-                        'color': 'skyblue'
+                        'color': 'skyblue',
+                        'sort_column': '#',
+                        'plot_column': '#',
+                        'label_column': "#"
                     }
         },
         6: {

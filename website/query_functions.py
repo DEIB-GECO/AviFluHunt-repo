@@ -1,6 +1,7 @@
 import yaml
 from matplotlib import pyplot as plt
 
+import pandas as pd
 from queries import *
 import streamlit as st
 
@@ -16,7 +17,9 @@ db = st.connection(name="fluhunt", type="sql", url="sqlite:///website/data/fluhu
 markers = db.query(get_markers)
 segments = db.query(get_segments)
 annotations = db.query(get_annotations)
-hosts = db.query(get_hosts).sort_values("host")
+hosts = db.query(get_hosts).sort_values("host_name")
+taxonomy = db.query(get_taxonomy)
+taxonomy_hosts = db.query(get_taxonomy_hosts)
 states = db.query(get_states).sort_values("state")
 regions = db.query(get_regions).sort_values("region")
 effects = db.query("SELECT * FROM Effect")
@@ -78,7 +81,79 @@ def params3():
     }
 
 
+def get_host_with_taxonomy():
+
+    taxonomy_hosts_names = dict(zip(taxonomy_hosts['host_id'], taxonomy_hosts['host_name']))
+    taxonomy_tree = build_taxonomy_tree(taxonomy, taxonomy_hosts_names, 0)
+    filtered_taxonomy_tree = filter_taxonomy_by_level(taxonomy_tree, [0, 3, 4])
+
+    selected_l0 = st.multiselect("Select Level 0", options=list(filtered_taxonomy_tree.keys()))
+
+    l1_options = get_next_level_options(filtered_taxonomy_tree, selected_l0)
+    selected_l1 = st.multiselect("Select Level 1", options=l1_options)
+
+    l2_options = get_next_level_options(filtered_taxonomy_tree, selected_l0 + selected_l1)
+    selected_l2 = st.multiselect("Select Level 2", options=l2_options)
+
+    l3_options = get_next_level_options(filtered_taxonomy_tree, selected_l0 + selected_l1 + selected_l2)
+    selected_l3 = st.multiselect("Select Level 3", options=l3_options)
+
+
+def get_next_level_options(current_dict, selected_keys):
+
+    options = []
+    for key in selected_keys:
+        if key in current_dict:
+            options.append(current_dict[key])
+    return options
+
+
+def build_taxonomy_tree(taxonomy_df, host_id_to_name, parent_id):
+    # Initialize an empty dictionary to hold children for the current parent
+    level_dict = {}
+
+    # Get the children of the current parent (parent_id)
+    children = taxonomy_df[taxonomy_df['parent_id'] == parent_id]
+
+    # For each child, add it to the taxonomy_dict
+    for _, row in children.iterrows():
+        host_id = row['host_id']
+        host_name = host_id_to_name.get(host_id, None)
+
+        # Skip the case where host_id == parent_id (self-referencing case)
+        if host_name and host_id != parent_id:  # Avoid self-referencing (0, 0) case
+            # Recursively build the tree for the current host
+            level_dict[host_name] = build_taxonomy_tree(taxonomy_df, host_id_to_name, host_id)
+
+    # Return the parent node and its associated children (level_dict)
+    # Only add the parent node at the root level (not inside the recursion)
+    if parent_id == 0:
+        return {host_id_to_name[parent_id]: level_dict}
+
+    return level_dict
+
+
+def filter_taxonomy_by_level(taxonomy_tree, levels, current_level=0):
+
+    filtered_dict = {}
+
+    if current_level in levels:
+        for key, value in taxonomy_tree.items():
+            filtered_dict[key] = filter_taxonomy_by_level(value, levels, current_level + 1)
+    else:
+        for key, value in taxonomy_tree.items():
+            if isinstance(value, dict) and value:
+                next_level_tree = filter_taxonomy_by_level(value, levels, current_level + 1)
+                return next_level_tree
+            else:
+                filtered_dict[key] = None
+
+    return filtered_dict
+
+
 def params4():
+
+    get_host_with_taxonomy()
 
     host = st.selectbox(label=strings["param_label4a"], options=hosts)
     other_hosts = st.multiselect(label=strings["param_label4b"], options=hosts, max_selections=5)
@@ -192,6 +267,7 @@ def manip_result3(results_pre, params):
     sorted_result = sorted_result[columns]
     return sorted_result
 
+
 def manip_result4(results_pre, params):
     pivot_result = results_pre.pivot(index='Marker', columns='host', values='percentage').reset_index()
     sorted_result = pivot_result.sort_values(by=params["host"], ascending=False)
@@ -201,64 +277,6 @@ def manip_result4(results_pre, params):
     sorted_result = sorted_result[columns]
     sorted_result.columns = [col + " %" if col != 'Marker' else col for col in sorted_result.columns]
     return sorted_result
-
-"""def graph3(result_df, params):
-
-    df_sorted = result_df.head(5)
-    names = df_sorted['Marker']
-    host1_values = df_sorted[params["host1"]]
-    host2_values = df_sorted[params["host2"]]
-    diff_values = df_sorted[f'Diff {params["host1"]} - {params["host2"]}']
-
-    # Bar width and positions
-    bar_width = 0.25
-    index = np.arange(len(names))
-
-    # Create the plot
-    fig, ax = plt.subplots(figsize=(12, 8))
-
-    # Plot bars for host1, host2, and difference
-    bars1 = ax.bar(index - bar_width, host1_values, bar_width, label=params["host1"], color='skyblue')
-    bars2 = ax.bar(index, host2_values, bar_width, label=params["host2"], color='lightgreen')
-    bars3 = ax.bar(index + bar_width, diff_values, bar_width, label=f'Diff {params["host1"]} - {params["host2"]}', color='lightcoral')
-
-    # Set the x-axis labels and title
-    ax.set_xlabel('Marker')
-    ax.set_ylabel('Percentage (%)')
-    ax.set_title('Top 5 Entries: Host1, Host2, and Difference')
-    ax.set_xticks(index)
-    ax.set_xticklabels(names)
-    ax.legend()
-
-    # Rotate x-axis labels for better readability
-    plt.xticks(rotation=45, ha='right')
-
-    # Return the figure and axes
-    return fig
-def graph4(result_df, params):
-
-    top_10_df = result_df.head(10)
-    fig, ax = plt.subplots(figsize=(14, 8))
-
-    num_markers = len(top_10_df)
-    num_hosts = len(top_10_df.columns) - 1
-    bar_width = 0.8 / num_hosts
-    index = range(num_markers)
-    colors = ['r', 'g', 'b', 'c', 'm', 'y']
-
-    for i, host in enumerate(top_10_df.columns[1:]):  # Skip 'marker' column
-        offset = (i - (num_hosts - 1) / 2) * bar_width
-        ax.bar([p + offset for p in index], top_10_df[host], bar_width, label=host, color=colors[i % len(colors)])
-
-    ax.set_xlabel('Marker')
-    ax.set_ylabel('Values')
-    ax.set_title('Top 10 Markers Ordered by ' + params["host"] + "%")
-    ax.set_xticks(index)
-    ax.set_xticklabels(top_10_df['Marker'], rotation=45)
-    ax.legend(title='Hosts')
-    ax.grid(True, linestyle='--', alpha=0.7)
-
-    return plt.gcf()"""
 
 
 def plot_data(result_df, sort_column, plot_column, top_n=20, label_column=None, plot_type='barh', title='',
