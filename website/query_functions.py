@@ -89,13 +89,16 @@ def get_host_with_taxonomy():
 
     selected_l0 = st.multiselect("Select Level 0", options=list(filtered_taxonomy_tree.keys()))
 
-    l1_options = get_next_level_options(filtered_taxonomy_tree, selected_l0)
+    l1_tree = {k: v for d in get_next_level_options(filtered_taxonomy_tree, selected_l0) for k, v in d.items()}
+    l1_options = l1_tree.keys()
     selected_l1 = st.multiselect("Select Level 1", options=l1_options)
 
-    l2_options = get_next_level_options(filtered_taxonomy_tree, selected_l0 + selected_l1)
+    l2_tree = {k: v for d in get_next_level_options(l1_tree, selected_l1) for k, v in d.items()}
+    l2_options = l2_tree.keys()
     selected_l2 = st.multiselect("Select Level 2", options=l2_options)
 
-    l3_options = get_next_level_options(filtered_taxonomy_tree, selected_l0 + selected_l1 + selected_l2)
+    l3_tree = {k: v for d in get_next_level_options(l2_tree, selected_l2) for k, v in d.items()}
+    l3_options = l3_tree.keys()
     selected_l3 = st.multiselect("Select Level 3", options=l3_options)
 
 
