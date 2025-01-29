@@ -81,7 +81,7 @@ def params3():
     }
 
 
-def get_host_with_taxonomy():
+"""def get_host_with_taxonomy():
 
     taxonomy_hosts_names = dict(zip(taxonomy_hosts['host_id'], taxonomy_hosts['host_name']))
     taxonomy_tree = build_taxonomy_tree(taxonomy, taxonomy_hosts_names, 0)
@@ -109,6 +109,7 @@ def get_next_level_options(current_dict, selected_keys):
         if key in current_dict:
             options.append(current_dict[key])
     return options
+"""
 
 
 def build_taxonomy_tree(taxonomy_df, host_id_to_name, parent_id):
@@ -154,12 +155,30 @@ def filter_taxonomy_by_level(taxonomy_tree, levels, current_level=0):
     return filtered_dict
 
 
+def get_all_keys(d, keys=None):
+    if keys is None:
+        keys = set()
+
+    if isinstance(d, dict):
+        for k, v in d.items():
+            keys.add(k)
+            get_all_keys(v, keys)  # Recursive call for nested dictionaries
+    elif isinstance(d, list):  # Handle lists of dictionaries
+        for item in d:
+            get_all_keys(item, keys)
+
+    return keys
+
+
 def params4():
 
-    get_host_with_taxonomy()
+    taxonomy_hosts_names = dict(zip(taxonomy_hosts['host_id'], taxonomy_hosts['host_name']))
+    taxonomy_tree = build_taxonomy_tree(taxonomy, taxonomy_hosts_names, 0)
+    filtered_taxonomy_tree = filter_taxonomy_by_level(taxonomy_tree, [0, 3, 4])
 
-    host = st.selectbox(label=strings["param_label4a"], options=hosts)
-    other_hosts = st.multiselect(label=strings["param_label4b"], options=hosts, max_selections=5)
+    host = st.selectbox(label=strings["param_label4a"], options=sorted(get_all_keys(filtered_taxonomy_tree)))
+    other_hosts = st.multiselect(label=strings["param_label4b"], options=sorted(get_all_keys(filtered_taxonomy_tree)),
+                                 max_selections=5)
 
     return {
         "host": host,
@@ -272,7 +291,7 @@ def manip_result3(results_pre, params):
 
 
 def manip_result4(results_pre, params):
-    pivot_result = results_pre.pivot(index='Marker', columns='host', values='percentage').reset_index()
+    pivot_result = results_pre.pivot(index='Marker', columns='host_name', values='percentage').reset_index()
     sorted_result = pivot_result.sort_values(by=params["host"], ascending=False)
     columns = list(sorted_result.columns)
     columns.remove(params["host"])

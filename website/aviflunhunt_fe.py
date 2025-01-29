@@ -180,7 +180,7 @@ def build_query_input_form(query_selection, global_config):
             st.write(global_config.text_resources["query_inputs_label"], unsafe_allow_html=True)
             query, params = get_query_and_params(query_selection)
             if st.form_submit_button("Submit"):
-                run_query(global_config.database_connection, query, params)
+                run_query(global_config.database_connection, query_selection, query, params)
                 get_result_graph(query_selection)
 
 

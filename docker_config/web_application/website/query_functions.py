@@ -17,6 +17,7 @@ with open('website/resources/strings.yaml', 'r') as yaml_file:
 # FUNCTIONS
 def run_query(query_selection, db, query_col, input_col):
 
+    print(query_selection)
     with query_col:
         st.write(strings[f"explanation{query_selection}"], unsafe_allow_html=True)
 

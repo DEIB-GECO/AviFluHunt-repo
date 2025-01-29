@@ -90,8 +90,18 @@ def order_table(dataframe):
         dataframe.reset_index(drop=True, inplace=True)
 
 
-def run_query(database_connection, query, local_params):
-    st.session_state.result = database_connection.query(query, params=local_params | get_global_isolates_params())
+def run_query(database_connection, query_selection, query, local_params):
+    result = database_connection.query(query, params=local_params | get_global_isolates_params())
+    st.session_state.result = manip_result(result, query_selection, local_params)
+
+
+def manip_result(result, query_selection, local_params):
+    if result is not None:
+        if query_selection == 3:
+            return manip_result3(result, local_params)
+        if query_selection == 4:
+            return manip_result4(result, local_params)
+    return result
 
 
 def get_result_graph(selection):
@@ -154,7 +164,7 @@ def get_pygwalker_default_config(selected_query_index):
 
 @st.cache_data(show_spinner=False)
 def split_frame(df, rows):
-    df = [df.loc[i: i + rows - 1, :] for i in range(0, len(df), rows)]
+    df = [df.loc[i: min(i + rows - 1, len(df) - 1), :] for i in range(0, len(df), rows)]
     return df
 
 
