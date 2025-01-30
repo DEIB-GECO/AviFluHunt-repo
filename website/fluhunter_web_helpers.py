@@ -43,7 +43,7 @@ def init_session():
     if 'global_regions' not in st.session_state:
         st.session_state.global_regions = None
     if 'g_regions' not in st.session_state:
-        st.session_state.g_regions = []
+        st.session_state.g_regions = fe_get_regions(db)['region'].tolist()
     if 'global_states' not in st.session_state:
         st.session_state.global_states = None
     if 'global_start_year' not in st.session_state:
@@ -187,7 +187,8 @@ def get_locations_from_regions(database_connection, regions):
     locations_from_regions = \
         ("SELECT DISTINCT state FROM Location "
          "WHERE region IN (" + ",".join([f":{reg.replace(" ", "")}" for reg in regions]) + ")")
-    return database_connection.query(locations_from_regions, params={f"{reg.replace(" ", "")}": reg for reg in regions})
+    return database_connection.query(locations_from_regions,
+                                     params={reg.replace(" ", ""): regions[reg] for reg in regions})
 
 
 query_mapping = {
