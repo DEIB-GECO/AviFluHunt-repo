@@ -273,7 +273,7 @@ def params15():
     selected_markers = st.multiselect(label=strings["param_label15a"], options=markers, max_selections=10)
     cleaned_markers = {marker.replace(":", "").replace("-", ""): marker for marker in selected_markers}
     placeholder_string = ', '.join(f":{key}" for key in cleaned_markers.keys())
-    return {"placeholder": placeholder_string}
+    return {"markers_placeholder": placeholder_string, **cleaned_markers}
 
 
 def manip_result3(results_pre, params):

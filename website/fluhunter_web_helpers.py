@@ -130,7 +130,7 @@ def get_global_isolates_params():
 def replace_query_placeholders(selected_query_index, query, params):
 
     if selected_query_index in {1, 15}:
-        query = query.replace("placeholder", params["placeholder"])
+        query = query.replace("markers_placeholder", params["markers_placeholder"])
     if selected_query_index in {3, 4}:
         query = query.replace("hosts", params["hosts"])
 
