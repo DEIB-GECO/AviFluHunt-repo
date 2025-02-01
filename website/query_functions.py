@@ -39,7 +39,7 @@ def params1():
 
     return {
         **cleaned_markers,
-        "placeholder": placeholder_string
+        "markers_placeholder": placeholder_string
     }
 
 
@@ -243,7 +243,8 @@ def params10():
         offset = st.number_input(label=strings["param_label10d"], min_value=0, step=1, value=0)
 
     if bin_size == 0:
-        bins = None
+        bins = [(st.session_state[f"start_{i + 1}"], st.session_state[f"end_{i + 1}"])
+                for i in range(st.session_state.num_inputs)]
     else:
         bins = [(i, i + bin_size) for i in range(offset, 1000 + offset, bin_size)][0:500]
 
@@ -265,7 +266,7 @@ def params13():
 
 
 def params14():
-    effect_full = st.selectbox(label=strings["param_label14a"], options=effects)
+    effect_full = st.selectbox(label=strings["param_label14a"], options=effects["effect_full"].tolist())
     return {"effect_full": effect_full}
 
 
@@ -277,10 +278,11 @@ def params15():
 
 
 def manip_result3(results_pre, params):
-    pivot_result = results_pre.pivot(index='Marker', columns='host', values='percentage').reset_index()
-    pivot_result[f'Diff {params["host1"]} - {params["host2"]}'] = (
+    print(results_pre)
+    pivot_result = results_pre.pivot(index='Marker', columns='host_name', values='percentage').reset_index()
+    pivot_result[f'Diff'] = (
             pivot_result[params["host1"]] - pivot_result[params["host2"]])
-    sorted_result = pivot_result.sort_values(by=f'Diff {params["host1"]} - {params["host2"]}', ascending=False)
+    sorted_result = pivot_result.sort_values(by=f'Diff', ascending=False)
     columns = list(sorted_result.columns)
     columns.remove(params["host1"])
     columns.insert(1, params["host1"])

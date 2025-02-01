@@ -74,7 +74,7 @@ get_filtered_isolates_count = \
 get_markers_literature = \
     (f"WITH SelectedMarkersIds AS ("
      f"SELECT marker_id FROM Marker "
-     f"WHERE name IN (placeholder)), "
+     f"WHERE name IN (markers_placeholder)), "
      f""
      f"SelectedMarkerGroupsIds AS ("
      f"SELECT DISTINCT marker_group_id FROM MarkerToGroup MTG "
@@ -136,7 +136,7 @@ get_markers_by_human_percentage = \
      "JOIN IsolatesFiltered isolate ON segment.isolate_epi = isolate.isolate_epi "
      "JOIN Subtype subtype ON isolate.subtype_id = subtype.subtype_id "
      "JOIN HostCommonName HCN ON Isolate.host_id = HCN.host_id "
-     "WHERE HCN.host_name = 'Human' "
+     "WHERE HCN.common_name = 'Human' "
      "AND (segment.segment_type == :segment_type OR :segment_type IS NULL) "
      "AND (subtype.name == :subtype OR :subtype IS NULL)), "
      ""
@@ -370,8 +370,7 @@ get_markers_location_distribution = \
      "SELECT DISTINCT segment.segment_id, location.state "
      "FROM Segment segment "
      "JOIN IsolatesFiltered isolate ON segment.isolate_epi = isolate.isolate_epi "
-     "JOIN Location location ON isolate.location_id = location.location_id "
-     "WHERE (location.region = :region OR :region IS NULL)) "
+     "JOIN Location location ON isolate.location_id = location.location_id) "
      ""
      "SELECT SBS.state as 'State', "
      "COUNT(DISTINCT segmentMarkers.segment_id) AS '# Found in Location',"
@@ -407,6 +406,7 @@ get_markers_location_distribution = \
 # --------------------------------------------------------------
 # NOTE: view SegmentMarker(segment_id, marker_id), tells whether a marker is found in a given segment
 
+# TODO: taxonomy
 get_most_common_markers_by_filters = \
     ("WITH IsolatesFiltered AS ("
      "SELECT * FROM Isolate isolate "
@@ -429,8 +429,6 @@ get_most_common_markers_by_filters = \
      "JOIN Subtype subtype ON isolate.subtype_id = subtype.subtype_id "
      "JOIN HOST host ON isolate.host_id = host.host_id "
      "WHERE (host.host_name = :host OR :host IS NULL) "
-     "AND (location.region = :region OR :region IS NULL) "
-     "AND (location.state = :state OR :state IS NULL) "
      "AND (segment.segment_type == :segment_type OR :segment_type IS NULL) "
      "AND (subtype.name == :subtype OR :subtype IS NULL)), "
      ""
@@ -617,7 +615,7 @@ get_segment_mutability_zones = \
      "JOIN Bin bin ON mutation.position BETWEEN bin.start_range AND bin.end_range "
      "JOIN SegmentMutations segmentMutations ON mutation.mutation_id = segmentMutations.mutation_id  "
      "WHERE segmentMutations.segment_id IN SelectedSegments "
-     "AND (mutation.annotation_name_mut == :segment_type OR :segment_type IS NULL) "  # TODO CHANGE
+     "AND (mutation.annotation_name_mut == :segment_type OR :segment_type IS NULL) "
      "GROUP BY bin.start_range, bin.end_range "
      "ORDER BY start_range) "
      ""
@@ -662,10 +660,7 @@ get_mutability_peak_months = \
   "FROM Segment segment  "
   "JOIN IsolatesFiltered isolate ON segment.isolate_epi = isolate.isolate_epi "
   "JOIN Subtype subtype ON isolate.subtype_id = subtype.subtype_id "
-  "WHERE (segment.segment_type == :segment_type OR :segment_type IS NULL) "
-  "AND (subtype.name = :subtype OR :subtype IS NULL) "
-  "AND (strftime('%Y', isolate.collection_date) * 100 + strftime('%m', isolate.collection_date)) "
-  "BETWEEN (:start_year * 100 + :start_month) AND (:end_year * 100 + :end_month)) "
+  "WHERE (segment.segment_type == :segment_type OR :segment_type IS NULL)) "
   ""
   "SELECT month AS 'Month', year AS 'Year', "
   "COUNT(DISTINCT mutation.mutation_id) AS '# Mutation', "
@@ -767,7 +762,7 @@ get_group_of_marker = \
      "JOIN Paper paper ON MGPAE.paper_id = paper.paper_id "
      "WHERE MGN.marker_group_id IN ( "
      "SELECT marker_group_id FROM MarkerToGroup WHERE marker_id = "
-     "(SELECT marker_id FROM Marker WHERE name = :marker_name))")
+     "(SELECT marker_id FROM Marker WHERE name = :marker))")
 
 
 # --------------------------------------------------------------

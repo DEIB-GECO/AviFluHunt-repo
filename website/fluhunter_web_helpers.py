@@ -129,6 +129,9 @@ def get_global_isolates_params():
 
 def replace_query_placeholders(selected_query_index, query, params):
 
+    if selected_query_index == 10:
+        query = with_query10(params["bins"]) + query
+
     if selected_query_index in {1, 15}:
         query = query.replace("markers_placeholder", params["markers_placeholder"])
     if selected_query_index in {3, 4}:
@@ -216,15 +219,15 @@ query_mapping = {
             'query': get_marker_host_distribution,
             'params_func': get_marker,
             'plot_params': {
-                        'top_n': 20,
-                        'title': 'Top Hosts',
-                        'xlabel': '#',
-                        'ylabel': 'Host',
-                        'color': 'skyblue',
-                        'sort_column': '#',
-                        'plot_column': '#',
-                        'label_column': "#"
-                    }
+                'top_n': 20,
+                'title': 'Top Hosts',
+                'xlabel': '#',
+                'ylabel': 'Host',
+                'color': 'skyblue',
+                'sort_column': '#',
+                'plot_column': '#',
+                'label_column': "#"
+            }
         },
         6: {
             'query': get_markers_location_distribution,
@@ -234,7 +237,10 @@ query_mapping = {
                 'title': 'Top States',
                 'xlabel': 'Normalized Percentage',
                 'ylabel': 'State',
-                'color': 'skyblue'
+                'color': 'skyblue',
+                'sort_column': 'Normalized Percentage',
+                'plot_column': 'Normalized Percentage',
+                'label_column': "Normalized Percentage"
             }
         },
         7: {
