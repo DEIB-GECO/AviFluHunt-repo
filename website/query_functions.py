@@ -340,9 +340,26 @@ def plot_data(result_df, sort_column, plot_column, top_n=20, label_column=None, 
                 yval = bar.get_height()
                 plt.text(bar.get_x() + bar.get_width() / 2, yval, int(yval), va='bottom', ha='center')
     elif plot_type == 'line':
+        # Convert Year to integer
+        df_sorted['Year'] = df_sorted['Year'].astype(int)
+
+        # Sort by Year in ascending order
+        df_sorted = df_sorted.sort_values(by='Year', ascending=True)
+
+        # Get the full range of years
+        all_years = range(df_sorted['Year'].min(), df_sorted['Year'].max() + 1)
+
+        # Plot each marker line
         for marker in df_sorted['Marker'].unique():
             subset = df_sorted[df_sorted['Marker'] == marker]
-            plt.plot(subset['Year'], subset['Percentage'], marker='o', label=marker)
+
+            # Reindex to include all years, filling missing values with NaN
+            subset = subset.set_index('Year').reindex(all_years).reset_index()
+
+            plt.plot(subset['Year'], subset['Percentage'], marker='^', label=marker)
+
+        # Set x-ticks to show all years
+        plt.xticks(all_years)
 
     # Customize the plot
     plt.xlabel(xlabel)

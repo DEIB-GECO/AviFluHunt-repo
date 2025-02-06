@@ -219,28 +219,30 @@ query_mapping = {
             'query': get_marker_host_distribution,
             'params_func': get_marker,
             'plot_params': {
+                'plot_type': "bar",
                 'top_n': 20,
                 'title': 'Top Hosts',
-                'xlabel': '#',
-                'ylabel': 'Host',
+                'xlabel': 'Host',
+                'ylabel': '#',
                 'color': 'skyblue',
-                'sort_column': '#',
+                'sort_column': '#', 
                 'plot_column': '#',
-                'label_column': "#"
+                'label_column': "Host"
             }
         },
         6: {
             'query': get_markers_location_distribution,
             'params_func': get_marker,
             'plot_params': {
+                'plot_type': "bar",
                 'top_n': 20,
                 'title': 'Top States',
-                'xlabel': 'Normalized Percentage',
-                'ylabel': 'State',
+                'xlabel': 'State',
+                'ylabel': 'Normalized Percentage',
                 'color': 'skyblue',
                 'sort_column': 'Normalized Percentage',
                 'plot_column': 'Normalized Percentage',
-                'label_column': "Normalized Percentage"
+                'label_column': "State"
             }
         },
         7: {
@@ -252,13 +254,14 @@ query_mapping = {
             'query': get_host_by_n_of_markers,
             'params_func': params8,
             'plot_params': {
+                'plot_type': "bar",
                 'top_n': 10,
                 'title': 'Top 10 Hosts by Distinct Markers',
                 'xlabel': 'Host',
                 'ylabel': 'Distinct Markers Per Host',
                 'color': 'skyblue',
                 'show_values': True,
-                'sort_column': 'Distinct Markers Per Host',
+                'sort_column': 'Host',
                 'plot_column': 'Distinct Markers Per Host',
                 'label_column': 'Host'
             }
@@ -267,12 +270,13 @@ query_mapping = {
             'query': get_markers_by_relevance,
             'params_func': params9,
             'plot_params': {
+                'plot_type': "bar",
                 'top_n': 10,
                 'title': 'Top 10 Markers by Percentage',
                 'xlabel': 'Marker',
-                'ylabel': 'Markers By Percentage',
+                'ylabel': 'Percentage',
                 'color': 'skyblue',
-                'show_values': True,
+                'show_values': False,
                 'sort_column': 'Percentage',
                 'plot_column': 'Percentage',
                 'label_column': 'Marker'
@@ -306,7 +310,18 @@ query_mapping = {
         15: {
             'query': get_markers_over_time,
             'params_func': params15,
-            'plot_params': {}
+            'plot_params': {
+                'plot_type': "line",
+                'top_n': 1000,
+                'title': 'Marker prevalence over the years',
+                'xlabel': 'Year',
+                'ylabel': 'Prevalence',
+                'color': 'skyblue',
+                'show_values': True,
+                'sort_column': 'Year',
+                'plot_column': 'Year',
+                'label_column': 'Year'
+            }
         }
     }
 
