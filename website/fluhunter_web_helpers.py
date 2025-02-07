@@ -225,7 +225,7 @@ query_mapping = {
                 'xlabel': 'Host',
                 'ylabel': '#',
                 'color': 'skyblue',
-                'sort_column': '#', 
+                'sort_column': '#',
                 'plot_column': '#',
                 'label_column': "Host"
             }

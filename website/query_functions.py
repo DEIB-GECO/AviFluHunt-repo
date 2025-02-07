@@ -342,6 +342,7 @@ def plot_data(result_df, sort_column, plot_column, top_n=20, label_column=None, 
     elif plot_type == 'line':
         # Convert Year to integer
         df_sorted['Year'] = df_sorted['Year'].astype(int)
+        df_sorted = df_sorted[df_sorted['Year'] > 2000]
 
         # Sort by Year in ascending order
         df_sorted = df_sorted.sort_values(by='Year', ascending=True)

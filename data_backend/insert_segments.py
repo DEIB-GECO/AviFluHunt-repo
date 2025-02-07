@@ -192,12 +192,20 @@ class MutationDatabaseHandler:
 
         host = isolate_metadata[17]
 
-        host_id = self.search_host_id_in_common_names(host)
-        if host_id is None:
+        if host:
 
-            host_taxonomy = [taxon.scientific_name for taxon in self.taxonomy_handler.retrieve_taxonomy(host, 8782)]
-            host_id = self.create_host_in_db(host_taxonomy)
-            self.create_common_host(host_id, host)
+            host_id = self.search_host_id_in_common_names(host)
+            if host_id is None:
+
+                try:
+                    taxonomy = self.taxonomy_handler.retrieve_taxonomy(host, 8782)
+                    host_taxonomy = [taxon.scientific_name for taxon in taxonomy]
+                    host_id = self.create_host_in_db(host_taxonomy)
+                    self.create_common_host(host_id, host)
+                except TypeError:
+                    host_id = -1  # NCBI Problem
+        else:
+            host_id = -1
 
         collection_date = isolate_metadata[25]
         location_id = self.get_location_id(isolate_metadata[16])
@@ -223,8 +231,10 @@ class MutationDatabaseHandler:
 
         if "Aves" in taxonomy:
             return self.insert_taxonomy_recursively(taxonomy[:taxonomy.index("Aves")+1])
+        elif "Mammalia" in taxonomy:
+            return self.insert_taxonomy_recursively(taxonomy[:taxonomy.index("Mammalia")+1])
 
-        return None
+        return -1
 
     def insert_taxonomy_recursively(self, taxonomy):
 
@@ -515,7 +525,7 @@ class MutationDatabaseHandler:
     @staticmethod
     def correct_start_end_deletions(reference, target):
 
-        # Count the number of '-' at the start and end of the target string
+        # Count the number of '-' at theHost start and end of the target string
         start_dashes = len(target) - len(target.lstrip('-'))
         end_dashes = len(target) - len(target.rstrip('-'))
 
@@ -531,6 +541,6 @@ class MutationDatabaseHandler:
 
 
 if __name__ == "__main__":
-    fasta = "resources/segments_data/H5/H5N1/test.fasta"
+    fasta = "resources/segments_data/H5/H5N1/H5N1_Fasta.fasta"
     meta = "resources/segments_data/H5/H5N1/H5N1_Metadata.xls"
     MutationDatabaseHandler(meta, fasta)

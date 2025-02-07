@@ -119,6 +119,11 @@ CREATE TABLE IF NOT EXISTS "Host" (
 	PRIMARY KEY("host_id")
 );
 
+INSERT INTO Host (host_id, host_name)
+VALUES
+    (0, 'Aves'),
+    (1, 'Mammalia');
+
 CREATE TABLE IF NOT EXISTS "HostCommonName" (
 	"host_id"	INTEGER,
 	"common_name"	TEXT NOT NULL UNIQUE,
