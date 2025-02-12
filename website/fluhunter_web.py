@@ -340,6 +340,25 @@ svg * {
     margin-bottom: 2vh;
 }
 
+.st-key-global_input_recap {
+    background-color: var(--accent-color);
+    padding: 10% !important; 
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1vh;
+    max-width: 100%;
+    box-sizing: border-box !important; 
+    overflow: hidden !important; 
+    word-wrap: break-word !important; 
+}
+
+.st-key-global_input_recap * {
+    max-width: 100%;
+    box-sizing: border-box !important; 
+    overflow: hidden !important; 
+    word-wrap: break-word !important; 
+}
+
 .st-key-query_inputs_container svg * {
     color: white;
 }

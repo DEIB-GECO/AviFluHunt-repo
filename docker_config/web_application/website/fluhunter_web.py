@@ -94,7 +94,7 @@ def enhance_pygwalker(selection, dataframe_columns, pyg_json_config):
 
 st.write(strings["website_name"], unsafe_allow_html=True)
 
-query_buttons = ["Markers Effects", "Markers", "Markers with Filters", "Mutations"]
+query_buttons = ["Markers Effects", "Markers", "Markers and Hosts", "Mutations"]
 queries_for_button = [[1, 12, 13, 14], [9, 7, 6], [5, 2, 3, 4, 8], [10, 11]]
 
 with st.container():

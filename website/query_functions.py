@@ -278,11 +278,11 @@ def params15():
 
 
 def manip_result3(results_pre, params):
-    print(results_pre)
     pivot_result = results_pre.pivot(index='Marker', columns='host_name', values='percentage').reset_index()
     pivot_result[f'Diff'] = (
             pivot_result[params["host1"]] - pivot_result[params["host2"]])
     sorted_result = pivot_result.sort_values(by=f'Diff', ascending=False)
+    print(pivot_result)
     columns = list(sorted_result.columns)
     columns.remove(params["host1"])
     columns.insert(1, params["host1"])

@@ -176,12 +176,48 @@ def build_query_selector(global_config):
 def build_query_input_form(query_selection, global_config):
 
     with st.container(key="query_inputs_container"):
+        recap_global_filters(global_config)
         with st.form(f"query_inputs_{query_selection}"):
             st.write(global_config.text_resources["query_inputs_label"], unsafe_allow_html=True)
             query, params = get_query_and_params(query_selection)
             if st.form_submit_button("Submit"):
                 run_query(global_config.database_connection, query_selection, query, params)
                 get_result_graph(query_selection)
+
+
+def recap_global_filters(global_config):
+
+    global_filters = {
+        "global_start_year": st.session_state.global_start_year,
+        "global_end_year": st.session_state.global_end_year,
+        "global_start_month": st.session_state.global_start_month,
+        "global_end_month": st.session_state.global_end_month,
+        "regions": st.session_state.global_regions if st.session_state.global_regions else [],
+        "states": st.session_state.global_states if st.session_state.global_states else []
+    }
+
+    all_regions = fe_get_regions(global_config.database_connection)['region'].tolist()
+    try:
+        selected_regions = global_filters["regions"].values()
+    except AttributeError:
+        selected_regions = []
+    regions_display = "All" if set(selected_regions) == set(all_regions) else ", ".join(selected_regions)
+
+    with st.container(key="global_input_recap"):
+
+        st.write(global_config.text_resources["global_input_recap_label"], unsafe_allow_html=True)
+
+        date_range = f"From {global_filters['global_start_month']:02d}/{global_filters['global_start_year']} to {global_filters['global_end_month']:02d}/{global_filters['global_end_year']}"
+        st.markdown(f"**📅** {date_range}")
+
+        st.markdown(f"**🌎 Selected Regions:** {regions_display}")
+
+        if global_filters["states"]:
+            states_list = ", ".join(global_filters["states"])
+            st.markdown(f"**🏛 Selected States:** {states_list}")
+        else:
+            st.markdown(f"**🏛 Selected States:**")
+            st.info("No states selected.")
 
 
 def get_query_and_params(selected_query_index):
@@ -240,11 +276,12 @@ def build_table_settings(selected_query_index):
 
 
 def build_table(batch_size, current_page):
+    # TODO: fix
     with st.container(key="table_container"):
         if st.session_state.result is not None and not st.session_state.result.empty:
             pagination = st.container()
             pages = split_frame(st.session_state.result, batch_size)
-            pagination.table(pages[current_page - 1])
+            pagination.table(st.session_state.result)
 
 
 def build_download_button():
