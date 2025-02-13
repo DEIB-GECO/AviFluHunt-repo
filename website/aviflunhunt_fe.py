@@ -1,4 +1,6 @@
 import datetime
+import io
+
 from streamlit_option_menu import option_menu
 from fluhunter_web_helpers import *
 from pygwalker.api.streamlit import StreamlitRenderer
@@ -88,12 +90,25 @@ def build_date_global_filter():
     with st.container(key="date_global_filter"):
 
         st.write("📅 Timeframe")
-        start_date = st.date_input('Start Date', datetime.date(1959, 1, 1),
+
+        # Set default values if they are not already in session state
+        if "global_start_date" not in st.session_state:
+            st.session_state.global_start_date = datetime.date(1959, 1, 1)
+        if "global_end_date" not in st.session_state:
+            st.session_state.global_end_date = datetime.date.today()
+
+        # Create the date input fields
+        start_date = st.date_input('Start Date', st.session_state.global_start_date,
                                    min_value=datetime.date(1900, 1, 1),
                                    max_value=datetime.date.today())
-        end_date = st.date_input('End Date', datetime.date.today(),
+        end_date = st.date_input('End Date', st.session_state.global_end_date,
                                  min_value=datetime.date(1900, 1, 1))
 
+        # Store the selected dates in session_state
+        st.session_state.global_start_date = start_date
+        st.session_state.global_end_date = end_date
+
+        # Store year and month separately
         st.session_state.global_start_year = start_date.year
         st.session_state.global_end_year = end_date.year
         st.session_state.global_start_month = start_date.month
@@ -106,6 +121,8 @@ def build_isolates_remaining_information(global_config):
         filtered_isolates = fe_get_filtered_isolates_count(global_config.database_connection)["count"].tolist()[0]
         all_isolates = fe_get_all_isolates_count(global_config.database_connection)["count"].tolist()[0]
         st.html(f"<hr><h4 id='isolates_filtered_h4'>Considering {filtered_isolates} isolates out of {all_isolates}</h4>")
+        if st.button("Close"):
+            st.rerun()
 
 
 @st.dialog("About")
@@ -207,7 +224,10 @@ def recap_global_filters(global_config):
 
         st.write(global_config.text_resources["global_input_recap_label"], unsafe_allow_html=True)
 
-        date_range = f"From {global_filters['global_start_month']:02d}/{global_filters['global_start_year']} to {global_filters['global_end_month']:02d}/{global_filters['global_end_year']}"
+        try:
+            date_range = f"From {global_filters['global_start_month']:02d}/{global_filters['global_start_year']} to {global_filters['global_end_month']:02d}/{global_filters['global_end_year']}"
+        except TypeError:
+            date_range = "Not available"
         st.markdown(f"**📅** {date_range}")
 
         st.markdown(f"**🌎 Selected Regions:** {regions_display}")
@@ -218,6 +238,10 @@ def recap_global_filters(global_config):
         else:
             st.markdown(f"**🏛 Selected States:**")
             st.info("No states selected.")
+
+        st.write('<br>', unsafe_allow_html=True)
+        filtered_isolates = fe_get_filtered_isolates_count(global_config.database_connection)["count"].tolist()[0]
+        st.markdown(f"**Isolates: {filtered_isolates}**")
 
 
 def get_query_and_params(selected_query_index):
@@ -242,6 +266,20 @@ def build_results_container(selected_query_index):
 def build_graph_tab():
     with st.container(key="graph_tab"):
         if st.session_state.graph is not None:
+
+            # Save the figure to a BytesIO buffer
+            buf = io.BytesIO()
+            st.session_state.graph.savefig(buf, format="png")
+            buf.seek(0)
+
+            # Add a download button
+            st.download_button(
+                label="Download Graph as PNG",
+                data=buf,
+                file_name="graph.png",
+                mime="image/png"
+            )
+
             empty1, img_col, empty2 = st.columns([0.025, 0.9, 0.025])
             with img_col:
                 st.pyplot(st.session_state.graph)
@@ -251,8 +289,8 @@ def build_table_tab(selected_query_index):
     with st.container(key="table_tab"):
         if st.session_state.result is not None:
             batch_size, current_page = build_table_settings(selected_query_index)
-            build_table(batch_size, current_page)
             build_download_button()
+            build_table(batch_size, current_page)
 
 
 def build_table_settings(selected_query_index):
