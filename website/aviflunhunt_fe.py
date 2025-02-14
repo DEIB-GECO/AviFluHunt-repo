@@ -116,11 +116,13 @@ def build_date_global_filter():
 
 
 def build_isolates_remaining_information(global_config):
+
+    st.html(f"<hr>")
     with st.container(key="isolates_remaining"):
 
         filtered_isolates = fe_get_filtered_isolates_count(global_config.database_connection)["count"].tolist()[0]
         all_isolates = fe_get_all_isolates_count(global_config.database_connection)["count"].tolist()[0]
-        st.html(f"<hr><h4 id='isolates_filtered_h4'>Considering {filtered_isolates} isolates out of {all_isolates}</h4>")
+        st.html(f"<h4 id='isolates_filtered_h4'>Considering {filtered_isolates} isolates out of {all_isolates}</h4>")
         if st.button("Close"):
             st.rerun()
 
@@ -254,13 +256,21 @@ def get_query_and_params(selected_query_index):
 
 def build_results_container(selected_query_index):
     with (st.container(key="results_container")):
-        table_tab, graph_tab, explore_tab = st.tabs(["Tabular"] + ["Graph"] + ["Explore Data"])
-        with table_tab:
-            build_table_tab(selected_query_index)
-        with graph_tab:
-            build_graph_tab()
-        with explore_tab:
-            build_explore_tab(selected_query_index)
+
+        if query_mapping[selected_query_index]["plot_params"]:
+
+            table_tab, graph_tab, explore_tab = st.tabs(["Data"] + ["Graph"] + ["Explore Data"])
+            with table_tab:
+                build_table_tab(selected_query_index)
+            with graph_tab:
+                build_graph_tab()
+            with explore_tab:
+                build_explore_tab(selected_query_index)
+
+        else:
+            table_tab = st.tabs(["Data"])[0]
+            with table_tab:
+                build_table_tab(selected_query_index)
 
 
 def build_graph_tab():

@@ -8,7 +8,7 @@ class GlobalConfig:
     queries = {
         "Markers Effects": [1, 12, 13, 14],
         "Markers": [9, 7, 6, 15],
-        "Markers with Filters": [5, 2, 3, 4, 8],
+        "Markers and Hosts": [5, 2, 3, 4, 8],
         "Mutations": [10, 11]
     }
     database_connection = db
@@ -183,6 +183,36 @@ h1 {
     flex: content !important;
 }
 
+.st-key-isolates_remaining {
+    display: inline-block !important;
+}
+
+.st-key-isolates_remaining * {
+    vertical-align: center !important;
+}
+
+.st-key-isolates_remaining > div:nth-child(3) {
+    width: 50%;
+    float: left !important;
+}
+
+.st-key-isolates_remaining > div:nth-child(4) {
+    width: 50%;
+    float: right !important;
+    align: right !important;
+}
+
+.st-key-isolates_remaining > div:nth-child(4) button {
+    margin-left: 40%;
+    width: 10%;
+    background-color: var(--accent-color);
+}
+
+.st-key-isolates_remaining > div:nth-child(4) button p {
+    color: white;
+    margin-top: 0 !important;
+}
+
 .stDialog [aria-label="dialog"] {
     padding: 1.5%;
     width: 80%;
@@ -217,13 +247,16 @@ h1 {
     color: black;
 }
 
+.stDialog [aria-label="Close"] {
+    visibility: hidden;
+}
+
 hr {
     background-color: #777;
 }
 
 #isolates_filtered_h4 {
     color: black;
-    margin-top: -2vh;
 }
 
 .st-key-main_page {
@@ -342,7 +375,7 @@ svg * {
 
 .st-key-global_input_recap {
     background-color: var(--accent-color);
-    padding: 10% !important; 
+    padding: 7.5% !important; 
     border-radius: 10px;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
     margin-bottom: 1vh;
