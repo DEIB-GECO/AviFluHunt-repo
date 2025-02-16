@@ -75,7 +75,7 @@ input {
     scrollbar-color: rgba(0, 0, 0, 0) rgba(255, 255, 255, 0); /* Thumb and background color */
 }
 
-.st-emotion-cache-1jicfl2 {
+.stMainBlockContainer {
     padding: 0;
     font-family: Poppins, sans-serif !important;
 }
@@ -132,7 +132,7 @@ input {
 }
 
 
-h1 {
+#avifluhunt {
 
     margin: 0;
     margin-left: 2vw;
@@ -535,7 +535,12 @@ button:hover > svg * {
 
 .stTable * {
     color: black;
-    border: 1px solid rgba(0, 0, 0, 0.3) !important;
+    border: 0.5px solid rgba(0, 0, 0, 0.3) !important;
+}
+
+.stTable div,
+.stTable p {
+    border: 0 !important;
 }
 
 thead * {

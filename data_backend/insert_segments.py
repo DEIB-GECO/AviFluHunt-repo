@@ -1,5 +1,6 @@
 import gc
 import os
+import re
 import sys
 import shutil
 import pandas as pd
@@ -211,11 +212,30 @@ class MutationDatabaseHandler:
         location_id = self.get_location_id(isolate_metadata[16])
         subtype_id = self.get_subtype(isolate_metadata[12].split("/")[-1].strip())["subtype_id"]
 
+        #clade = isolate_metadata[14]
+        #print(self.extract_clade_levels(clade))
+
         self.database_handler.insert_row("Isolate",
                                          ["isolate_id", "isolate_epi", "subtype_id",
                                           "host_id", "collection_date", "location_id"],
                                          (None, isolate_epi, subtype_id, host_id, collection_date, location_id,))
         return 0
+
+    @staticmethod
+    def extract_clade_levels(clade_str):
+        pattern = r'^(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?(?:([a-z]))?$'
+        match = re.match(pattern, clade_str)
+        if not match:
+            return None, None, None, None, None
+
+        lv1, lv2, lv3, lv4, suffix = match.groups()
+        return lv1, lv2, lv3, lv4, suffix
+
+    def search_clade_id_by_name(self, clade_name):
+        clades = self.database_handler.get_rows("Clade", ["clade_name"], (clade_name,))
+        if clades:
+            return clades[0]["clade_id"]
+        return None
 
     def search_host_id_in_common_names(self, host_name):
         hosts = self.database_handler.get_rows("HostCommonName", ["common_name"], (host_name,))
@@ -541,6 +561,6 @@ class MutationDatabaseHandler:
 
 
 if __name__ == "__main__":
-    fasta = "resources/segments_data/H5/H5N1/H5N1_Fasta.fasta"
+    fasta = "resources/segments_data/H5/H5N1/test.fasta"
     meta = "resources/segments_data/H5/H5N1/H5N1_Metadata.xls"
     MutationDatabaseHandler(meta, fasta)
