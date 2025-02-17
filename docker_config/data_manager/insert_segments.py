@@ -33,6 +33,7 @@ class MutationDatabaseHandler:
         self.fasta_file = None
         self.metadata_file = None
         self.database_handler = handler.DatabaseHandler()
+        self.taxonomy_handler = taxonomer.Taxonomer()
         self.dna_fasta_by_ref = {}
 
         self.organize_files(metadata_file, fasta_file)
@@ -190,15 +191,96 @@ class MutationDatabaseHandler:
             return -1
 
         host = isolate_metadata[17]
+
+        if host:
+
+            host_id = self.search_host_id_in_common_names(host)
+            if host_id is None:
+
+                try:
+                    taxonomy = self.taxonomy_handler.retrieve_taxonomy(host, 8782)
+                    host_taxonomy = [taxon.scientific_name for taxon in taxonomy]
+                    host_id = self.create_host_in_db(host_taxonomy)
+                    self.create_common_host(host_id, host)
+                except TypeError:
+                    host_id = -1  # NCBI Problem
+        else:
+            host_id = -1
+
         collection_date = isolate_metadata[25]
         location_id = self.get_location_id(isolate_metadata[16])
         subtype_id = self.get_subtype(isolate_metadata[12].split("/")[-1].strip())["subtype_id"]
 
+        #clade = isolate_metadata[14]
+        #print(self.extract_clade_levels(clade))
+
         self.database_handler.insert_row("Isolate",
                                          ["isolate_id", "isolate_epi", "subtype_id",
-                                          "host", "collection_date", "location_id"],
-                                         (None, isolate_epi, subtype_id, host, collection_date, location_id,))
+                                          "host_id", "collection_date", "location_id"],
+                                         (None, isolate_epi, subtype_id, host_id, collection_date, location_id,))
         return 0
+
+    @staticmethod
+    def extract_clade_levels(clade_str):
+        pattern = r'^(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?(?:([a-z]))?$'
+        match = re.match(pattern, clade_str)
+        if not match:
+            return None, None, None, None, None
+
+        lv1, lv2, lv3, lv4, suffix = match.groups()
+        return lv1, lv2, lv3, lv4, suffix
+
+    def search_clade_id_by_name(self, clade_name):
+        clades = self.database_handler.get_rows("Clade", ["clade_name"], (clade_name,))
+        if clades:
+            return clades[0]["clade_id"]
+        return None
+
+    def search_host_id_in_common_names(self, host_name):
+        hosts = self.database_handler.get_rows("HostCommonName", ["common_name"], (host_name,))
+        if hosts: return hosts[0]["host_id"]
+        return None
+
+    def search_host_id_in_scientific_names(self, host_name):
+        hosts = self.database_handler.get_rows("Host", ["host_name"], (host_name,))
+        if hosts: return hosts[0]["host_id"]
+        return None
+
+    def create_host_in_db(self, taxonomy):
+
+        if "Aves" in taxonomy:
+            return self.insert_taxonomy_recursively(taxonomy[:taxonomy.index("Aves")+1])
+        elif "Mammalia" in taxonomy:
+            return self.insert_taxonomy_recursively(taxonomy[:taxonomy.index("Mammalia")+1])
+
+        return -1
+
+    def insert_taxonomy_recursively(self, taxonomy):
+
+        current_host_name = taxonomy[0]
+
+        # Step 1: Check if the current level is already in the database
+        current_id = self.search_host_id_in_scientific_names(current_host_name)
+
+        if current_id is not None:
+            return current_id
+
+        # Step 2: Process the parent level (remaining taxonomy)
+        parent_id = self.insert_taxonomy_recursively(taxonomy[1:])
+
+        # Step 3: Insert the current level and link it to the parent
+        return self.create_host_and_taxonomy_link(current_host_name, parent_id)
+
+    def create_host_and_taxonomy_link(self, host_name, parent_id):
+        host_id = self.database_handler.insert_row("Host", ["host_id", "host_name"],
+                                                   (None, host_name), commit=True)
+        self.database_handler.insert_row("Taxonomy", ["host_id", "parent_id"],
+                                         (host_id, parent_id), commit=True)
+        return host_id
+
+    def create_common_host(self, host_id, common_name):
+        self.database_handler.insert_row("HostCommonName", ["host_id", "common_name"],
+                                         (host_id, common_name), commit=True)
 
     def create_segment(self, header_dict):
 
@@ -462,7 +544,7 @@ class MutationDatabaseHandler:
     @staticmethod
     def correct_start_end_deletions(reference, target):
 
-        # Count the number of '-' at the start and end of the target string
+        # Count the number of '-' at theHost start and end of the target string
         start_dashes = len(target) - len(target.lstrip('-'))
         end_dashes = len(target) - len(target.rstrip('-'))
 

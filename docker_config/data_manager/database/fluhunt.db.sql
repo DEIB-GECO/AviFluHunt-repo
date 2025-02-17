@@ -94,11 +94,12 @@ CREATE TABLE IF NOT EXISTS "Isolate" (
 	"isolate_id"	INTEGER,
 	"isolate_epi"	TEXT NOT NULL,
 	"subtype_id"	INTEGER,
-	"host"	TEXT,
+	"host_id"	INTEGER,
 	"collection_date"	DATE,
 	"location_id"	INTEGER,
 	FOREIGN KEY("subtype_id") REFERENCES "Subtype"("subtype_id"),
 	FOREIGN KEY("location_id") REFERENCES "Location"("location_id"),
+	FOREIGN KEY("host_id") REFERENCES "Host"("host_id"),
 	PRIMARY KEY("isolate_id"),
     UNIQUE (isolate_epi)
 );
@@ -110,6 +111,31 @@ CREATE TABLE IF NOT EXISTS "Location" (
 	"city"	TEXT,
 	PRIMARY KEY("location_id"),
     UNIQUE (region, state, city)
+);
+
+CREATE TABLE IF NOT EXISTS "Host" (
+	"host_id"	INTEGER,
+	"host_name"	TEXT NOT NULL UNIQUE,
+	PRIMARY KEY("host_id")
+);
+
+INSERT INTO Host (host_id, host_name)
+VALUES
+    (0, 'Aves'),
+    (1, 'Mammalia');
+
+CREATE TABLE IF NOT EXISTS "HostCommonName" (
+	"host_id"	INTEGER,
+	"common_name"	TEXT NOT NULL UNIQUE,
+	FOREIGN KEY("host_id") REFERENCES "Host"("host_id")
+);
+
+CREATE TABLE IF NOT EXISTS "Taxonomy" (
+	"host_id"	INTEGER NOT NULL,
+	"parent_id"	INTEGER NOT NULL,
+	FOREIGN KEY("host_id") REFERENCES "Host"("host_id"),
+	FOREIGN KEY("parent_id") REFERENCES "Host"("host_id"),
+    PRIMARY KEY ("host_id", "parent_id")
 );
 
 CREATE TABLE IF NOT EXISTS "Segment" (
