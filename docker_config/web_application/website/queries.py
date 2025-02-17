@@ -1,7 +1,15 @@
 # GENERAL QUERIES
 get_hosts = \
- ("SELECT DISTINCT host "
-  "FROM Isolate")
+ ("SELECT DISTINCT host_name "
+  "FROM Host")
+
+get_taxonomy = \
+ ("SELECT DISTINCT host_id, parent_id "
+  "FROM Taxonomy")
+
+get_taxonomy_hosts = \
+ ("SELECT DISTINCT host_id, host_name "
+  "FROM Host")
 
 get_markers = \
  ("SELECT DISTINCT name "
@@ -27,6 +35,22 @@ get_annotations = \
  ("SELECT DISTINCT annotation_name "
   "FROM Annotation")
 
+get_isolates_count = ("SELECT COUNT(DISTINCT isolate_epi) as count "
+                "FROM Isolate")
+
+get_filtered_isolates_count = \
+ ("SELECT COUNT(DISTINCT isolate_epi) as count FROM Isolate isolate "
+  "JOIN Location location ON isolate.location_id = location.location_id "
+  "WHERE "
+  "(location.region IN (global_regions_placeholder)) AND "
+  "(location.state  IN (global_states_placeholder) OR :global_states IS NULL) AND "
+  "CASE "
+    "WHEN length(isolate.collection_date) = 4 THEN isolate.collection_date * 100 "
+    "WHEN length(isolate.collection_date) = 7 THEN substr(isolate.collection_date, 1, 4) * 100 + substr(isolate.collection_date, 6, 2) "
+    "ELSE strftime('%Y', isolate.collection_date) * 100 + strftime('%m', isolate.collection_date) "
+  "END "
+  "BETWEEN (:global_start_year * 100 + :global_start_month) AND (:global_end_year * 100 + :global_end_month)")
+
 
 # QUERIES
 # --------------------------------------------------------------
@@ -50,7 +74,7 @@ get_annotations = \
 get_markers_literature = \
     (f"WITH SelectedMarkersIds AS ("
      f"SELECT marker_id FROM Marker "
-     f"WHERE name IN (placeholder)), "
+     f"WHERE name IN (markers_placeholder)), "
      f""
      f"SelectedMarkerGroupsIds AS ("
      f"SELECT DISTINCT marker_group_id FROM MarkerToGroup MTG "
@@ -83,7 +107,6 @@ get_markers_literature = \
 #   - (Optional) subtype: subtype
 #   - (Optional) segment_type: Segment type
 #   - (Optional Filter) min_perc, max_perc: Percentage range (default = (0, 100))
-#   - (Optional Filter) limit: Limit in the number of results (default = 10000)
 #   - (Optional Filter) min_n_instance: Min number of Segments that must contain the Marker (default = 1)
 #
 # Outputs:
@@ -94,21 +117,36 @@ get_markers_literature = \
 # NOTE: view SegmentMarker(segment_id, marker_id), tells whether a marker is found in a given segment
 
 get_markers_by_human_percentage = \
-    ("WITH SelectedSegmentsIds AS ("
+    ("WITH IsolatesFiltered AS ("
+     "SELECT * FROM Isolate isolate "
+     "JOIN Location location ON isolate.location_id = location.location_id "
+     "WHERE "
+     "(location.region IN (global_regions_placeholder)) AND "
+     "(location.state  IN (global_states_placeholder) OR :global_states IS NULL) AND "
+     "CASE "
+       "WHEN length(isolate.collection_date) = 4 THEN isolate.collection_date * 100 "
+       "WHEN length(isolate.collection_date) = 7 THEN substr(isolate.collection_date, 1, 4) * 100 + substr(isolate.collection_date, 6, 2) "
+       "ELSE strftime('%Y', isolate.collection_date) * 100 + strftime('%m', isolate.collection_date) "
+     "END "
+     "BETWEEN (:global_start_year * 100 + :global_start_month) AND (:global_end_year * 100 + :global_end_month)), "
+     ""
+     "SelectedSegmentsIds AS ("
      "SELECT DISTINCT segment.segment_id "
      "FROM Segment segment "
-     "JOIN Isolate isolate ON segment.isolate_epi = isolate.isolate_epi "
+     "JOIN IsolatesFiltered isolate ON segment.isolate_epi = isolate.isolate_epi "
      "JOIN Subtype subtype ON isolate.subtype_id = subtype.subtype_id "
-     "WHERE isolate.host = 'Human' "
+     "JOIN HostCommonName HCN ON Isolate.host_id = HCN.host_id "
+     "WHERE HCN.common_name = 'Human' "
      "AND (segment.segment_type == :segment_type OR :segment_type IS NULL) "
      "AND (subtype.name == :subtype OR :subtype IS NULL)), "
      ""
      "OtherHostsSegmentIds AS ("
-     "SELECT DISTINCT segment.segment_id, isolate.host "
+     "SELECT DISTINCT segment.segment_id, host.host_name "
      "FROM Segment segment "
-     "JOIN Isolate isolate ON segment.isolate_epi = isolate.isolate_epi "
+     "JOIN IsolatesFiltered isolate ON segment.isolate_epi = isolate.isolate_epi "
      "JOIN Subtype subtype ON isolate.subtype_id = subtype.subtype_id "
-     "WHERE isolate.host != 'Human' "
+     "JOIN Host host ON host.host_id = isolate.host_id "
+     "WHERE host.host_name != 'Human' "
      "AND (segment.segment_type == :segment_type OR :segment_type IS NULL) "
      "AND (subtype.name == :subtype OR :subtype IS NULL)), "
      ""
@@ -118,10 +156,10 @@ get_markers_by_human_percentage = \
      "GROUP BY marker_id), "
      ""
      "HostMarkerCount AS ( "
-     "SELECT segmentMarkers.marker_id, OHSI.host, COUNT(DISTINCT segmentMarkers.segment_id) AS host_marker_count "
+     "SELECT segmentMarkers.marker_id, OHSI.host_name, COUNT(DISTINCT segmentMarkers.segment_id) AS host_marker_count "
      "FROM SegmentMarkers segmentMarkers "
      "JOIN OtherHostsSegmentIds OHSI ON segmentMarkers.segment_id = OHSI.segment_id "
-     "GROUP BY segmentMarkers.marker_id, OHSI.host "
+     "GROUP BY segmentMarkers.marker_id, OHSI.host_name "
      "ORDER BY host_marker_count DESC), "
      ""
      "TotalMarkerCount AS ("
@@ -138,11 +176,10 @@ get_markers_by_human_percentage = \
      "WHERE ROUND(COALESCE(HMC.human_marker_count, 0) * 100.0 / TMC.total_marker_count, 2) "
      "BETWEEN :min_perc AND :max_perc "
      "AND TMC.total_marker_count >= :min_n_instances "
-     "GROUP BY marker.marker_id "
-     "LIMIT :limit), "
+     "GROUP BY marker.marker_id), "
      ""
      "OtherHostInfo AS ( "
-     "SELECT marker_id, GROUP_CONCAT((host || ': ' || host_marker_count), ';       ') as host_info "
+     "SELECT marker_id, GROUP_CONCAT((host_name || ': ' || host_marker_count), ';       ') as host_info "
      "FROM HostMarkerCount "
      "GROUP BY marker_id) "
      ""
@@ -178,27 +215,64 @@ get_markers_by_human_percentage = \
 # ATTENTION: This query only returns (marker, host%), to aggregate data python is necessary!
 
 get_markers_id_by_host_relative_presence = \
-    ("WITH SegmentsByHost AS ("
-     "SELECT DISTINCT segment.segment_id, isolate.host "
-     "FROM Segment segment "
-     "JOIN Isolate isolate ON segment.isolate_epi = isolate.isolate_epi "
-     "WHERE host in (hosts)), "
+    ("WITH RECURSIVE Descendants(host_id, parent_id, root_parent_id) AS ( "
+     "SELECT host_id, parent_id, parent_id AS root_parent_id "
+     "FROM Taxonomy "
+     ""
+     "UNION ALL "
+     ""
+     "SELECT t.host_id, t.parent_id, d.root_parent_id "
+     "FROM Taxonomy t "
+     "INNER JOIN Descendants d ON t.parent_id = d.host_id "
+     "), "
+     ""
+     "IsolatesFiltered AS ("
+     "SELECT * FROM Isolate isolate "
+     "JOIN Location location ON isolate.location_id = location.location_id "
+     "WHERE "
+     "(location.region IN (global_regions_placeholder)) AND "
+     "(location.state  IN (global_states_placeholder) OR :global_states IS NULL) AND "
+     "CASE "
+       "WHEN length(isolate.collection_date) = 4 THEN isolate.collection_date * 100 "
+       "WHEN length(isolate.collection_date) = 7 THEN substr(isolate.collection_date, 1, 4) * 100 + substr(isolate.collection_date, 6, 2) "
+       "ELSE strftime('%Y', isolate.collection_date) * 100 + strftime('%m', isolate.collection_date) "
+     "END "
+     "BETWEEN (:global_start_year * 100 + :global_start_month) AND (:global_end_year * 100 + :global_end_month)), "
+     ""
+     "SegmentsByHost AS ("
+     "SELECT DISTINCT (SELECT host_name FROM Host WHERE host_id = d.root_parent_id) AS host_name, s.segment_id "
+     "FROM Descendants d "
+     "JOIN Host h ON d.host_id = h.host_id "
+     "JOIN IsolatesFiltered i ON h.host_id = i.host_id "
+     "JOIN Segment s ON i.isolate_epi = s.isolate_epi "
+     "WHERE d.root_parent_id IN ( "
+         "SELECT host_id "
+         "FROM Host "
+         "WHERE host_name IN (hosts))"
+     ""
+     "UNION SELECT DISTINCT "
+        "h.host_name, "
+        "s.segment_id "
+     "FROM Host h "
+     "JOIN IsolatesFiltered i ON h.host_id = i.host_id "
+     "JOIN Segment s ON i.isolate_epi = s.isolate_epi "
+     "WHERE h.host_name IN (hosts)), "
      ""
      "MarkerCountByHost AS ( "
-     "SELECT segmentMarkers.marker_id, SBH.host, COUNT(DISTINCT segmentMarkers.segment_id) AS marker_host_count "
+     "SELECT segmentMarkers.marker_id, SBH.host_name, COUNT(DISTINCT segmentMarkers.segment_id) AS marker_host_count "
      "FROM SegmentMarkers segmentMarkers "
      "JOIN SegmentsByHost SBH ON segmentMarkers.segment_id = SBH.segment_id "
-     "GROUP BY segmentMarkers.marker_id, SBH.host), "
+     "GROUP BY segmentMarkers.marker_id, SBH.host_name), "
      ""
      "TotalSegmentCountByHost AS ( "
-     "SELECT host, COUNT(DISTINCT segment_id) AS host_count "
+     "SELECT host_name, COUNT(DISTINCT segment_id) AS host_count "
      "FROM SegmentsByHost "
-     "GROUP BY host ) "
+     "GROUP BY host_name ) "
      ""
-     "SELECT distinct marker.name as 'Marker', MCbH.host, "
+     "SELECT distinct marker.name as 'Marker', MCbH.host_name, "
      "ROUND(MCbH.marker_host_count * 100.0 / TSCbH.host_count, 2) AS 'percentage' "
      "FROM MarkerCountByHost MCbH "
-     "JOIN TotalSegmentCountByHost TSCbH  ON MCbH.host = TSCbH.host "
+     "JOIN TotalSegmentCountByHost TSCbH  ON MCbH.host_name = TSCbH.host_name "
      "JOIN Marker marker ON MCbH.marker_id = marker.marker_id")
 
 
@@ -212,7 +286,6 @@ get_markers_id_by_host_relative_presence = \
 #   - hosts: The other hosts to consider (up to 5)
 #
 # Outputs:
-#   - TODO
 #
 # --------------------------------------------------------------
 # NOTE: view SegmentMarker(segment_id, marker_id), tells whether a marker is found in a given segment
@@ -236,17 +309,31 @@ get_markers_id_by_host_relative_presence = \
 # ATTENTION: This query only returns (marker, host%), to aggregate data python is necessary!
 
 get_marker_host_distribution = \
-    ("WITH SegmentsByHost AS ("
-     "SELECT DISTINCT segment.segment_id, isolate.host "
-     "FROM Segment segment "
-     "JOIN Isolate isolate ON segment.isolate_epi = isolate.isolate_epi) "
+    ("WITH IsolatesFiltered AS ("
+     "SELECT * FROM Isolate isolate "
+     "JOIN Location location ON isolate.location_id = location.location_id "
+     "WHERE "
+     "(location.region IN (global_regions_placeholder)) AND "
+     "(location.state  IN (global_states_placeholder) OR :global_states IS NULL) AND "
+     "CASE "
+       "WHEN length(isolate.collection_date) = 4 THEN isolate.collection_date * 100 "
+       "WHEN length(isolate.collection_date) = 7 THEN substr(isolate.collection_date, 1, 4) * 100 + substr(isolate.collection_date, 6, 2) "
+       "ELSE strftime('%Y', isolate.collection_date) * 100 + strftime('%m', isolate.collection_date) "
+     "END "
+     "BETWEEN (:global_start_year * 100 + :global_start_month) AND (:global_end_year * 100 + :global_end_month)), "
      ""
-     "SELECT SBH.host as 'Host', COUNT(DISTINCT segmentMarkers.segment_id) AS '#' "
+     "SegmentsByHost AS ("
+     "SELECT DISTINCT segment.segment_id, host.host_name "
+     "FROM Segment segment "
+     "JOIN IsolatesFiltered isolate ON segment.isolate_epi = isolate.isolate_epi "
+     "JOIN Host ON isolate.host_id = host.host_id) "
+     ""
+     "SELECT SBH.host_name as 'Host', COUNT(DISTINCT segmentMarkers.segment_id) AS '#' "
      "FROM SegmentMarkers segmentMarkers "
      "JOIN SegmentsByHost SBH ON segmentMarkers.segment_id = SBH.segment_id "
      "JOIN Marker marker ON segmentMarkers.marker_id = marker.marker_id "
      "WHERE marker.name = :marker "
-     "GROUP BY segmentMarkers.marker_id, SBH.host "
+     "GROUP BY segmentMarkers.marker_id, SBH.host_name "
      "ORDER BY COUNT(DISTINCT segmentMarkers.segment_id) DESC")
 
 
@@ -266,14 +353,28 @@ get_marker_host_distribution = \
 # NOTE: view SegmentMarker(segment_id, marker_id), tells whether a marker is found in a given segment
 
 get_markers_location_distribution = \
-    ("WITH SegmentsByState AS ("
+    ("WITH IsolatesFiltered AS ("
+     "SELECT * FROM Isolate isolate "
+     "JOIN Location location ON isolate.location_id = location.location_id "
+     "WHERE "
+     "(location.region IN (global_regions_placeholder)) AND "
+     "(location.state  IN (global_states_placeholder) OR :global_states IS NULL) AND "
+     "CASE "
+       "WHEN length(isolate.collection_date) = 4 THEN isolate.collection_date * 100 "
+       "WHEN length(isolate.collection_date) = 7 THEN substr(isolate.collection_date, 1, 4) * 100 + substr(isolate.collection_date, 6, 2) "
+       "ELSE strftime('%Y', isolate.collection_date) * 100 + strftime('%m', isolate.collection_date) "
+     "END "
+     "BETWEEN (:global_start_year * 100 + :global_start_month) AND (:global_end_year * 100 + :global_end_month)), "
+     ""
+     "SegmentsByState AS ("
      "SELECT DISTINCT segment.segment_id, location.state "
      "FROM Segment segment "
-     "JOIN Isolate isolate ON segment.isolate_epi = isolate.isolate_epi "
-     "JOIN Location location ON isolate.location_id = location.location_id "
-     "WHERE (location.region = :region OR :region IS NULL)) "
+     "JOIN IsolatesFiltered isolate ON segment.isolate_epi = isolate.isolate_epi "
+     "JOIN Location location ON isolate.location_id = location.location_id) "
      ""
      "SELECT SBS.state as 'State', "
+     "COUNT(DISTINCT segmentMarkers.segment_id) AS '# Found in Location',"
+     "(SELECT COUNT(*) FROM SegmentsByState WHERE state = SBS.state) AS 'Total Markers in Location', "
      "COUNT(DISTINCT segmentMarkers.segment_id) * 100.0 / "
      "(SELECT COUNT(*) FROM SegmentsByState WHERE state = SBS.state) AS 'Normalized Percentage' "
      "FROM SegmentMarkers segmentMarkers "
@@ -305,16 +406,29 @@ get_markers_location_distribution = \
 # --------------------------------------------------------------
 # NOTE: view SegmentMarker(segment_id, marker_id), tells whether a marker is found in a given segment
 
+# TODO: taxonomy
 get_most_common_markers_by_filters = \
-    ("WITH SelectedSegmentsIds AS ("
+    ("WITH IsolatesFiltered AS ("
+     "SELECT * FROM Isolate isolate "
+     "JOIN Location location ON isolate.location_id = location.location_id "
+     "WHERE "
+     "(location.region IN (global_regions_placeholder)) AND "
+     "(location.state  IN (global_states_placeholder) OR :global_states IS NULL) AND "
+     "CASE "
+       "WHEN length(isolate.collection_date) = 4 THEN isolate.collection_date * 100 "
+       "WHEN length(isolate.collection_date) = 7 THEN substr(isolate.collection_date, 1, 4) * 100 + substr(isolate.collection_date, 6, 2) "
+       "ELSE strftime('%Y', isolate.collection_date) * 100 + strftime('%m', isolate.collection_date) "
+     "END "
+     "BETWEEN (:global_start_year * 100 + :global_start_month) AND (:global_end_year * 100 + :global_end_month)), "
+     ""
+     "SelectedSegmentsIds AS ("
      "SELECT DISTINCT segment.segment_id "
      "FROM Segment segment "
-     "JOIN Isolate isolate ON segment.isolate_epi = isolate.isolate_epi "
+     "JOIN IsolatesFiltered isolate ON segment.isolate_epi = isolate.isolate_epi "
      "JOIN Location location ON isolate.location_id = location.location_id "
      "JOIN Subtype subtype ON isolate.subtype_id = subtype.subtype_id "
-     "WHERE (isolate.host = :host OR :host IS NULL) "
-     "AND (location.region = :region OR :region IS NULL) "
-     "AND (location.state = :state OR :state IS NULL) "
+     "JOIN HOST host ON isolate.host_id = host.host_id "
+     "WHERE (host.host_name = :host OR :host IS NULL) "
      "AND (segment.segment_type == :segment_type OR :segment_type IS NULL) "
      "AND (subtype.name == :subtype OR :subtype IS NULL)), "
      ""
@@ -358,19 +472,55 @@ get_most_common_markers_by_filters = \
 # NOTE: view SegmentMarker(segment_id, marker_id), tells whether a marker is found in a given segment
 
 get_host_by_n_of_markers = \
-    ("WITH SelectedSegments AS ("
-     "SELECT DISTINCT segment.segment_id, isolate.host "
-     "FROM Segment segment "
-     "JOIN Isolate isolate ON segment.isolate_epi = isolate.isolate_epi "
-     "JOIN Subtype subtype ON isolate.subtype_id = subtype.subtype_id "
-     "WHERE (segment.segment_type == :segment_type OR :segment_type IS NULL) "
-     "AND (subtype.name == :subtype OR :subtype IS NULL)) "
+    ("WITH RECURSIVE Descendants(host_id, parent_id, root_parent_id) AS ( "
+     "SELECT host_id, parent_id, parent_id AS root_parent_id "
+     "FROM Taxonomy "
      ""
-     "SELECT selectedSegments.host AS 'Host', "
+     "UNION ALL "
+     ""
+     "SELECT t.host_id, t.parent_id, d.root_parent_id "
+     "FROM Taxonomy t "
+     "INNER JOIN Descendants d ON t.parent_id = d.host_id "
+     "), "
+     ""
+     "IsolatesFiltered AS ("
+     "SELECT * FROM Isolate isolate "
+     "JOIN Location location ON isolate.location_id = location.location_id "
+     "WHERE "
+     "(location.region IN (global_regions_placeholder)) AND "
+     "(location.state  IN (global_states_placeholder) OR :global_states IS NULL) AND "
+     "CASE "
+       "WHEN length(isolate.collection_date) = 4 THEN isolate.collection_date * 100 "
+       "WHEN length(isolate.collection_date) = 7 THEN substr(isolate.collection_date, 1, 4) * 100 + substr(isolate.collection_date, 6, 2) "
+       "ELSE strftime('%Y', isolate.collection_date) * 100 + strftime('%m', isolate.collection_date) "
+     "END "
+     "BETWEEN (:global_start_year * 100 + :global_start_month) AND (:global_end_year * 100 + :global_end_month)), "
+     ""
+     "SelectedSegments AS ("
+     "SELECT DISTINCT segment.segment_id, host.host_name "
+     "FROM Segment segment "
+     "JOIN IsolatesFiltered isolate ON segment.isolate_epi = isolate.isolate_epi "
+     "JOIN Subtype subtype ON isolate.subtype_id = subtype.subtype_id "
+     "JOIN Host ON host.host_id = isolate.host_id "
+     "WHERE (segment.segment_type == :segment_type OR :segment_type IS NULL) "
+     "AND (subtype.name == :subtype OR :subtype IS NULL)"
+     ""
+     "UNION ALL "
+     ""
+     "SELECT DISTINCT segment.segment_id, host.host_name "
+     "FROM Segment segment "
+     "JOIN IsolatesFiltered isolate ON segment.isolate_epi = isolate.isolate_epi "
+     "JOIN Subtype subtype ON isolate.subtype_id = subtype.subtype_id "
+     "JOIN Descendants d ON isolate.host_id = d.host_id "
+     "JOIN Host ON d.root_parent_id = Host.host_id "
+     "WHERE (segment.segment_type = :segment_type OR :segment_type IS NULL) "
+     "AND (subtype.name = :subtype OR :subtype IS NULL)) "
+     ""
+     "SELECT selectedSegments.host_name AS 'Host', "
      "COUNT(DISTINCT segmentMarkers.marker_id) AS 'Distinct Markers Per Host' "
      "FROM SelectedSegments selectedSegments "
      "JOIN SegmentMarkers segmentMarkers ON selectedSegments.segment_id = segmentMarkers.segment_id "
-     "GROUP BY selectedSegments.host "
+     "GROUP BY selectedSegments.host_name "
      "ORDER BY COUNT(DISTINCT segmentMarkers.marker_id) DESC ")
 
 
@@ -381,7 +531,6 @@ get_host_by_n_of_markers = \
 #
 # Inputs:
 #   - (Optional Filter) min_perc, max_perc: Percentage range (default = (0, 100))
-#   - (Optional Filter) limit: Limit in the number of results (default = 10000)
 #
 # Outputs:
 #   - Markers and percentage of appearance sorted
@@ -389,9 +538,24 @@ get_host_by_n_of_markers = \
 # --------------------------------------------------------------
 
 get_markers_by_relevance = \
-    ("WITH MarkerCount AS ( "
-     "SELECT marker_id, COUNT(DISTINCT segment_id) AS marker_count "
+    ("WITH IsolatesFiltered AS ("
+     "SELECT * FROM Isolate isolate "
+     "JOIN Location location ON isolate.location_id = location.location_id "
+     "WHERE "
+     "(location.region IN (global_regions_placeholder)) AND "
+     "(location.state  IN (global_states_placeholder) OR :global_states IS NULL) AND "
+     "CASE "
+       "WHEN length(isolate.collection_date) = 4 THEN isolate.collection_date * 100 "
+       "WHEN length(isolate.collection_date) = 7 THEN substr(isolate.collection_date, 1, 4) * 100 + substr(isolate.collection_date, 6, 2) "
+       "ELSE strftime('%Y', isolate.collection_date) * 100 + strftime('%m', isolate.collection_date) "
+     "END "
+     "BETWEEN (:global_start_year * 100 + :global_start_month) AND (:global_end_year * 100 + :global_end_month)), "
+     ""
+     "MarkerCount AS ( "
+     "SELECT marker_id, COUNT(DISTINCT SegmentMarkers.segment_id) AS marker_count "
      "FROM SegmentMarkers "
+     "JOIN Segment ON SegmentMarkers.segment_id = Segment.segment_id "
+     "JOIN IsolatesFiltered ON IsolatesFiltered.isolate_epi = Segment.isolate_epi "
      "GROUP BY marker_id), "
      ""
      "TotalCount AS ("
@@ -404,8 +568,7 @@ get_markers_by_relevance = \
      "JOIN MarkerCount markerCount ON marker.marker_id = markerCount.marker_id "
      "CROSS JOIN TotalCount totalCount "
      "WHERE (markerCount.marker_count * 100.0) / totalCount.total_count BETWEEN :min_perc AND :max_perc "
-     "ORDER BY ROUND((markerCount.marker_count * 100.0) / totalCount.total_count, 2) DESC "
-     "LIMIT :limit")
+     "ORDER BY ROUND((markerCount.marker_count * 100.0) / totalCount.total_count, 2) DESC")
 
 # --------------------------------------------------------------
 # QUERY 10: Given a Segment Type find the Most Mutable Zones
@@ -426,10 +589,23 @@ get_markers_by_relevance = \
 # IDEA: select only mutations that are markers?
 
 get_segment_mutability_zones = \
-    ("SelectedSegments AS ( "
+    ("IsolatesFiltered AS ("
+     "SELECT * FROM Isolate isolate "
+     "JOIN Location location ON isolate.location_id = location.location_id "
+     "WHERE "
+     "(location.region IN (global_regions_placeholder)) AND "
+     "(location.state  IN (global_states_placeholder) OR :global_states IS NULL) AND "
+     "CASE "
+       "WHEN length(isolate.collection_date) = 4 THEN isolate.collection_date * 100 "
+       "WHEN length(isolate.collection_date) = 7 THEN substr(isolate.collection_date, 1, 4) * 100 + substr(isolate.collection_date, 6, 2) "
+       "ELSE strftime('%Y', isolate.collection_date) * 100 + strftime('%m', isolate.collection_date) "
+     "END "
+     "BETWEEN (:global_start_year * 100 + :global_start_month) AND (:global_end_year * 100 + :global_end_month)), "
+     ""
+     "SelectedSegments AS ( "
      "SELECT DISTINCT segment.segment_id "
      "FROM Segment segment  "
-     "JOIN Isolate isolate ON segment.isolate_epi = isolate.isolate_epi "
+     "JOIN IsolatesFiltered isolate ON segment.isolate_epi = isolate.isolate_epi "
      "JOIN Subtype subtype ON isolate.subtype_id = subtype.subtype_id "
      "WHERE (subtype.name = :subtype OR :subtype IS NULL)), "
      ""
@@ -439,7 +615,7 @@ get_segment_mutability_zones = \
      "JOIN Bin bin ON mutation.position BETWEEN bin.start_range AND bin.end_range "
      "JOIN SegmentMutations segmentMutations ON mutation.mutation_id = segmentMutations.mutation_id  "
      "WHERE segmentMutations.segment_id IN SelectedSegments "
-     "AND (mutation.annotation_name_mut == :segment_type OR :segment_type IS NULL) "  # TODO CHANGE
+     "AND (mutation.annotation_name_mut == :segment_type OR :segment_type IS NULL) "
      "GROUP BY bin.start_range, bin.end_range "
      "ORDER BY start_range) "
      ""
@@ -465,16 +641,26 @@ get_segment_mutability_zones = \
 # --------------------------------------------------------------
 
 get_mutability_peak_months = \
- ("WITH SelectedSegmentsPerMonths AS ( "
+ ("WITH IsolatesFiltered AS ("
+  "SELECT * FROM Isolate isolate "
+  "JOIN Location location ON isolate.location_id = location.location_id "
+  "WHERE "
+  "(location.region IN (global_regions_placeholder)) AND "
+  "(location.state  IN (global_states_placeholder) OR :global_states IS NULL) AND "
+  "CASE "
+    "WHEN length(isolate.collection_date) = 4 THEN isolate.collection_date * 100 "
+    "WHEN length(isolate.collection_date) = 7 THEN substr(isolate.collection_date, 1, 4) * 100 + substr(isolate.collection_date, 6, 2) "
+    "ELSE strftime('%Y', isolate.collection_date) * 100 + strftime('%m', isolate.collection_date) "
+  "END "
+  "BETWEEN (:global_start_year * 100 + :global_start_month) AND (:global_end_year * 100 + :global_end_month)), "
+  ""
+  "SelectedSegmentsPerMonths AS ( "
   "SELECT DISTINCT segment.segment_id, "
   "strftime('%Y', isolate.collection_date) AS year, strftime('%m', isolate.collection_date) AS month "
   "FROM Segment segment  "
-  "JOIN Isolate isolate ON segment.isolate_epi = isolate.isolate_epi "
+  "JOIN IsolatesFiltered isolate ON segment.isolate_epi = isolate.isolate_epi "
   "JOIN Subtype subtype ON isolate.subtype_id = subtype.subtype_id "
-  "WHERE (segment.segment_type == :segment_type OR :segment_type IS NULL) "
-  "AND (subtype.name = :subtype OR :subtype IS NULL) "
-  "AND (strftime('%Y', isolate.collection_date) * 100 + strftime('%m', isolate.collection_date)) "
-  "BETWEEN (:start_year * 100 + :start_month) AND (:end_year * 100 + :end_month)) "
+  "WHERE (segment.segment_type == :segment_type OR :segment_type IS NULL)) "
   ""
   "SELECT month AS 'Month', year AS 'Year', "
   "COUNT(DISTINCT mutation.mutation_id) AS '# Mutation', "
@@ -485,7 +671,62 @@ get_mutability_peak_months = \
   "JOIN Mutation mutation ON segmentMutations.mutation_id = mutation.mutation_id "
   "GROUP BY year, month "
   "HAVING COUNT(DISTINCT SSPM.segment_id) >= :min_n_instances "
-  "ORDER BY '#Mutation per Sample' DESC")
+  "ORDER BY ROUND((COUNT(DISTINCT mutation.mutation_id) * 1.0 / COUNT(DISTINCT SSPM.segment_id)), 2) DESC")
+
+# --------------------------------------------------------------
+# QUERY 15: Given a set of Markers, get data over time
+# GRAPH
+# --------------------------------------------------------------
+#
+# Inputs:
+#   -
+#
+# Outputs:
+#   -
+#
+# --------------------------------------------------------------
+
+get_markers_over_time = \
+    ("WITH IsolatesFiltered AS ("
+     "SELECT * FROM Isolate isolate "
+     "JOIN Location location ON isolate.location_id = location.location_id "
+     "WHERE "
+     "(location.region IN (global_regions_placeholder)) AND "
+     "(location.state  IN (global_states_placeholder) OR :global_states IS NULL) AND "
+     "CASE "
+       "WHEN length(isolate.collection_date) = 4 THEN isolate.collection_date * 100 "
+       "WHEN length(isolate.collection_date) = 7 THEN substr(isolate.collection_date, 1, 4) * 100 + substr(isolate.collection_date, 6, 2) "
+       "ELSE strftime('%Y', isolate.collection_date) * 100 + strftime('%m', isolate.collection_date) "
+     "END "
+     "BETWEEN (:global_start_year * 100 + :global_start_month) AND (:global_end_year * 100 + :global_end_month)), "
+     ""
+     "SelectedMarkers AS  ("
+     f"SELECT name, marker_id FROM Marker "
+     f"WHERE name IN (markers_placeholder)), "
+     f""
+     f"MarkerOverTimeInformation AS ( "
+     f"SELECT SM.marker_id, name, COUNT(*) AS count, "
+     f"strftime('%Y', I.collection_date) AS year "
+     f"FROM SelectedMarkers SM "
+     f"JOIN SegmentMarkers SegM ON SM.marker_id == SegM.marker_id "
+     f"JOIN Segment S ON SegM.segment_id == S.segment_id "
+     f"JOIN IsolatesFiltered I ON S.isolate_epi == I.isolate_epi "
+     f"JOIN Location L ON I.location_id = L.location_id "
+     f"GROUP BY SM.marker_id, name, year "
+     f"),"
+     f""
+     f"TotalOverTime AS ( "
+     f"SELECT COUNT(*) AS total_for_year, "
+     f"strftime('%Y', I.collection_date) AS year "
+     f"FROM SegmentMarkers SegM "
+     f"JOIN Segment S ON SegM.segment_id == S.segment_id "
+     f"JOIN IsolatesFiltered I ON S.isolate_epi == I.isolate_epi "
+     f"GROUP BY year"
+     f") "
+     f""
+     f"SELECT name AS 'Marker', MOTI.year AS 'Year', count AS '# per Year', count * 1.0/total_for_year AS Percentage "
+     f"FROM MarkerOverTimeInformation MOTI "
+     f"JOIN TotalOverTime TOT ON MOTI.year = TOT.year")
 
 
 # QUERIES ONTOLOGY
@@ -521,7 +762,7 @@ get_group_of_marker = \
      "JOIN Paper paper ON MGPAE.paper_id = paper.paper_id "
      "WHERE MGN.marker_group_id IN ( "
      "SELECT marker_group_id FROM MarkerToGroup WHERE marker_id = "
-     "(SELECT marker_id FROM Marker WHERE name = :marker_name))")
+     "(SELECT marker_id FROM Marker WHERE name = :marker))")
 
 
 # --------------------------------------------------------------

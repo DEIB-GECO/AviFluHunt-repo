@@ -1,200 +1,590 @@
-import json
-from json import JSONDecodeError
-
-from query_functions import *
-from pygwalker.api.streamlit import StreamlitRenderer
-
-# CONFIG
-st.set_page_config(layout="wide")
-db = st.connection(name="fluhunt", type="sql", url="sqlite:///db/fluhunt.db")
-
-if "sort_by" not in st.session_state:
-    st.session_state.sort_by = "Effect"
-if "result" not in st.session_state:
-    st.session_state.result = None
-if "graphs" not in st.session_state:
-    st.session_state.graphs = {}
-if 'current_button' not in st.session_state:
-    st.session_state.current_button = 0
-
-with open("website/resources/style.css") as css:
-    st.markdown(f'<style>{css.read()}</style>', unsafe_allow_html=True)
+import streamlit as st
+st.set_page_config(layout="wide", page_title="AviFluHunt")
+from aviflunhunt_fe import *
 
 
-# HELPERS
-def order_table():
-    order_column = st.session_state.get('order_column', None)
-    order_ascending = st.session_state.get('order_ascending', True)
-
-    if order_ascending == 'Ascending':
-        order_ascending = True
-    elif order_ascending == 'Descending':
-        order_ascending = False
-
-    if order_column:
-        st.session_state.result.sort_values(by=[order_column], ascending=order_ascending, inplace=True)
+class GlobalConfig:
+    text_resources = strings  # TODO: deal with other file!
+    queries = {
+        "Markers Effects": [1, 12, 13, 14],
+        "Markers": [9, 7, 6, 15],
+        "Markers and Hosts": [5, 2, 3, 4, 8],
+        "Mutations": [10, 11]
+    }
+    database_connection = db
 
 
-def empty_result():
-    st.session_state.result = None
-    st.session_state.graphs = {}
+global_config = GlobalConfig()
+
+if not check_auth():
+    st.stop()
+
+init_session()
+
+st.markdown(f'<style>{
+"""
+/* General Styling */
+
+:root {
+    --main-color: #09090B;
+    --secondary-color: #131313;
+    --main-text-color: white;
+    --accent-color: #6164F4;
+    --border-color: black;
+}
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+* {
+    color: white;
+    border: 0 !important;
+    box-sizing: border-box;
+    font-family: Poppins, sans-serif !important;
+}
+
+body {
+    font-family: Poppins, sans-serif !important;
+}
+
+.stApp {
+    background-color: var(--main-color);
+}
+
+input {
+    caret-color: transparent;
+}
+
+/* Webkit-based browsers (Chrome, Safari) */
+::-webkit-scrollbar {
+    width: 10px; /* Width of the scrollbar */
+    background: rgba(255, 255, 255, 0); /* Background color of the scrollbar */
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0); /* Color of the draggable part of the scrollbar */
+    border-radius: 10px; /* Rounded corners */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0); /* Darker color when hovered */
+}
+
+/* Firefox */
+* {
+    scrollbar-width: thin; /* Make scrollbar thinner */
+    scrollbar-color: rgba(0, 0, 0, 0) rgba(255, 255, 255, 0); /* Thumb and background color */
+}
+
+.stMainBlockContainer {
+    padding: 0;
+    font-family: Poppins, sans-serif !important;
+}
+
+.stVerticalBlock {
+    gap: 0 !important;
+}
+
+[data-baseweb="popover"] {
+    border-radius: 0;
+    border: 2px solid white;
+}
+
+[data-baseweb="popover"] div {
+    font-weight: bold;
+    font-size: 14px !important;
+    background-color: var(--main-color);
+}
+
+[data-baseweb="popover"] ul {
+    border-radius: 5px !important;
+}
+
+[data-baseweb="popover"] li {
+    background-color: white;
+}
+
+[data-baseweb="popover"] li * {
+    color: black;
+    background-color: transparent;
+}
+
+[data-baseweb="popover"] li:hover * {
+    color: white;
+    background-color: transparent;
+}
+
+[data-baseweb="popover"] li:hover {
+    color: white;
+    background-color: var(--accent-color);
+}
+
+[data-baseweb="popover"] [data-baseweb="calendar"] {
+    border-radius: 5px;
+}
+
+[data-baseweb="popover"] [data-baseweb="calendar"] div {
+    background-color: black !important;
+    color: white;
+}
+
+[data-baseweb="popover"] [data-baseweb="calendar"] * {
+    color: white;
+}
 
 
-def enhance_pygwalker(selection, dataframe_columns, pyg_json_config):
+#avifluhunt {
 
-    if selection == 3:
-        host_1_name = dataframe_columns[1]
-        host_2_name = dataframe_columns[2]
-        rows = [
-            {
-                "fid": host_1_name,
-                "name": host_1_name,
-                "basename": host_1_name,
-                "analyticType": "measure",
-                "semanticType": "quantitative",
-                "aggName": "sum",
-                "offset": 0
-            },
-            {
-                "fid": host_2_name,
-                "name": host_2_name,
-                "basename": host_2_name,
-                "analyticType": "measure",
-                "semanticType": "quantitative",
-                "aggName": "sum",
-                "offset": 0
-            }
-        ]
-        pyg_json_config[0]['encodings']['rows'] = rows
+    margin: 0;
+    margin-left: 2vw;
+    width: 100% !important;
+    padding-bottom: 0.5rem !important;
 
-    elif selection == 4:
-        host_1_name = dataframe_columns[1]
-        host_2_name = dataframe_columns[2]
-        host_3_name = dataframe_columns[2]
-        host_4_name = dataframe_columns[2]
-        host_5_name = dataframe_columns[2]
-        host_6_name = dataframe_columns[2]
-        host_names = [host_1_name, host_2_name, host_3_name, host_4_name, host_5_name, host_6_name]
-        rows = [
-            {
-                "fid": host_name,
-                "name": host_name,
-                "basename": host_name,
-                "analyticType": "measure",
-                "semanticType": "quantitative",
-                "aggName": "sum",
-                "offset": 0
-            } for host_name in host_names
-        ]
-        pyg_json_config[0]['encodings']['rows'] = rows
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    background-color: transparent;
+    font-family: Poppins, sans-serif !important;
+}
 
-    return pyg_json_config
+.st-key-global_container {
+    width: 96vw;
+    margin: 0 3vw 0 2vw;
+    margin-top: .5vh;
+    margin-bottom: 1.5vh;
+    height: 0 !important;
+    padding-left: 83vw;
+}
 
-# FRONTEND
+.st-key-global_container > div > div {
+    height: 0 !important;
+}
 
-st.write(strings["website_name"], unsafe_allow_html=True)
+.st-key-global_container .stButton {
+    width: auto;
+}
 
-query_buttons = ["Markers Effects", "Markers", "Markers and Hosts", "Mutations"]
-queries_for_button = [[1, 12, 13, 14], [9, 7, 6], [5, 2, 3, 4, 8], [10, 11]]
+.st-key-global_container button {
+    padding: 0 !important;
+    margin-left: 1vw;
+}
 
-with st.container():
-    fake = st.html("<div id='fake'></div>")
-    for index, title in enumerate(query_buttons):
-        if st.button(title):
-            st.session_state.current_button = index
+.st-key-global_container button * {
+    min-width: auto;
+    text-align: right;
+    font-size: 16px;
+    font-weight: bold;
+    margin-left: auto;
+    margin-right: 0;
+    padding: 0 !important;
+}
 
-queries = {strings[f"label{x}"]: x for x in queries_for_button[st.session_state.current_button]}
+.st-key-global_container div {
+    width: max-content;
+    flex: content !important;
+}
 
-with st.container():
-    if st.session_state.current_button != st.session_state.get('last_button', -1):
-        empty_result()
+.st-key-isolates_remaining {
+    display: inline-block !important;
+}
 
-    st.session_state.last_button = st.session_state.current_button
+.st-key-isolates_remaining * {
+    vertical-align: center !important;
+}
 
-    query_col, space, input_col = st.columns([0.45, 0.025, 0.525])
+.st-key-isolates_remaining > div:nth-child(3) {
+    width: 50%;
+    float: left !important;
+}
 
-    with query_col:
-        query_selection = st.selectbox(label=strings["query_select_label"],
-                                       options=queries.keys(),
-                                       on_change=lambda: empty_result(),
-                                       key=f"query_selection{st.session_state.current_button}",
-                                       label_visibility="collapsed")
+.st-key-isolates_remaining > div:nth-child(4) {
+    width: 50%;
+    float: right !important;
+    align: right !important;
+}
 
-    with input_col:
-        if queries[query_selection] == 10:
-            def increment_inputs():
-                st.session_state.num_inputs += 1
+.st-key-isolates_remaining > div:nth-child(4) button {
+    margin-left: 40%;
+    width: 10%;
+    background-color: var(--accent-color);
+}
 
+.st-key-isolates_remaining > div:nth-child(4) button p {
+    color: white;
+    margin-top: 0 !important;
+}
 
-            st.button("Add input", on_click=increment_inputs)
+.stDialog [aria-label="dialog"] {
+    padding: 1.5%;
+    width: 80%;
+    height: auto !important;
+    background-color: white;
+    border-radius: 5px !important;
+}
 
-    result, graphs, error = run_query(queries[query_selection], db,
-                                      query_col, input_col)
+.stDialog span svg * {
+    color: white !important;
+}
 
-    if result is not None:
-        empty_result()
-        st.session_state.result = result
-        st.session_state.graphs = graphs
+.stDialog label, 
+.stDialog p{
+    color: black;
+    font-weight: bold;
+    margin-top: 1vh;
+}
 
-    if result is None or result.empty:
-        if error is not None:
-            with query_col:
-                with st.container():
-                    st.html(f"<div id='error_div'>"
-                            f"<img id='error_icon' src='https://pngimg.com/uploads/attention/attention_PNG5.png'>"
-                            f"{error}!"
-                            f"</div>")
+.stDialog .stMultiSelect > div {
+    padding: 1%;
+    border: 1px solid black !important;
+    border-radius: 5px !important;
+}
 
-if st.session_state.result is not None and not st.session_state.result.empty:
+.stDialog .stDateInput > div {
+    border: 1px solid black !important;
+    border-radius: 5px !important;
+}
 
-    results_tab, *graph_tabs, explore_tab = (
-        st.tabs(["Results"] + [key for key in st.session_state.graphs.keys()] + ["Explore Data"]))
+.stDialog .stMultiSelect svg * {
+    color: black;
+}
 
-    with results_tab:
+.stDialog [aria-label="Close"] {
+    visibility: hidden;
+}
 
-        col_order, col_strategy, col_search, col_searchby = st.columns([1, 1, 2, 1])
+hr {
+    background-color: #777;
+}
 
-        col_order.selectbox('Order by', st.session_state.result.columns, key='order_column',
-                            on_change=lambda: order_table())
-        col_strategy.selectbox('Strategy', ['Ascending', 'Descending'], key='order_ascending',
-                               on_change=lambda: order_table())
+#isolates_filtered_h4 {
+    color: black;
+}
 
-        if not st.session_state.result.empty:
-            st.download_button(label="Download data as CSV", data=st.session_state.result.to_csv(index=False).encode(),
-                               file_name="data.csv", mime="text/csv")
-            st.table(st.session_state.result.reset_index(drop=True))
+.st-key-main_page {
+    width: 98vw;
+    margin: 4vh 1vw;
+    padding: 0 1vw 3vh 1vw !important;
+    display: inline-block !important;
+    
+    background-color: var(--secondary-color);
+    border-radius: 10px !important;
+}
 
-    for index, graph_tab in enumerate(graph_tabs):
-        with graph_tab:
-            graph = st.session_state.graphs[[key for key in st.session_state.graphs.keys()][index]]
-            fn = 'results.png'
-            graph.savefig(fn)
-            with open(fn, "rb") as img:
-                btn = st.download_button(label="Download Plot", data=img,
-                                         file_name=fn, mime="image/png")
-            st.pyplot(graph)
+.st-key-main_page > div:nth-child(3) {
+    width: 20%;
+    float: left !important;
+}
 
-    with explore_tab:
+.st-key-main_page > div:nth-child(4) {
+    width: 78%;
+    margin-left: 1.5%;
+    float: left;
+}
 
-        if not st.session_state.result.empty:
+.st-key-query_type_selector {
+    z-index: 10;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0;
+    margin-top: 2vh;
+    margin-bottom: -1vh;
+    padding-right: 1vw;
+}
 
-            try:
-                query_pyg_config_file = json.loads(open((f"website/resources/pygwalker_configs/"
-                                                         f"query_{queries[query_selection]}_config.json")).read())
-            except FileNotFoundError as e:
-                query_pyg_config_file = ""
-            except JSONDecodeError:
-                query_pyg_config_file = ""
+.st-key-query_type_selector > .stElementContainer {
+    width: auto !important; 
+    flex: 0 0 auto; 
+}
 
-            # TODO: further, query-specific, modifications
-            enhance_pygwalker(queries[query_selection], st.session_state.result.columns, query_pyg_config_file)
+.st-key-query_type_selector .stButton {
+    width: auto !important;
+    
+    border-radius: 5px !important;
+    background-color: transparent;
+}
 
-            def get_pyg_renderer() -> "StreamlitRenderer":
-                return StreamlitRenderer(st.session_state.result, appearance="dark",
-                                         spec_io_mode="r", spec=query_pyg_config_file)
+.st-key-query_type_selector .stButton > button {
+    padding: 0 !important;
+    min-height: 0 !important;
+    border: 0;
+    border-radius: 0 !important;
+}
 
-            renderer = get_pyg_renderer()
-            renderer.explorer()
+.st-key-query_type_selector .stButton > button > div > p {
+    padding: 0 !important;
+    font-weight: bold;
+    font-size: 14px !important;
+}
 
-with open("website/resources/highlight.css") as css:
-    st.markdown(f'<style>{css.read()}</style>', unsafe_allow_html=True)
+.st-key-left_column {
+    padding-left: 1vw;
+    margin-bottom: 2vh;
+    background-color: transparent;
+}
+
+.st-key-left_column svg * {
+    color: black;
+}
+
+.st-key-query_container,
+.st-key-results_container {
+    width: 100%;
+    flex: 1;
+}
+
+#query_sel_label {
+    font-size: 18px;
+}
+
+.st-key-query_selector {
+    margin-top: -3vh;
+    padding-bottom: 1vh;
+    margin-bottom: 1vh;
+    margin-left: 1vw !important;
+}
+
+.st-key-query_selector * {
+    max-width: 94.6vw !important;
+}
+
+.st-key-query_selector .stSelectbox {
+    margin-top: -0.5vh;
+    max-height: 30vh;
+    background-color: white;
+    border-radius: 5px !important;
+}
+
+svg * {
+    color: black;
+}
+
+.st-key-query_selector .stSelectbox div {
+    height: auto !important;
+    max-height: 30vh;
+    white-space: wrap !important;
+    font-weight: bold;
+    color: black;
+    font-size: 14px !important;
+}
+
+.st-key-query_inputs_container {
+    padding: 0 !important;
+    margin-bottom: 2vh;
+}
+
+.st-key-global_input_recap {
+    background-color: var(--accent-color);
+    padding: 7.5% !important; 
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1vh;
+    max-width: 100%;
+    box-sizing: border-box !important; 
+    overflow: hidden !important; 
+    word-wrap: break-word !important; 
+}
+
+.st-key-global_input_recap * {
+    max-width: 100%;
+    box-sizing: border-box !important; 
+    overflow: hidden !important; 
+    word-wrap: break-word !important; 
+}
+
+.st-key-query_inputs_container svg * {
+    color: white;
+}
+
+.st-key-query_inputs_container > .stForm {
+    padding: 0 !important;
+}
+
+#inputs {
+    margin-bottom: 1vh;
+    font-size: 18px !important;
+}
+
+.st-key-query_inputs_container [data-testid="stWidgetLabel"] > div {
+    width: 100% !important;
+} 
+
+.st-key-query_inputs_container [data-testid="stWidgetLabel"] p {
+    font-weight: bold;
+    font-size: 13px !important;
+}
+
+.st-key-query_inputs_container .stSelectbox > div,
+.st-key-query_inputs_container .stMultiSelect > div,
+.st-key-query_inputs_container .stNumberInput > div,
+.st-key-query_inputs_container .stDateInput > div 
+{
+    height: auto !important;
+    max-height: 30vh;
+    white-space: wrap !important;
+    background-color: white;
+}
+
+.st-key-query_inputs_container .stSelectbox > div div,
+.st-key-query_inputs_container .stMultiSelect > div div,
+.st-key-query_inputs_container .stNumberInput > div input,
+.st-key-query_inputs_container .stDateInput > div input
+{
+    height: auto !important;
+    color: black;
+    font-size: 14px !important;
+}
+
+.stNumberInputContainer {
+    background-radius: 0!important;
+}
+
+.st-key-query_inputs_container [data-baseweb="tab-list"] {
+    margin-top: 2vh;
+    margin-bottom: -2vh;
+    width: 100% !important;
+}
+
+.st-key-query_inputs_container [data-baseweb="tab-list"] > div {
+    background-color: white;
+}
+
+.st-key-query_inputs_container [data-baseweb="tab-list"] button {
+    float: right !important;
+    background-color: transparent;
+    border-radius: 5px;
+    padding: 0 !important;
+}
+
+.st-key-query_inputs_container [data-baseweb="tab-list"] button p {
+    color: white;
+    font-weight: bold;
+    font-size: 13px !important;
+}
+
+.st-key-query_inputs_container .stFormSubmitButton > button {
+    margin-top: 5vh;
+    background-color: var(--accent-color);
+    border-radius: 0;
+    padding: 0vh 2vw;
+    width: 100% !important;
+}
+
+.st-key-query_inputs_container .stFormSubmitButton > button p {
+    color: white;
+    font-weight: bold;
+    font-size: 14px !important;
+}
+
+.st-key-results_container {
+    background: white;
+    padding: 3vh 2vw 1vh 2vw;
+    border-radius: 10px !important;
+}
+
+.st-key-results_container [data-testid="stTab"]{
+    margin-right: 0.5vw
+}
+
+.st-key-results_container [data-testid="stTab"] p {
+    font-weight: bold;
+    font-size: 14px !important;
+    color: var(--main-color);
+    text-transform: uppercase;
+}
+
+.st-key-results_container [data-baseweb="tab-highlight"] {
+    height: 3px;
+    background-color: var(--main-color);
+}
+
+.stDownloadButton button {
+    border: 1px solid black !important;
+    margin-bottom: 2vh;
+}
+
+.st-key-results_container button p {
+    color: black;
+}
+
+.st-key-table_settings {
+    margin-bottom: 2.5vh;
+}
+
+.st-key-table_settings * {
+    color: black;
+}
+
+.st-key-table_settings .stSelectbox > div,
+.st-key-table_settings .stNumberInput > div {
+    border-radius: 0.5rem;
+    border: 1px solid var(--main-color) !important;
+}
+
+[data-baseweb="popover"] div {
+    background-color: transparent !important;
+}
+
+button:hover > svg * {
+    color: white;
+}
+
+.stTable, table {
+    border-radius: 5px !important;
+}
+
+.stTable * {
+    color: black;
+    border: 0.5px solid rgba(0, 0, 0, 0.3) !important;
+}
+
+.stTable div,
+.stTable p {
+    border: 0 !important;
+}
+
+thead * {
+    font-weight: bold !important;
+    color: white !important;
+    text-align: left !important;
+    background-color: var(--accent-color);
+}
+
+th {
+    padding-left: 0.5vw !important;
+}
+
+#about_page_html * {
+    color: black;
+    text-align: justify !important;
+}
+
+#about_page_html p {
+    font-size: 16px !important;
+}
+
+#bottom_about_container {
+    display: flex; /* Enables flexbox layout */
+    width: 100%; /* Ensure it takes the full width of its parent */
+    box-sizing: border-box; /* Include padding and border in width calculations */
+}
+
+#bottom_about_container > div {
+    flex: 0 0 50%; /* Set each child to take 50% of the parent's width */
+    box-sizing: border-box; /* Include padding and border in width calculations */
+}
+
+#bottom_about_container > div * {
+    padding: 0;
+    padding-bottom: 0.5vh;
+}
+
+#bottom_about_container > div h6 {
+    font-weight: normal;
+}
+"""
+}</style>', unsafe_allow_html=True)
+
+build_top_bar(global_config)
+build_global_container(global_config)
+build_main_page(global_config)

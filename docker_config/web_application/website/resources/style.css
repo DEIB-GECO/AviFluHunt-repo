@@ -142,12 +142,33 @@ h1 {
     border-left: 2.5px solid black;
 }
 
+[data-testid="stVerticalBlock"] > div:nth-of-type(2) > div > button  {
+    background-color: black;
+    color: white;
+}
+
+[data-testid="stVerticalBlock"] > div:nth-of-type(2) > div > button:hover  {
+    background-color: black !important;
+    color: white !important;
+}
+
+[data-testid="stVerticalBlock"] > div:nth-of-type(2) > div > button:focus  {
+    background-color: black !important;
+    color: white !important;
+}
+
 [data-testid='stVerticalBlockBorderWrapper'] button > div > p {
     font-weight: bold !important;
     font-family: Poppins, sans-serif !important;
 }
 
 [data-testid='stVerticalBlockBorderWrapper'] button:hover {
+    border-radius: 0 !important;
+    background-color: var(--accent-color);
+    font-family: Poppins, sans-serif !important;
+}
+
+[data-testid='stVerticalBlockBorderWrapper'] button:focus {
     border-radius: 0 !important;
     background-color: var(--accent-color);
     font-family: Poppins, sans-serif !important;
@@ -423,7 +444,23 @@ table tr:hover {
 }
 [data-testid="stVerticalBlock"] > div > div > [data-testid='stVerticalBlockBorderWrapper'] > div > div > div > div > button {
     position: absolute;
-    margin-top: 310px !important;
-    margin-left: 25px !important;
+    margin-top: 322.5px !important;
+    margin-left: 26.5px !important;
     z-index: 10000 !important;
+}
+
+/*[data-testid="stNumberInputContainer"] {
+    max-width: 50%;
+}*/
+
+[aria-label="Limit:"] {
+    border-radius: 0 !important;
+    background-color: white !important;
+}
+
+[data-testid="stVerticalBlockBorderWrapper"] > div > div > div > div > div > div > img {
+    border-radius: 10px;
+    border: 2.5px solid black;
+    padding: 1.5%;
+    background: white;
 }
