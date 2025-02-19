@@ -5,7 +5,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y build-essential
 RUN pip install --upgrade pip
 ADD web_application/requirements.txt /app/
-RUN pip install -r requirements.txt
+RUN pip install --timeout=6000 -r requirements.txt
 
 COPY ./web_application /app/
 

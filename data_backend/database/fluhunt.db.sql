@@ -119,7 +119,7 @@ CREATE TABLE IF NOT EXISTS "Host" (
 	PRIMARY KEY("host_id")
 );
 
-INSERT INTO Host (host_id, host_name)
+INSERT OR IGNORE INTO Host (host_id, host_name)
 VALUES
     (0, 'Aves'),
     (1, 'Mammalia');

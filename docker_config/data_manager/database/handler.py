@@ -45,7 +45,10 @@ class DatabaseHandler:
         for command in sql_commands:
             command = command.strip()
             if command:
-                cursor.execute(command)
+                try:
+                    cursor.execute(command)
+                except:
+                    print(command)
         self.commit_changes()
 
     def insert_row(self, table_name, columns, values, commit=False):

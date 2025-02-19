@@ -10,7 +10,7 @@ with open('website/resources/strings.yaml', 'r') as yaml_file:
     strings = yaml.safe_load(yaml_file)
 
 
-db = st.connection(name="fluhunt", type="sql", url="sqlite:///website/data/fluhunt.db")
+db = st.connection(name="fluhunt", type="sql", url="sqlite:///db/fluhunt.db")
 
 
 # DB ROWS

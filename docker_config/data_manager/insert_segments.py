@@ -1,6 +1,7 @@
 import argparse
 import gc
 import os
+import re
 import sys
 import shutil
 import pandas as pd
@@ -8,6 +9,7 @@ import pandas as pd
 sys.path.append('helpers')
 sys.path.append('database')
 import handler
+import taxonomer
 
 
 class MutationDatabaseHandler:

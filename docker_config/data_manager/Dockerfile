@@ -26,7 +26,7 @@ RUN conda install -y mafft python=3.12 && \
 
 # Install Python dependencies
 ADD data_manager/requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --timeout=6000 --no-cache-dir -r requirements.txt
 
 # Copy all application code
 COPY ./data_manager /app
