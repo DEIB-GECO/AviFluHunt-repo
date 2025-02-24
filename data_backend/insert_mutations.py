@@ -469,6 +469,6 @@ class MutationDatabaseHandler:
 
 
 if __name__ == "__main__":
-    fasta = "resources/segments_data/H5/H5N1/H5N1_Fasta.fasta"
-    meta = "resources/segments_data/H5/H5N1/H5N1_Metadata.xls"
+    fasta = "resources/segments_data/H5/H5N1_New/23_26_Fasta.fasta"
+    meta = "resources/segments_data/H5/H5N1_New/23_26_Metadata.xls"
     MutationDatabaseHandler(meta, fasta)

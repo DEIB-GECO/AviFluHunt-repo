@@ -51,6 +51,22 @@ get_filtered_isolates_count = \
   "END "
   "BETWEEN (:global_start_year * 100 + :global_start_month) AND (:global_end_year * 100 + :global_end_month)")
 
+get_taxonomy_tree = \
+    ("WITH RECURSIVE Descendants(host_id, parent_id, root_parent_id) AS ( "
+     "SELECT host_id, parent_id, parent_id AS root_parent_id "
+     "FROM Taxonomy "
+     ""
+     "UNION ALL "
+     ""
+     "SELECT t.host_id, t.parent_id, d.root_parent_id "
+     "FROM Taxonomy t "
+     "INNER JOIN Descendants d ON t.parent_id = d.host_id "
+     ") "
+     "SELECT DISTINCT h.host_name, d.host_id, d.parent_id "
+     "FROM Descendants d "
+     "JOIN Host h ON d.host_id = h.host_id "
+     "WHERE d.root_parent_id = 0 OR d.host_id = 0")
+
 
 # QUERIES
 # --------------------------------------------------------------

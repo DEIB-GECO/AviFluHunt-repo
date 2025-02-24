@@ -152,7 +152,7 @@ input {
     margin-top: .5vh;
     margin-bottom: 1.5vh;
     height: 0 !important;
-    padding-left: 83vw;
+    padding-left: 73vw;
 }
 
 .st-key-global_container > div > div {
@@ -181,6 +181,10 @@ input {
 .st-key-global_container div {
     width: max-content;
     flex: content !important;
+}
+
+.st-key-taxonomy_tree_overlay * {
+    color: black;
 }
 
 .st-key-isolates_remaining {

@@ -12,6 +12,7 @@ class Taxonomer:
     _instance = None
     _manual_pairings = {}
     _taxonomy_data = {}
+    _taxonomy_names = []
 
     class SpeciesNotFoundError(Exception):
 
@@ -28,9 +29,12 @@ class Taxonomer:
         self.__create_taxonomy_data_ncbi_dmp()
 
     def retrieve_taxonomy(self, host, preferred_parent_tax_id=None):
-        scientific_name = self.retrieve_scientific_name_from_host(self.__clean_host(host), preferred_parent_tax_id)
-        if scientific_name is None: return None
-        return taxoniq.Taxon(scientific_name=scientific_name).lineage
+        try:
+            scientific_name = self.retrieve_scientific_name_from_host(self.__clean_host(host), preferred_parent_tax_id)
+            if scientific_name is None: return None
+            return taxoniq.Taxon(scientific_name=scientific_name).lineage
+        except requests.exceptions.ConnectionError:
+            return TypeError
 
     def retrieve_scientific_name_from_host(self, host, preferred_parent_tax_id=None):
 
@@ -87,20 +91,14 @@ class Taxonomer:
             if taxon is None: return False
             return preferred_parent_tax_id in [t.tax_id for t in taxon.lineage]
 
-        taxonomy_names = [
-            name
-            for taxon in self._taxonomy_data.values()
-            for name in ([taxon["scientific_name"]] + taxon["common_names"])
-        ]
-
         try:
-            partial_match = [match for match in process.extract(host.lower(), taxonomy_names)
+            partial_match = [match for match in process.extract(host.lower(), self._taxonomy_names)
                              if is_specific_host(match[0])][0]
         except IndexError:
             partial_match = []
 
         try:
-            fuzzy_match = [match for match in process.extract(host.lower(), taxonomy_names, scorer=fuzz.partial_ratio)
+            fuzzy_match = [match for match in process.extract(host.lower(), self._taxonomy_names, scorer=fuzz.partial_ratio)
                            if is_specific_host(match[0])][0]
         except IndexError:
             fuzzy_match = []
@@ -205,6 +203,12 @@ class Taxonomer:
             for tax_id, data in taxon_data.items()
             if data["scientific_name"] is not None
         }
+
+        self._taxonomy_names = [
+            name
+            for taxon in self._taxonomy_data.values()
+            for name in ([taxon["scientific_name"]] + taxon["common_names"])
+        ]
 
     @staticmethod
     def __clean_host(host):

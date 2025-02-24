@@ -1,6 +1,9 @@
 import datetime
 import io
 
+import matplotlib
+matplotlib.use('Agg')
+from st_aggrid import AgGrid, GridOptionsBuilder
 from streamlit_option_menu import option_menu
 from fluhunter_web_helpers import *
 from pygwalker.api.streamlit import StreamlitRenderer
@@ -21,6 +24,8 @@ def handle_global_button_click(button_name, global_config):
         filters_overlay_container(global_config)
     elif button_name == "About":
         about_overlay_container()
+    elif button_name == "Taxonomy Tree":
+        taxonomy_tree_overlay_container(global_config)
 
 
 def build_global_filters_overlay_container(global_config):
@@ -31,13 +36,17 @@ def build_global_filters_overlay_container(global_config):
 
 def build_settings_menu(global_config):
 
-    col1, col2 = st.columns([1, 1])
+    tax, settings, about = st.columns([1, 1, 1])
 
-    with col1:
+    with tax:
+        if st.button("Taxonomy Tree"):
+            handle_global_button_click("Taxonomy Tree", global_config)
+
+    with settings:
         if st.button("Settings", key="settings_button"):
             handle_global_button_click("Settings", global_config)
 
-    with col2:
+    with about:
         if st.button("About", key="about_button"):
             handle_global_button_click("About", global_config)
 
@@ -132,6 +141,35 @@ def about_overlay_container():
     with st.container(key="about_overlay"):
         with open("website/resources/about.html", "r") as about:
             st.html(about.read())
+
+
+@st.dialog("Taxonomy Tree")
+def taxonomy_tree_overlay_container(global_config):
+    with (st.container(key="taxonomy_tree_overlay")):
+
+        data = [("Aves", 0, -1)] + \
+               list(global_config.database_connection.query(get_taxonomy_tree).itertuples(index=False, name=None))
+
+        # Convert list to a dictionary {parent_id: [(name, id)]}
+        tree = {}
+        for name, node_id, parent_id in data:
+            if parent_id not in tree:
+                tree[parent_id] = []
+            tree[parent_id].append((name, node_id))
+
+        # Recursive function to display tree using expanders
+        def display_tree(parent_id=None, indent=0):
+            if parent_id not in tree:
+                return
+
+            for name, node_id in tree[parent_id]:
+                toggle = st.toggle(f"{'-' * indent}▶ {name}")
+                if toggle:
+                    display_tree(node_id, indent + 4)
+
+        # Streamlit UI
+        st.title("🦆 Taxonomy Tree Explorer")
+        display_tree(-1)  # Start from the root (None)
 
 
 def build_query_bar(query_types):
