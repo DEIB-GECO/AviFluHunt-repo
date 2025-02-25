@@ -187,6 +187,33 @@ input {
     color: black;
 }
 
+.st-key-taxonomy_tree_overlay label > div:first-of-type {
+    background-color: transparent;
+    max-width: 0% !important;
+    max-height: 0% !important;
+}
+
+.st-key-taxonomy_tree_overlay label {
+    margin-top: 0 !important;
+}
+
+.st-key-taxonomy_tree_overlay label:has(input[aria-checked="false"]) p {
+    color: blue !important;
+}
+
+.st-key-taxonomy_tree_overlay label:has(input[aria-checked="false"]) p::before {
+    content: "▶ ";
+}
+
+.st-key-taxonomy_tree_overlay label:has(input[aria-checked="true"]) p {
+    color: black !important;
+    text-decoration: none !important;
+}
+
+.st-key-taxonomy_tree_overlay label:has(input[aria-checked="true"]) p::before {
+    content: "▼ ";
+}
+
 .st-key-isolates_remaining {
     display: inline-block !important;
 }

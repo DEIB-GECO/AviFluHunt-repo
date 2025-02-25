@@ -39,7 +39,7 @@ def build_settings_menu(global_config):
     tax, settings, about = st.columns([1, 1, 1])
 
     with tax:
-        if st.button("Taxonomy Tree"):
+        if True or st.button("Taxonomy Tree"):
             handle_global_button_click("Taxonomy Tree", global_config)
 
     with settings:
@@ -143,7 +143,7 @@ def about_overlay_container():
             st.html(about.read())
 
 
-@st.dialog("Taxonomy Tree")
+@st.dialog("🦆 Taxonomy Tree Explorer")
 def taxonomy_tree_overlay_container(global_config):
     with (st.container(key="taxonomy_tree_overlay")):
 
@@ -163,12 +163,10 @@ def taxonomy_tree_overlay_container(global_config):
                 return
 
             for name, node_id in tree[parent_id]:
-                toggle = st.toggle(f"{'-' * indent}▶ {name}")
+                toggle = st.toggle(f"&nbsp;{'&nbsp;' * indent} {name}")
                 if toggle:
-                    display_tree(node_id, indent + 4)
+                    display_tree(node_id, indent + 8)
 
-        # Streamlit UI
-        st.title("🦆 Taxonomy Tree Explorer")
         display_tree(-1)  # Start from the root (None)
 
 
