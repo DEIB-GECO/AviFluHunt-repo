@@ -188,6 +188,7 @@ input {
 }
 
 .st-key-taxonomy_tree_overlay label > div:first-of-type {
+    min-width: 0 !important;
     background-color: transparent;
     max-width: 0% !important;
     max-height: 0% !important;

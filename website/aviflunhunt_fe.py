@@ -39,7 +39,7 @@ def build_settings_menu(global_config):
     tax, settings, about = st.columns([1, 1, 1])
 
     with tax:
-        if True or st.button("Taxonomy Tree"):
+        if st.button("Taxonomy Tree"):
             handle_global_button_click("Taxonomy Tree", global_config)
 
     with settings:
@@ -61,7 +61,7 @@ def filters_overlay_container(global_config):
             build_location_global_filter(global_config)
 
         with right_col:
-            build_date_global_filter()
+            build_date_global_filter(global_config)
 
         build_isolates_remaining_information(global_config)
 
@@ -95,23 +95,24 @@ def build_location_state_filter(global_config):
     st.session_state.global_states = {f"{re.sub(r'[^a-zA-Z]', '', state)}": state for state in selected_states}
 
 
-def build_date_global_filter():
+def build_date_global_filter(global_config):
     with st.container(key="date_global_filter"):
 
         st.write("📅 Timeframe")
+        min_year = global_config.database_connection.query(get_min_year)["min_year"].tolist()[0]
 
         # Set default values if they are not already in session state
         if "global_start_date" not in st.session_state:
-            st.session_state.global_start_date = datetime.date(1959, 1, 1)
+            st.session_state.global_start_date = datetime.date(min_year, 1, 1)
         if "global_end_date" not in st.session_state:
             st.session_state.global_end_date = datetime.date.today()
 
         # Create the date input fields
         start_date = st.date_input('Start Date', st.session_state.global_start_date,
-                                   min_value=datetime.date(1900, 1, 1),
+                                   min_value=datetime.date(min_year, 1, 1),
                                    max_value=datetime.date.today())
         end_date = st.date_input('End Date', st.session_state.global_end_date,
-                                 min_value=datetime.date(1900, 1, 1))
+                                 min_value=datetime.date(min_year, 1, 1))
 
         # Store the selected dates in session_state
         st.session_state.global_start_date = start_date

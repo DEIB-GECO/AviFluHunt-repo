@@ -35,6 +35,19 @@ get_annotations = \
  ("SELECT DISTINCT annotation_name "
   "FROM Annotation")
 
+get_min_year = (
+  "SELECT min(CASE "
+  "           WHEN length(isolate.collection_date) = 4 THEN isolate.collection_date "
+  "           WHEN length(isolate.collection_date) = 7 THEN substr(isolate.collection_date, 1, 4) "
+  "           ELSE strftime('%Y', isolate.collection_date) "
+  "           END) as min_year "
+  "FROM Isolate "
+  "WHERE (length(isolate.collection_date) = 4 AND isolate.collection_date LIKE '____') "
+  "   OR (length(isolate.collection_date) = 7 AND isolate.collection_date LIKE '____-__') "
+  "   OR (length(isolate.collection_date) = 10 AND isolate.collection_date LIKE '____-__-__')"
+)
+
+
 get_isolates_count = ("SELECT COUNT(DISTINCT isolate_epi) as count "
                 "FROM Isolate")
 
