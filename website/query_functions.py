@@ -303,7 +303,8 @@ def manip_result4(results_pre, params):
 
 
 def plot_data(result_df, sort_column, plot_column, top_n=20, label_column=None, plot_type='barh', title='',
-              xlabel='', ylabel='', color='skyblue', is_bar=True, show_values=False, rotation=0):
+              xlabel='', ylabel='', color='skyblue', is_bar=True, show_values=False, rotation=0,
+              host_comparison=False):
     """
     Generalized function for plotting graphs with sorting, labeling, and value display.
 
@@ -328,6 +329,21 @@ def plot_data(result_df, sort_column, plot_column, top_n=20, label_column=None, 
 
     # Create the plot
     plt.figure(figsize=(12, 8))
+
+    if host_comparison:
+
+        host1_col = df_sorted.columns[1]
+        host2_col = df_sorted.columns[2]
+
+        y_labels = [f"{row['Marker']}" for _, row in df_sorted.iterrows()]
+        plt.figure(figsize=(8, 6))
+        plt.barh(y_labels, df_sorted["Diff"], color="skyblue")
+        plt.xlabel("Difference (Diff)")
+        plt.ylabel("Marker")
+        plt.title(f"Top {top_n} Marker difference between {host1_col} and {host2_col}")
+        plt.gca().invert_yaxis()  # Invert y-axis to match sorting
+
+        return plt.gcf()
 
     if plot_type == 'barh' and is_bar:
         plt.barh(df_sorted[label_column], df_sorted[plot_column], color=color)

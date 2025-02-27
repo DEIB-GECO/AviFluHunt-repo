@@ -208,7 +208,19 @@ query_mapping = {
         3: {
             'query': get_markers_id_by_host_relative_presence,
             'params_func': params3,
-            'plot_params': {}
+            'plot_params': {
+                'plot_type': "bar",
+                'top_n': 20,
+                'title': '',
+                'xlabel': 'Host',
+                'ylabel': 'Distinct Markers Per Host',
+                'color': 'skyblue',
+                'show_values': True,
+                'sort_column': 'Diff',
+                'plot_column': 'Distinct Markers Per Host',
+                'label_column': 'Host',
+                'host_comparison': True
+            }
         },
         4: {
             'query': get_markers_id_by_host_relative_presence,
@@ -227,7 +239,8 @@ query_mapping = {
                 'color': 'skyblue',
                 'sort_column': '#',
                 'plot_column': '#',
-                'label_column': "Host"
+                'label_column': "Host",
+                'host_comparison': False
             }
         },
         6: {
@@ -242,7 +255,8 @@ query_mapping = {
                 'color': 'skyblue',
                 'sort_column': 'Normalized Percentage',
                 'plot_column': 'Normalized Percentage',
-                'label_column': "State"
+                'label_column': "State",
+                'host_comparison': False
             }
         },
         7: {
@@ -263,7 +277,8 @@ query_mapping = {
                 'show_values': True,
                 'sort_column': 'Host',
                 'plot_column': 'Distinct Markers Per Host',
-                'label_column': 'Host'
+                'label_column': 'Host',
+                'host_comparison': False
             }
         },
         9: {
@@ -279,7 +294,8 @@ query_mapping = {
                 'show_values': False,
                 'sort_column': 'Percentage',
                 'plot_column': 'Percentage',
-                'label_column': 'Marker'
+                'label_column': 'Marker',
+                'host_comparison': False
             }
         },
         10: {
@@ -320,7 +336,8 @@ query_mapping = {
                 'show_values': True,
                 'sort_column': 'Year',
                 'plot_column': 'Year',
-                'label_column': 'Year'
+                'label_column': 'Year',
+                'host_comparison': False
             }
         }
     }
