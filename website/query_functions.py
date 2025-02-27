@@ -1,7 +1,7 @@
 import yaml
 from matplotlib import pyplot as plt
 
-import pandas as pd
+
 from queries import *
 import streamlit as st
 

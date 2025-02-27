@@ -3,7 +3,6 @@ import io
 
 import matplotlib
 matplotlib.use('Agg')
-from st_aggrid import AgGrid, GridOptionsBuilder
 from streamlit_option_menu import option_menu
 from fluhunter_web_helpers import *
 from pygwalker.api.streamlit import StreamlitRenderer
