@@ -194,6 +194,12 @@ input {
     max-height: 0% !important;
 }
 
+.st-key-taxonomy_tree_search label > div:first-of-type {
+    background-color: transparent;
+    max-width: 100% !important;
+    max-height: auto !important;
+}
+
 .st-key-taxonomy_tree_overlay label {
     margin-top: 0 !important;
 }

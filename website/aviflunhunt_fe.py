@@ -157,15 +157,37 @@ def taxonomy_tree_overlay_container(global_config):
                 tree[parent_id] = []
             tree[parent_id].append((name, node_id))
 
+        with st.container(key="taxonomy_tree_search"):
+            search_tax = st.text_input("Search:")
+
+        def get_all_descendants(node_id, tree):
+            descendants = []
+            if node_id in tree:
+                children = tree[node_id]
+                for child_name, child_id in children:
+                    descendants.append(child_name)
+                    descendants.extend(get_all_descendants(child_id, tree))
+
+            return descendants
+
         # Recursive function to display tree using expanders
-        def display_tree(parent_id=None, indent=0):
+        def display_tree(parent_id=None, indent=0, parent_in_search=False):
+
             if parent_id not in tree:
                 return
 
             for name, node_id in tree[parent_id]:
-                toggle = st.toggle(f"&nbsp;{'&nbsp;' * indent} {name}")
-                if toggle:
-                    display_tree(node_id, indent + 8)
+
+                node_descendants = get_all_descendants(node_id, tree)
+
+                show_node = (
+                    search_tax == "" or parent_in_search or search_tax.lower() in name.lower() or
+                    any(search_tax.lower() in tax.lower() for tax in node_descendants))  # matching children
+
+                if show_node:
+                    toggle = st.toggle(f"&nbsp;{'&nbsp;' * indent} {name}")
+                    if toggle:
+                        display_tree(node_id, indent + 8, search_tax.lower() in name.lower() or parent_in_search)
 
         display_tree(-1)  # Start from the root (None)
 
