@@ -14,3 +14,4 @@ matplotlib
 miniFasta==3.0.3
 pygwalker
 streamlit_option_menu
+taxoniq

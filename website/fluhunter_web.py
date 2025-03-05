@@ -200,7 +200,21 @@ input {
     max-height: auto !important;
 }
 
+.st-key-taxonomy_tree_search {
+    margin-bottom: 2vh;
+}
+
+.st-key-taxonomy_tree_search .stTextInput > * {
+    width: auto;
+    float: left !important;
+}
+
+.st-key-taxonomy_tree_search .stTextInput > div {
+    border: 1px solid black !important; 
+}
+
 .st-key-taxonomy_tree_overlay label {
+    margin-right: 1vw !important;
     margin-top: 0 !important;
 }
 

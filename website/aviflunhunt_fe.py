@@ -1,7 +1,8 @@
 import datetime
 import io
-
+import taxoniq
 import matplotlib
+
 matplotlib.use('Agg')
 from streamlit_option_menu import option_menu
 from fluhunter_web_helpers import *
@@ -178,6 +179,11 @@ def taxonomy_tree_overlay_container(global_config):
 
             for name, node_id in tree[parent_id]:
 
+                try:
+                    ncbi_id = taxoniq.Taxon(scientific_name=name).tax_id
+                except:
+                    ncbi_id = "unavailable"
+
                 node_descendants = get_all_descendants(node_id, tree)
 
                 show_node = (
@@ -185,8 +191,9 @@ def taxonomy_tree_overlay_container(global_config):
                     any(search_tax.lower() in tax.lower() for tax in node_descendants))  # matching children
 
                 if show_node:
-                    toggle = st.toggle(f"&nbsp;{'&nbsp;' * indent} {name}")
-                    if toggle:
+                    toggle = st.toggle(f"&nbsp;{'&nbsp;' * indent} {name} ({ncbi_id})")
+                    if toggle or \
+                        (any(search_tax.lower() in tax.lower() for tax in node_descendants) and search_tax != ""):
                         display_tree(node_id, indent + 8, search_tax.lower() in name.lower() or parent_in_search)
 
         display_tree(-1)  # Start from the root (None)
