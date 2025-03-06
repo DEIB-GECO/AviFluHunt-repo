@@ -212,6 +212,11 @@ def build_query_bar(query_types):
             st.session_state.current_query_type = query_type
 
 
+def reset_result():
+    pass
+    #st.session_state["result"] = None
+
+
 def build_query_type_menu(query_types):
     return option_menu(
             menu_title=None,
@@ -228,7 +233,8 @@ def build_query_type_menu(query_types):
                 "nav-link": {"font-size": "14px", "text-align": "left", "margin": "0px",
                              "font-weight": "bold", "color": "white"},
                 "nav-link-selected": {"background-color": "white", "color": "black"},
-            }
+            },
+            on_change=reset_result(),
         )
 
 
@@ -258,7 +264,7 @@ def build_query_selector(global_config):
         return options[st.selectbox(
             label=global_config.text_resources["query_select_label"],
             options=options,
-            on_change=lambda: None,
+            on_change=reset_result,
             # #key=f"query_selection{st.session_state.current_query_type}",
             label_visibility="collapsed")]
 
@@ -267,12 +273,23 @@ def build_query_input_form(query_selection, global_config):
 
     with st.container(key="query_inputs_container"):
         recap_global_filters(global_config)
+
+        if query_selection == 10:
+            build_add_manual_for_10()
+
         with st.form(f"query_inputs_{query_selection}"):
             st.write(global_config.text_resources["query_inputs_label"], unsafe_allow_html=True)
             query, params = get_query_and_params(query_selection)
             if st.form_submit_button("Submit"):
                 run_query(global_config.database_connection, query_selection, query, params)
                 get_result_graph(query_selection)
+
+
+def build_add_manual_for_10():
+    with st.container(key="add_manual_input_container"):
+        if 'num_inputs' not in st.session_state:
+            st.session_state.num_inputs = 1
+        st.number_input("# Manual Inputs:", min_value=1, step=1, key="num_inputs")
 
 
 def recap_global_filters(global_config):
@@ -395,12 +412,11 @@ def build_table_settings(selected_query_index):
 
 
 def build_table(batch_size, current_page):
-    # TODO: fix
     with st.container(key="table_container"):
         if st.session_state.result is not None and not st.session_state.result.empty:
             pagination = st.container()
             pages = split_frame(st.session_state.result, batch_size)
-            pagination.table(st.session_state.result)
+            pagination.table(pages[current_page - 1])
 
 
 def build_download_button():

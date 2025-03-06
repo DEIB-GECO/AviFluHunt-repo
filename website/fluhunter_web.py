@@ -402,7 +402,6 @@ hr {
 
 .st-key-query_selector .stSelectbox {
     margin-top: -0.5vh;
-    max-height: 30vh;
     background-color: white;
     border-radius: 5px !important;
 }
@@ -413,7 +412,6 @@ svg * {
 
 .st-key-query_selector .stSelectbox div {
     height: auto !important;
-    max-height: 30vh;
     white-space: wrap !important;
     font-weight: bold;
     color: black;
@@ -472,7 +470,6 @@ svg * {
 .st-key-query_inputs_container .stDateInput > div 
 {
     height: auto !important;
-    max-height: 30vh;
     white-space: wrap !important;
     background-color: white;
 }
@@ -485,6 +482,11 @@ svg * {
     height: auto !important;
     color: black;
     font-size: 14px !important;
+}
+
+.stMultiSelect span * {
+    font-size: 12px;
+    font-weight: bold;
 }
 
 .stNumberInputContainer {
@@ -633,6 +635,17 @@ th {
 
 #bottom_about_container > div h6 {
     font-weight: normal;
+}
+
+.st-key-add_manual_input_container {
+    position: absolute;
+    margin-top: 175px;
+    z-index: 9999;
+}
+
+.st-key-add_manual_input_container label {
+    font-size: 13px;
+    font-weight: bold;
 }
 """
 }</style>', unsafe_allow_html=True)

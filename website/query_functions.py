@@ -224,12 +224,10 @@ def params10():
     subtype = st.selectbox(label=strings["param_label10a"], options=[None, "H5N1"])
     segment = st.selectbox(label=strings["param_label10b"], options=annotation_list)
 
+    st.html("<div id='10_space' style='height: 10vh;'><br></div>")
+
     manual_tab, auto_tab = st.tabs([strings["param_tab10a"], strings["param_tab10b"]])
     with manual_tab:
-
-        if 'num_inputs' not in st.session_state:
-            st.session_state.num_inputs = 1
-
         start_col, end_col = st.columns(2)
         for i in range(st.session_state.num_inputs):
             with start_col:
@@ -382,7 +380,7 @@ def plot_data(result_df, sort_column, plot_column, top_n=20, label_column=None, 
     plt.ylabel(ylabel)
     plt.title(title)
     plt.grid(axis='x', linestyle='--', alpha=0.7)
-    plt.xticks(rotation=rotation)
+    plt.xticks(rotation=90)
 
     # Show the legend for line plots
     if plot_type == 'line':
