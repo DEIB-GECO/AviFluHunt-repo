@@ -180,20 +180,26 @@ def taxonomy_tree_overlay_container(global_config):
             for name, node_id in tree[parent_id]:
 
                 try:
-                    ncbi_id = taxoniq.Taxon(scientific_name=name).tax_id
+                    ncbi_id = str(taxoniq.Taxon(scientific_name=name).tax_id)
                 except:
                     ncbi_id = "unavailable"
 
                 node_descendants = get_all_descendants(node_id, tree)
+                node_descendants_ids = [str(taxoniq.Taxon(scientific_name=desc_name).tax_id)
+                                        for desc_name in node_descendants]
 
                 show_node = (
-                    search_tax == "" or parent_in_search or search_tax.lower() in name.lower() or
-                    any(search_tax.lower() in tax.lower() for tax in node_descendants))  # matching children
+                    search_tax == "" or parent_in_search or
+                    search_tax.lower() in name.lower() or search_tax in ncbi_id or
+                    any(search_tax.lower() in tax.lower() for tax in node_descendants) or
+                    any(search_tax in tax_id for tax_id in node_descendants_ids))  # matching children
 
                 if show_node:
                     toggle = st.toggle(f"&nbsp;{'&nbsp;' * indent} {name} ({ncbi_id})")
                     if toggle or \
-                        (any(search_tax.lower() in tax.lower() for tax in node_descendants) and search_tax != ""):
+                            ((any(search_tax.lower() in tax.lower() for tax in node_descendants) or
+                             any(search_tax in tax_id for tax_id in node_descendants_ids)) and
+                             search_tax != ""):
                         display_tree(node_id, indent + 8, search_tax.lower() in name.lower() or parent_in_search)
 
         display_tree(-1)  # Start from the root (None)
