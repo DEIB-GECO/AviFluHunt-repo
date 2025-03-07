@@ -184,6 +184,11 @@ def taxonomy_tree_overlay_container(global_config):
                 except:
                     ncbi_id = "unavailable"
 
+                try:
+                    common_name = f"({str(taxoniq.Taxon(scientific_name=name).common_name)})"
+                except:
+                    common_name = ""
+
                 node_descendants = get_all_descendants(node_id, tree)
                 node_descendants_ids = [str(taxoniq.Taxon(scientific_name=desc_name).tax_id)
                                         for desc_name in node_descendants]
@@ -195,7 +200,7 @@ def taxonomy_tree_overlay_container(global_config):
                     any(search_tax in tax_id for tax_id in node_descendants_ids))  # matching children
 
                 if show_node:
-                    toggle = st.toggle(f"&nbsp;{'&nbsp;' * indent} {name} ({ncbi_id})")
+                    toggle = st.toggle(f"&nbsp;{'&nbsp;' * indent} {name} {common_name} (ID: {ncbi_id})")
                     if toggle or \
                             ((any(search_tax.lower() in tax.lower() for tax in node_descendants) or
                              any(search_tax in tax_id for tax_id in node_descendants_ids)) and
