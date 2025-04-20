@@ -368,7 +368,6 @@ def plot_data(result_df, sort_column, plot_column, top_n=20, label_column=None, 
         all_years = range(df_sorted['Year'].min(), df_sorted['Year'].max() + 1)
 
         # Plot each marker line
-        # Plot each marker line
         for marker in df_sorted['Marker'].unique():
             subset = df_sorted[df_sorted['Marker'] == marker]
 
