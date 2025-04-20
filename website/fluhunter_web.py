@@ -442,6 +442,28 @@ svg * {
     word-wrap: break-word !important; 
 }
 
+.st-key-global_filters_recap_top {
+    display: inline-block !important;
+    vertical-align: central !important;
+}
+
+.st-key-global_filters_recap_top > div:nth-child(1) {
+    padding-top: 5%;
+    float: left !important;
+    width: 70% !important;
+}
+
+.st-key-global_filters_recap_top > div:nth-child(2) {
+    display: inline-block !important;
+    float: left;
+    width: 30% !important;
+    content-align: right !important;
+}
+
+.st-key-recap_modify * {
+    font-size: 24px;
+}
+
 .st-key-query_inputs_container svg * {
     color: white;
 }

@@ -41,19 +41,19 @@ def init_session():
     if 'current_query_type' not in st.session_state:
         st.session_state.current_query_type = "Markers"
     if 'global_regions' not in st.session_state:
-        st.session_state.global_regions = None
+        st.session_state.global_regions = {f"{region.replace(" ", "")}": region for region in fe_get_regions(db)['region'].tolist()}
     if 'g_regions' not in st.session_state:
         st.session_state.g_regions = fe_get_regions(db)['region'].tolist()
     if 'global_states' not in st.session_state:
         st.session_state.global_states = None
     if 'global_start_year' not in st.session_state:
-        st.session_state.global_start_year = None
+        st.session_state.global_start_year = 2000
     if 'global_end_year' not in st.session_state:
-        st.session_state.global_end_year = None
+        st.session_state.global_end_year = 2025
     if 'global_start_month' not in st.session_state:
-        st.session_state.global_start_month = None
+        st.session_state.global_start_month = 1
     if 'global_end_month' not in st.session_state:
-        st.session_state.global_end_month = None
+        st.session_state.global_end_month = 1
 
 
 def set_default_table_order(selection, columns):
@@ -108,7 +108,8 @@ def get_result_graph(selection):
     if st.session_state.result is not None:
         plot_params = query_mapping[selection]["plot_params"]
         if plot_params:
-            st.session_state.graph = plot_data(st.session_state.result, **plot_params)
+            if not st.session_state.result.empty:
+                st.session_state.graph = plot_data(st.session_state.result, **plot_params)
         else:
             st.session_state.graph = None
 
@@ -138,7 +139,7 @@ def replace_query_placeholders(selected_query_index, query, params):
         query = query.replace("hosts", params["hosts"])
 
     if st.session_state.global_regions:
-        global_regions = ", ".join(f":{region.replace(' ', '')}" for region in st.session_state.global_regions.values())
+        global_regions = ", ".join(f":{region.replace(' ', '')}" for region in st.session_state.global_regions)
         query = query.replace("global_regions_placeholder", global_regions)
     else:
         query = query.replace("global_regions_placeholder", "")
@@ -167,8 +168,7 @@ def get_pygwalker_default_config(selected_query_index):
 
 @st.cache_data(show_spinner=False)
 def split_frame(df, rows):
-    df = [df.loc[i: min(i + rows - 1, len(df) - 1), :] for i in range(0, len(df), rows)]
-    return df
+    return [df.iloc[i:i + rows] for i in range(0, len(df), rows)]
 
 
 def fe_get_filtered_isolates_count(database_connection):

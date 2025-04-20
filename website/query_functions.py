@@ -1,3 +1,4 @@
+import pandas
 import yaml
 from matplotlib import pyplot as plt
 
@@ -48,7 +49,7 @@ def params2():
     l_col, r_col = st.columns(2)
 
     with l_col:
-        subtype = st.selectbox(label=strings["param_label2a"],  options=["H5N1"])
+        #subtype = st.selectbox(label=strings["param_label2a"],  options=["H5N1"])
         min_perc = st.number_input(label=strings["param_label2c"], key=strings["param_label2c"],
                                    min_value=0.0, step=0.1, max_value=100.0)
     with r_col:
@@ -59,7 +60,7 @@ def params2():
                                           min_value=1, step=1)
 
     return {
-        "subtype": subtype,
+        "subtype": "H5N1",
         "segment_type": segment,
         "min_perc": min_perc,
         "max_perc": max_perc,
@@ -188,16 +189,16 @@ def params4():
 
 
 def params7():
-    subtype = st.selectbox(label=strings["param_label7a"], options=["H5N1"])
+    #subtype = st.selectbox(label=strings["param_label7a"], options=["H5N1"])
     segment = st.selectbox(label=strings["param_label7b"], options=segments)
     host = st.selectbox(label=strings["param_label7d"], options=hosts)
-    return {"subtype": subtype, "segment_type": segment, "host": host}
+    return {"subtype": "H5N1", "segment_type": segment, "host": host}
 
 
 def params8():
-    subtype = st.selectbox(label=strings["param_label8a"], options=["H5N1"])
+    #subtype = st.selectbox(label=strings["param_label8a"], options=["H5N1"])
     segment = st.selectbox(label=strings["param_label8b"], options=segments['segment_type'].tolist())
-    return {"subtype": subtype, "segment_type": segment if segment else None}
+    return {"subtype": "H5N1", "segment_type": segment if segment else None}
 
 
 def params9():
@@ -221,7 +222,7 @@ def params10():
     annotation_list.remove("HA1")
     annotation_list.remove("HA2")
 
-    subtype = st.selectbox(label=strings["param_label10a"], options=[None, "H5N1"])
+    #subtype = st.selectbox(label=strings["param_label10a"], options=[None, "H5N1"])
     segment = st.selectbox(label=strings["param_label10b"], options=annotation_list)
 
     st.html("<div id='10_space' style='height: 10vh;'><br></div>")
@@ -246,15 +247,15 @@ def params10():
     else:
         bins = [(i, i + bin_size) for i in range(offset, 1000 + offset, bin_size)][0:500]
 
-    return {"subtype": subtype, "segment_type": segment if segment else None, "bins": bins}
+    return {"subtype": "H5N1", "segment_type": segment if segment else None, "bins": bins}
 
 
 def params11():
-    subtype = st.selectbox(label=strings["param_label11a"], options=[None, "H5N1"])
+     #subtype = st.selectbox(label=strings["param_label11a"], options=[None, "H5N1"])
     segment = st.selectbox(label=strings["param_label11b"], options=segments['segment_type'].tolist())
     min_n_instances = st.number_input(label=strings["param_label11e"], key=strings["param_label11e"],
                                       min_value=1, step=1)
-    return {"subtype": subtype, "segment_type": segment, "min_n_instances": min_n_instances}
+    return {"subtype": "H5N1", "segment_type": segment, "min_n_instances": min_n_instances}
 
 
 def params13():
@@ -276,17 +277,20 @@ def params15():
 
 
 def manip_result3(results_pre, params):
-    pivot_result = results_pre.pivot(index='Marker', columns='host_name', values='percentage').reset_index()
-    pivot_result[f'Diff'] = (
-            pivot_result[params["host1"]] - pivot_result[params["host2"]])
-    sorted_result = pivot_result.sort_values(by=f'Diff', ascending=False)
-    columns = list(sorted_result.columns)
-    columns.remove(params["host1"])
-    columns.insert(1, params["host1"])
-    columns.remove(params["host2"])
-    columns.insert(2, params["host2"])
-    sorted_result = sorted_result[columns]
-    return sorted_result
+    try:
+        pivot_result = results_pre.pivot(index='Marker', columns='host_name', values='percentage').reset_index()
+        pivot_result[f'Diff'] = (
+                pivot_result[params["host1"]] - pivot_result[params["host2"]])
+        sorted_result = pivot_result.sort_values(by=f'Diff', ascending=False)
+        columns = list(sorted_result.columns)
+        columns.remove(params["host1"])
+        columns.insert(1, params["host1"])
+        columns.remove(params["host2"])
+        columns.insert(2, params["host2"])
+        sorted_result = sorted_result[columns]
+        return sorted_result
+    except KeyError:
+        return pandas.DataFrame()
 
 
 def manip_result4(results_pre, params):
@@ -364,12 +368,19 @@ def plot_data(result_df, sort_column, plot_column, top_n=20, label_column=None, 
         all_years = range(df_sorted['Year'].min(), df_sorted['Year'].max() + 1)
 
         # Plot each marker line
+        # Plot each marker line
         for marker in df_sorted['Marker'].unique():
             subset = df_sorted[df_sorted['Marker'] == marker]
 
-            # Reindex to include all years, filling missing values with NaN
-            subset = subset.set_index('Year').reindex(all_years).reset_index()
+            # Reindex to include all years
+            subset = subset.set_index('Year').reindex(all_years)
 
+            # Fill missing values (choose one method)
+            subset['Percentage'] = subset['Percentage'].interpolate()  # Option 1: interpolate
+            # subset['Percentage'] = subset['Percentage'].ffill()     # Option 2: forward fill
+            # subset['Percentage'] = subset['Percentage'].bfill()     # Option 3: backward fill
+
+            subset = subset.reset_index()
             plt.plot(subset['Year'], subset['Percentage'], marker='^', label=marker)
 
         # Set x-ticks to show all years

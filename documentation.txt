@@ -1,0 +1,204 @@
+### Avian Flu Data Analysis  
+**Frontend User Documentation**
+
+---
+
+#### Table of Contents
+1. [Introduction](#introduction)  
+2. [Getting Started](#getting-started)  
+3. [User Interface Overview](#user-interface-overview)  
+4. [Queries](#queries)  
+   - [a) Literature](#a-literature)  
+   - [b) Data on Markers](#b-data-on-markers)  
+   - [c) Markers and Hosts](#c-markers-and-hosts)  
+   - [d) Mutations](#d-mutations)  
+5. [Global Settings](#global-settings)  
+6. [Taxonomy Tree](#taxonomy-tree)  
+7. [Viewing and Downloading Results](#viewing-and-downloading-results)  
+8. [Additional Notes](#additional-notes)
+
+---
+
+#### 1. Introduction
+
+This application provides a **web-based interface** for avian flu researchers to:
+- Query markers and their effects on hosts or drugs.
+- Examine literature references and marker groups.
+- Filter data by location, date range, or host type.
+- View an automatically generated taxonomy tree of avian species in the database.
+
+The system is built to leverage **domain knowledge** (markers, effects, literature references, etc.) and is powered by a **Dockerized backend** to simplify setup and deployment. If you have not yet set up the Docker environment, please refer to the project’s **README** for instructions on installation and configuration.
+
+---
+
+#### 2. Getting Started
+
+1. **Access the Application**  
+   Once Docker is running (using `docker compose up -d`), open your browser and navigate to the URL provided in the Docker logs (e.g., `http://localhost:8000`).
+
+2. **Prepare Required Data Files**  
+   - A `.fasta` file containing sequence data for analysis.  
+   - A `.xls` metadata file following the structure of GISAID downloads.  
+   - (Optional) Updated XLSX files containing domain knowledge if you set `update_also_knowledge=true`.
+
+3. **Verify Global Settings**  
+   Before running queries, ensure the **Global Filters** (dates, locations) match the subset of data you wish to analyze.
+
+---
+
+#### 3. User Interface Overview
+
+Below is a simplified breakdown of the main interface sections (refer to the attached screenshot for an example):
+
+1. **Navigation Bar (Top-Right)**
+   - **Taxonomy Tree**: View or hide the avian taxonomy tree.  
+   - **Global Settings**: Open the global settings panel to change date ranges and geographic filters.  
+   - **About**: General information about the project.
+
+2. **Query Section (Left Panel / Center)**
+   - **Query Macro Group**: Select which set of queries you want to explore (Literature, Data on Markers, Markers and Hosts, Mutations).  
+   - **Specific Query**: After choosing a macro group, select a query from the dropdown.
+
+3. **Global Settings Recap (Left Panel)**
+   - Displays your current global filters (e.g., date range, selected regions).
+
+4. **Inputs for Each Query (Left Panel or Center)**
+   - Depending on the query, you may need to specify additional parameters (e.g., marker name, effect type, host type).
+
+5. **Results Panel (Center / Bottom)**
+   - Shows query outputs in a table or graph form, often with an option to **Download** the data or the graph.
+
+---
+
+#### 4. Queries
+
+The queries are grouped into four **macro categories**. Select a macro group, then pick one of the listed queries from the dropdown.
+
+##### a) Literature
+
+1. **Obtain the Literature Associated to a Group of Markers**  
+   - **Purpose**: Look up references (DOI, publication, etc.) discussing a specific group of markers.  
+   - **Inputs**: Marker group name or ID.  
+   - **Output**: Table of relevant literature entries.
+
+2. **Retrieve the Marker Groups for a Specific Marker**  
+   - **Purpose**: Given a single marker, find all groups that include it.  
+   - **Inputs**: Marker name or ID.  
+   - **Output**: Table listing associated marker groups and their descriptions.
+
+3. **Retrieve the Effects Associated to Host/Drug**  
+   - **Purpose**: Find known effects (e.g., transmissibility, drug resistance) tied to a specific host or drug.  
+   - **Inputs**: Host name (e.g., human, chicken) or drug name.  
+   - **Output**: Table of markers, effect descriptions, and literature references.
+
+4. **Retrieve the Marker Groups Associated to a Particular Effect**  
+   - **Purpose**: Identify marker groups linked to a specified effect (e.g., “increased transmission in humans”).  
+   - **Inputs**: Effect name or partial description.  
+   - **Output**: Table of marker groups.
+
+##### b) Data on Markers
+
+1. **Get How Common Each Marker Is**  
+   - **Purpose**: Show the overall frequency of each marker in the filtered dataset.  
+   - **Output**: Table or chart showing marker frequency counts or percentages.
+
+2. **Get the Most Common Marker**  
+   - **Purpose**: Identify which marker appears most frequently.  
+   - **Output**: Single marker result or top-ranked list of markers.
+
+3. **Given a Marker, Obtain the Location Distribution (Normalized)**  
+   - **Purpose**: Show how often the specified marker appears in each location (country, region, etc.), normalized by the total isolates in that location.  
+   - **Output**: Table or map visualization (if available).
+
+4. **Trends in Marker Presence Over Time**  
+   - **Purpose**: Display how a marker’s prevalence changes by month or year.  
+   - **Output**: Time-series graph and/or data table.
+
+##### c) Markers and Hosts
+
+1. **Given a Marker, Obtain Information on Host Distribution**  
+   - **Purpose**: Determine which hosts (e.g., human, chicken, duck) carry a specified marker.  
+   - **Output**: Table or chart of host distribution.
+
+2. **Get Markers by Relative Percentage of Human Samples**  
+   - **Purpose**: Identify markers that are most common (or least common) in human samples compared to others.  
+   - **Output**: Ranked list of markers based on relative frequency in humans.
+
+3. **Get Markers by Difference in Relative Presence Between Two Hosts**  
+   - **Purpose**: Compare two hosts (e.g., chicken vs. duck) to find markers that are significantly more prevalent in one than the other.  
+   - **Output**: Table showing marker name, difference in percentage, and significance if applicable.
+
+4. **Given a Reference Host, Compare Marker Presence in Other Hosts**  
+   - **Purpose**: Select a reference host and see how marker frequencies differ across all other hosts in the dataset.  
+   - **Output**: Table or bar chart of comparative frequencies.
+
+5. **Get Number of Instances of Distinct Markers for Each Host**  
+   - **Purpose**: Show how many distinct markers appear in each host.  
+   - **Output**: Table or chart enumerating marker counts per host.
+
+##### d) Mutations
+
+1. **Find the Most Mutable Zones**  
+   - **Purpose**: Identify genomic regions with the highest mutation rates.  
+   - **Output**: Table or genomic visualization indicating hotspots.
+
+2. **Find the Most Mutable Zones**  
+   - **Purpose**: If this is a variant of the above query, it may use different thresholds or parameters.  
+   - **Output**: Similar table/graph highlighting mutation hotspots.
+
+---
+
+#### 5. Global Settings
+
+Global filters affect **all** queries you run. Use them to narrow your dataset by **location** and **date range**.
+
+1. **Location**  
+   - **Regions**: Select from a list of continents or large areas (e.g., Asia, Europe).  
+   - **States**: Within a chosen region, optionally select specific states/provinces. If none are selected, **all** locations in that region are included.
+
+2. **Date Range**  
+   - Choose a **Start Date** and **End Date**. Only isolates collected within this date range are considered.
+
+You can revisit the **Global Settings** panel anytime to adjust these filters. The **Global Settings Recap** displays your current selection.
+
+---
+
+#### 6. Taxonomy Tree
+
+The **Taxonomy Tree** is an **informational** tool showing avian species in the database. It’s generated based on:
+- Automatically detected hosts in your dataset.  
+- Supplemental taxonomy data (used if the automatic taxonomer fails to identify certain hosts).
+
+Usually, **no action** is needed here unless you need to review or explore host classifications. If some hosts are not recognized, you may need to update the fallback data in the XLSX files.
+
+---
+
+#### 7. Viewing and Downloading Results
+
+Most queries produce **tables**, **graphs**, or both:
+
+- **Download Data**: You can download query results as CSV or Excel files.  
+- **Download Graph**: If a graph is displayed, a “Download PNG” button may be available.  
+- **Pygwalker Interface**: Some queries offer an interactive data exploration tool (Pygwalker) for building custom visualizations.
+
+---
+
+#### 8. Additional Notes
+
+- **Performance**:  
+  Large datasets (big `.fasta` or `.xls` files) may slow queries. Narrow your date range or location to improve performance.
+
+- **Domain Knowledge Updates**:  
+  If you change or add knowledge in the XLSX files (markers, effects, references), set `update_also_knowledge=true` in your `.env` file before restarting Docker to ensure the new knowledge is integrated.
+
+- **Troubleshooting**:  
+  - **No Results?** Check that your **Global Settings** (date range, location) include valid data.  
+  - **Missing Markers/Hosts?** Confirm your metadata file follows GISAID-like structure and `.fasta` file path is correct.  
+  - **Taxonomy Issues?** Rare hosts may require manual addition to the fallback taxonomy data.
+
+- **Further Assistance**:  
+  Refer to the **GitHub README** for Docker commands and environment variable details. For additional support or to report a bug, open an issue on the project’s GitHub repository.
+
+---
+
+**End of Documentation**

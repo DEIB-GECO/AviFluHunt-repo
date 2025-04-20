@@ -192,18 +192,27 @@ def taxonomy_tree_overlay_container(global_config):
                 node_descendants = get_all_descendants(node_id, tree)
                 node_descendants_ids = [str(taxoniq.Taxon(scientific_name=desc_name).tax_id)
                                         for desc_name in node_descendants]
+                node_descendants_cn = []
+                for node_descendant_id in node_descendants_ids:
+                    try:
+                        node_descendants_cn.append(taxoniq.Taxon(tax_id=node_descendant_id).common_name)
+                    except:
+                        continue
 
                 show_node = (
                     search_tax == "" or parent_in_search or
-                    search_tax.lower() in name.lower() or search_tax in ncbi_id or
+                    search_tax.lower() in name.lower() or search_tax in ncbi_id or search_tax.lower() in common_name.lower() or
                     any(search_tax.lower() in tax.lower() for tax in node_descendants) or
-                    any(search_tax in tax_id for tax_id in node_descendants_ids))  # matching children
+                    any(search_tax in tax_id for tax_id in node_descendants_ids) or
+                    any(search_tax.lower() in tax_child.lower() for tax_child in node_descendants_cn)
+                )  # matching children
 
                 if show_node:
                     toggle = st.toggle(f"&nbsp;{'&nbsp;' * indent} {name} {common_name} (ID: {ncbi_id})")
                     if toggle or \
                             ((any(search_tax.lower() in tax.lower() for tax in node_descendants) or
-                             any(search_tax in tax_id for tax_id in node_descendants_ids)) and
+                             any(search_tax in tax_id for tax_id in node_descendants_ids) or
+                             any(search_tax.lower() in tax_child.lower() for tax_child in node_descendants_cn)) and
                              search_tax != ""):
                         display_tree(node_id, indent + 8, search_tax.lower() in name.lower() or parent_in_search)
 
@@ -317,7 +326,10 @@ def recap_global_filters(global_config):
 
     with st.container(key="global_input_recap"):
 
-        st.write(global_config.text_resources["global_input_recap_label"], unsafe_allow_html=True)
+        with st.container(key="global_filters_recap_top"):
+            st.write(global_config.text_resources["global_input_recap_label"], unsafe_allow_html=True)
+            if st.button("*🛠*", key="recap_modify"):
+                handle_global_button_click("Settings", global_config)
 
         try:
             date_range = f"From {global_filters['global_start_month']:02d}/{global_filters['global_start_year']} to {global_filters['global_end_month']:02d}/{global_filters['global_end_year']}"
@@ -389,11 +401,12 @@ def build_graph_tab():
 
 
 def build_table_tab(selected_query_index):
-    with st.container(key="table_tab"):
-        if st.session_state.result is not None:
-            batch_size, current_page = build_table_settings(selected_query_index)
-            build_download_button()
-            build_table(batch_size, current_page)
+    if st.session_state.result is not None:
+        if not st.session_state.result.empty:
+            with st.container(key="table_tab"):
+                batch_size, current_page = build_table_settings(selected_query_index)
+                build_download_button()
+                build_table(batch_size, current_page)
 
 
 def build_table_settings(selected_query_index):
@@ -421,7 +434,7 @@ def build_table(batch_size, current_page):
         if st.session_state.result is not None and not st.session_state.result.empty:
             pagination = st.container()
             pages = split_frame(st.session_state.result, batch_size)
-            pagination.table(pages[current_page - 1])
+            pagination.table(pages[current_page])
 
 
 def build_download_button():
