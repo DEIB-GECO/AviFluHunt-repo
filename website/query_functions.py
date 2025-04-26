@@ -24,6 +24,13 @@ taxonomy_hosts = db.query(get_taxonomy_hosts)
 states = db.query(get_states).sort_values("state")
 regions = db.query(get_regions).sort_values("region")
 effects = db.query("SELECT * FROM Effect")
+hosts_with_at_least_one_marker = (
+    db.query(""
+             "SELECT DISTINCT Host.host_name "
+             "FROM Host "
+             "JOIN Isolate I ON Host.host_id = I.host_id "
+             "JOIN Segment S ON I.isolate_epi = S.isolate_epi "
+             "JOIN SegmentMarkers SM ON S.segment_id = SM.segment_id "))
 
 
 def get_marker():
@@ -191,7 +198,7 @@ def params4():
 def params7():
     #subtype = st.selectbox(label=strings["param_label7a"], options=["H5N1"])
     segment = st.selectbox(label=strings["param_label7b"], options=segments)
-    host = st.selectbox(label=strings["param_label7d"], options=hosts)
+    host = st.selectbox(label=strings["param_label7d"], options=hosts_with_at_least_one_marker)
     return {"subtype": "H5N1", "segment_type": segment, "host": host}
 
 
@@ -259,9 +266,39 @@ def params11():
 
 
 def params13():
-    effect_host = st.selectbox(label=strings["param_label13a"], options=set([None] + effects["host"].tolist()))
-    effect_drug = st.selectbox(label=strings["param_label13b"], options=set([None] + effects["drug"].tolist()))
-    return {"host": effect_host, "drug": effect_drug}
+    # Prepare the options for the 'host' and 'drug' selectboxes
+    host_options = {"No filter": None}
+    drug_options = {"No filter": None}
+
+    # Handle effects['host'] (mapping empty values to "Unspecified" and None to "No filter")
+    for host in effects["host"].tolist():
+        if host == '':
+            host_options["Unspecified"] = host
+        elif host is not None:
+            host_options[host] = host
+
+    # Handle effects['drug'] (mapping empty values to "Unspecified" and None to "No filter")
+    for drug in effects["drug"].tolist():
+        if drug == '':
+            drug_options["Unspecified"] = drug
+        elif drug is not None:
+            drug_options[drug] = drug
+
+    # Create the selectboxes with the updated options
+    effect_host = st.selectbox(
+        label=strings["param_label13a"],
+        options=list(host_options.keys()),  # Display the keys (labels)
+        index=list(host_options.keys()).index("Unspecified")  # Set default to "Unspecified"
+    )
+
+    effect_drug = st.selectbox(
+        label=strings["param_label13b"],
+        options=list(drug_options.keys()),  # Display the keys (labels)
+        index=list(drug_options.keys()).index("Unspecified")  # Set default to "Unspecified"
+    )
+
+    # Return the selected values (lookup the actual values from the dictionary)
+    return {"host": host_options[effect_host], "drug": drug_options[effect_drug]}
 
 
 def params14():
@@ -336,11 +373,12 @@ def plot_data(result_df, sort_column, plot_column, top_n=20, label_column=None, 
 
         host1_col = df_sorted.columns[1]
         host2_col = df_sorted.columns[2]
+        print(df_sorted)
 
         y_labels = [f"{row['Marker']}" for _, row in df_sorted.iterrows()]
         plt.figure(figsize=(8, 6))
         plt.barh(y_labels, df_sorted["Diff"], color="skyblue")
-        plt.xlabel("Difference (Diff)")
+        plt.xlabel("Difference %")
         plt.ylabel("Marker")
         plt.title(f"Top {top_n} Marker difference between {host1_col} and {host2_col}")
         plt.gca().invert_yaxis()  # Invert y-axis to match sorting

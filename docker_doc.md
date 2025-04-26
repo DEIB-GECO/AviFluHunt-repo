@@ -11,8 +11,7 @@
 6. [Managing Containers](#managing-containers)  
 7. [Environment Variables](#environment-variables)  
 8. [Common Issues and Troubleshooting](#common-issues-and-troubleshooting)  
-9. [FAQ](#faq)  
-10. [Further Resources](#further-resources)
+9. [FAQ](#faq)
 
 ---
 
@@ -140,7 +139,7 @@ Defined in `.env` file:
 **Q: Do I need to rebuild after updating the `.env` file?**  
 A: No. Just restart the containers:
 ```bash
-docker compose down && docker compose up -d
+docker compose down && docker compose build && docker compose up -d
 ```
 
 **Q: Can I add custom markers or knowledge?**  
@@ -149,10 +148,3 @@ A: Yes. Add XLSX files to `knowledge/` and set `update_also_knowledge=true`.
 **Q: Can I run this on a server?**  
 A: Yes, deploy on any system with Docker installed. Configure port mapping as needed.
 
----
-
-### 10. Further Resources
-- [Docker Docs](https://docs.docker.com/)
-- [Docker Compose Docs](https://docs.docker.com/compose/)
-- [GISAID](https://www.gisaid.org/)
-- **Project GitHub**: _[insert link here]_

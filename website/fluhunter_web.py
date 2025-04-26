@@ -152,7 +152,7 @@ input {
     margin-top: .5vh;
     margin-bottom: 1.5vh;
     height: 0 !important;
-    padding-left: 73vw;
+    padding-left: 67.5vw;
 }
 
 .st-key-global_container > div > div {
@@ -445,19 +445,21 @@ svg * {
 .st-key-global_filters_recap_top {
     display: inline-block !important;
     vertical-align: central !important;
+    margin-bottom: 2vh;
 }
 
-.st-key-global_filters_recap_top > div:nth-child(1) {
-    padding-top: 5%;
-    float: left !important;
-    width: 70% !important;
+.st-key-global_filters_recap_top > div:nth-child(1) button {
+    padding: 0 !important;
 }
 
-.st-key-global_filters_recap_top > div:nth-child(2) {
-    display: inline-block !important;
-    float: left;
-    width: 30% !important;
-    content-align: right !important;
+.st-key-global_filters_recap_top > div:nth-child(1) * {
+    font-size: 18px !important;
+    font-weight: bold;
+    text-align: left;
+}
+
+.st-key-global_filters_recap_top > div:nth-child(1) *:hover {
+    text-decoration: underline;
 }
 
 .st-key-recap_modify * {

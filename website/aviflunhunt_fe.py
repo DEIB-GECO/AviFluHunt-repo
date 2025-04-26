@@ -43,7 +43,7 @@ def build_settings_menu(global_config):
             handle_global_button_click("Taxonomy Tree", global_config)
 
     with settings:
-        if st.button("Settings", key="settings_button"):
+        if st.button("Global Settings", key="settings_button"):
             handle_global_button_click("Settings", global_config)
 
     with about:
@@ -51,7 +51,7 @@ def build_settings_menu(global_config):
             handle_global_button_click("About", global_config)
 
 
-@st.dialog("Settings")
+@st.dialog("Global Settings")
 def filters_overlay_container(global_config):
     with st.container(key="global_filters_overlay"):
 
@@ -327,8 +327,7 @@ def recap_global_filters(global_config):
     with st.container(key="global_input_recap"):
 
         with st.container(key="global_filters_recap_top"):
-            st.write(global_config.text_resources["global_input_recap_label"], unsafe_allow_html=True)
-            if st.button("*🛠*", key="recap_modify"):
+            if st.button(global_config.text_resources["global_input_recap_label"]):
                 handle_global_button_click("Settings", global_config)
 
         try:
@@ -406,7 +405,7 @@ def build_table_tab(selected_query_index):
             with st.container(key="table_tab"):
                 batch_size, current_page = build_table_settings(selected_query_index)
                 build_download_button()
-                build_table(batch_size, current_page)
+                build_table(batch_size, current_page - 1)
 
 
 def build_table_settings(selected_query_index):
@@ -434,7 +433,10 @@ def build_table(batch_size, current_page):
         if st.session_state.result is not None and not st.session_state.result.empty:
             pagination = st.container()
             pages = split_frame(st.session_state.result, batch_size)
-            pagination.table(pages[current_page])
+            page_data = pages[current_page]
+            start_index = (current_page) * batch_size + 1
+            page_data.index = range(start_index, start_index + len(page_data))
+            pagination.table(page_data)
 
 
 def build_download_button():
