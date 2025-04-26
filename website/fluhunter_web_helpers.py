@@ -8,8 +8,6 @@ from query_functions import *
 # PASSWORD CHECK
 def check_auth():
 
-    return True
-
     def password_entered():
         """Checks whether a password entered by the user is correct."""
         if hmac.compare_digest(st.session_state["password"], st.secrets["password"]):
