@@ -442,6 +442,27 @@ svg * {
     word-wrap: break-word !important; 
 }
 
+.st-key-no_global_filters {
+    background-color: var(--accent-color);
+    padding: 7.5% !important; 
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1vh;
+    max-width: 100%;
+    box-sizing: border-box !important; 
+    overflow: hidden !important; 
+    word-wrap: break-word !important; 
+}
+
+.st-key-no_global_filters * {
+    font-weight: bold;
+    font-size: 14px !important;
+    max-width: 100%;
+    box-sizing: border-box !important; 
+    overflow: hidden !important; 
+    word-wrap: break-word !important; 
+}
+
 .st-key-global_filters_recap_top {
     display: inline-block !important;
     vertical-align: central !important;
@@ -663,7 +684,7 @@ th {
 
 .st-key-add_manual_input_container {
     position: absolute;
-    margin-top: 175px;
+    margin-top: 120px;
     z-index: 9999;
 }
 

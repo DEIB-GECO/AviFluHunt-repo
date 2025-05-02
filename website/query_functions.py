@@ -15,22 +15,22 @@ db = st.connection(name="fluhunt", type="sql", url="sqlite:///website/data/fluhu
 
 
 # DB ROWS
-markers = db.query(get_markers)
-segments = db.query(get_segments)
-annotations = db.query(get_annotations)
+markers = db.query(get_markers).sort_values("name")
+segments = db.query(get_segments).sort_values("segment_type")
+annotations = db.query(get_annotations).sort_values("annotation_name")
 hosts = db.query(get_hosts).sort_values("host_name")
 taxonomy = db.query(get_taxonomy)
 taxonomy_hosts = db.query(get_taxonomy_hosts)
 states = db.query(get_states).sort_values("state")
 regions = db.query(get_regions).sort_values("region")
-effects = db.query("SELECT * FROM Effect")
+effects = db.query("SELECT * FROM Effect").sort_values("effect_full")
 hosts_with_at_least_one_marker = (
     db.query(""
              "SELECT DISTINCT Host.host_name "
              "FROM Host "
              "JOIN Isolate I ON Host.host_id = I.host_id "
              "JOIN Segment S ON I.isolate_epi = S.isolate_epi "
-             "JOIN SegmentMarkers SM ON S.segment_id = SM.segment_id "))
+             "JOIN SegmentMarkers SM ON S.segment_id = SM.segment_id ")).sort_values("host_name")
 
 
 def get_marker():
@@ -184,8 +184,8 @@ def params4():
     taxonomy_tree = build_taxonomy_tree(taxonomy, taxonomy_hosts_names, 0)
     filtered_taxonomy_tree = filter_taxonomy_by_level(taxonomy_tree, [0, 3, 4])
 
-    host = st.selectbox(label=strings["param_label4a"], options=sorted(get_all_keys(filtered_taxonomy_tree)))
-    other_hosts = st.multiselect(label=strings["param_label4b"], options=sorted(get_all_keys(filtered_taxonomy_tree)),
+    host = st.selectbox(label=strings["param_label4a"], options=hosts)
+    other_hosts = st.multiselect(label=strings["param_label4b"], options=hosts,
                                  max_selections=5)
 
     return {
@@ -232,7 +232,7 @@ def params10():
     #subtype = st.selectbox(label=strings["param_label10a"], options=[None, "H5N1"])
     segment = st.selectbox(label=strings["param_label10b"], options=annotation_list)
 
-    st.html("<div id='10_space' style='height: 10vh;'><br></div>")
+    st.html("<div id='10_space' style='height: 13vh;'><br></div>")
 
     manual_tab, auto_tab = st.tabs([strings["param_tab10a"], strings["param_tab10b"]])
     with manual_tab:

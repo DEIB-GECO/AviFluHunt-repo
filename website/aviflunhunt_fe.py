@@ -286,13 +286,24 @@ def build_query_selector(global_config):
 def build_query_input_form(query_selection, global_config):
 
     with st.container(key="query_inputs_container"):
-        recap_global_filters(global_config)
+
+        if query_selection not in [1, 8, 13, 14, 15]:
+            recap_global_filters(global_config)
+        else:
+            no_global_filters()
 
         if query_selection == 10:
             build_add_manual_for_10()
 
+        st.write(global_config.text_resources["query_inputs_label"], unsafe_allow_html=True)
+
+        if query_selection in [3, 4, 7]:
+            st.write("<br>", unsafe_allow_html=True)
+            if st.button("📖 Taxonomy Tree Lookup "):
+                handle_global_button_click("Taxonomy Tree", global_config)
+            st.write("<br>", unsafe_allow_html=True)
+
         with st.form(f"query_inputs_{query_selection}"):
-            st.write(global_config.text_resources["query_inputs_label"], unsafe_allow_html=True)
             query, params = get_query_and_params(query_selection)
             if st.form_submit_button("Submit"):
                 run_query(global_config.database_connection, query_selection, query, params)
@@ -348,6 +359,13 @@ def recap_global_filters(global_config):
         st.write('<br>', unsafe_allow_html=True)
         filtered_isolates = fe_get_filtered_isolates_count(global_config.database_connection)["count"].tolist()[0]
         st.markdown(f"**Isolates: {filtered_isolates}**")
+
+
+def no_global_filters():
+
+    with st.container(key="no_global_filters"):
+
+        st.write("Global settings do not apply to this query (no computation with sequences)", unsafe_allow_html=True)
 
 
 def get_query_and_params(selected_query_index):
@@ -419,7 +437,7 @@ def build_table_settings(selected_query_index):
         col_strategy.selectbox('Strategy', ['Descending', 'Ascending'], key='order_ascending',
                                on_change=lambda: order_table(st.session_state.result))
         with res_per_page_col:
-            batch_size = st.selectbox("Page Size", options=[10, 25, 50])
+            batch_size = st.selectbox("Page Size", options=[10, 25, 50, 100])
 
         with current_page_col:
             total_pages = max(int(len(st.session_state.result) / batch_size) + 1, 1)
