@@ -381,7 +381,7 @@ def build_results_container(selected_query_index):
 
         if query_mapping[selected_query_index]["plot_params"]:
 
-            table_tab, graph_tab, explore_tab = st.tabs(["Data"] + ["Graph"] + ["Explore Data"])
+            table_tab, graph_tab = st.tabs(["Data"] + ["Graph"])
             with table_tab:
                 build_table_tab(selected_query_index)
             with graph_tab:
