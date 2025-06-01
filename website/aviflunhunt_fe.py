@@ -287,7 +287,7 @@ def build_query_input_form(query_selection, global_config):
 
     with st.container(key="query_inputs_container"):
 
-        if query_selection not in [1, 8, 13, 14, 15]:
+        if query_selection not in [1, 8, 12, 13, 14]:
             recap_global_filters(global_config)
         else:
             no_global_filters()
@@ -314,7 +314,7 @@ def build_add_manual_for_10():
     with st.container(key="add_manual_input_container"):
         if 'num_inputs' not in st.session_state:
             st.session_state.num_inputs = 1
-        st.number_input("# Manual Inputs:", min_value=1, step=1, key="num_inputs")
+        st.number_input("Number of regions:", min_value=0, step=1, key="num_inputs")
 
 
 def recap_global_filters(global_config):
@@ -386,8 +386,8 @@ def build_results_container(selected_query_index):
                 build_table_tab(selected_query_index)
             with graph_tab:
                 build_graph_tab()
-            with explore_tab:
-                build_explore_tab(selected_query_index)
+            #with explore_tab:
+                #build_explore_tab(selected_query_index)
 
         else:
             table_tab = st.tabs(["Data"])[0]
@@ -424,6 +424,25 @@ def build_table_tab(selected_query_index):
                 batch_size, current_page = build_table_settings(selected_query_index)
                 build_download_button()
                 build_table(batch_size, current_page - 1)
+        else:
+            with st.container():
+                st.markdown(
+                    """
+                    <div style="
+                        margin-bottom: 20px;
+                        padding-bottom: 10px;
+                        background-color: #ff4d4d; 
+                        color: white; 
+                        padding: 16px; 
+                        border-radius: 8px; 
+                        font-weight: bold;
+                        text-align: center;
+                        box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+                        ⚠️ No results found for your query. Please adjust your filters or try again.
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
 
 
 def build_table_settings(selected_query_index):

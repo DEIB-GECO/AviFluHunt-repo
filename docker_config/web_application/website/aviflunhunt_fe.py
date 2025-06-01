@@ -264,8 +264,8 @@ def build_results_container(selected_query_index):
                 build_table_tab(selected_query_index)
             with graph_tab:
                 build_graph_tab()
-            with explore_tab:
-                build_explore_tab(selected_query_index)
+            #with explore_tab:
+                #build_explore_tab(selected_query_index)
 
         else:
             table_tab = st.tabs(["Data"])[0]

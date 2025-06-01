@@ -59,10 +59,8 @@ def params2():
         #subtype = st.selectbox(label=strings["param_label2a"],  options=["H5N1"])
         min_perc = st.number_input(label=strings["param_label2c"], key=strings["param_label2c"],
                                    min_value=0.0, step=0.1, max_value=100.0)
-    with r_col:
         segment = st.selectbox(label=strings["param_label2b"], options=segments)
-        max_perc = st.number_input(label=strings["param_label2d"], key=strings["param_label2d"],
-                                   min_value=0.0, step=0.1, max_value=100.0, value=100.0)
+    with r_col:
         min_n_instances = st.number_input(label=strings["param_label2f"], key=strings["param_label2f"],
                                           min_value=1, step=1)
 
@@ -70,7 +68,7 @@ def params2():
         "subtype": "H5N1",
         "segment_type": segment,
         "min_perc": min_perc,
-        "max_perc": max_perc,
+        "max_perc": 100,
         "min_n_instances": min_n_instances
     }
 
@@ -211,9 +209,7 @@ def params8():
 def params9():
     min_perc = st.number_input(label=strings["param_label9a"], key=strings["param_label9a"],
                                min_value=0.0, step=0.1, max_value=100.0)
-    max_perc = st.number_input(label=strings["param_label9b"], key=strings["param_label9b"],
-                               min_value=0.0, step=0.1, max_value=100.0, value=100.0)
-    return {"min_perc": min_perc, "max_perc": max_perc}
+    return {"min_perc": min_perc, "max_perc": 100}
 
 
 def with_query10(bins):
@@ -248,7 +244,7 @@ def params10():
         bin_size = st.number_input(label=strings["param_label10c"], min_value=0, step=10, value=0)
         offset = st.number_input(label=strings["param_label10d"], min_value=0, step=1, value=0)
 
-    if bin_size == 0:
+    if st.session_state.num_inputs > 0 or bin_size == 0:
         bins = [(st.session_state[f"start_{i + 1}"], st.session_state[f"end_{i + 1}"])
                 for i in range(st.session_state.num_inputs)]
     else:
@@ -331,13 +327,30 @@ def manip_result3(results_pre, params):
 
 
 def manip_result4(results_pre, params):
+    host = params["host"]
+
+    # Pivot the results
     pivot_result = results_pre.pivot(index='Marker', columns='host_name', values='percentage').reset_index()
-    sorted_result = pivot_result.sort_values(by=params["host"], ascending=False)
+
+    # Add the missing host column with 0.0 if it doesn't exist
+    if host not in pivot_result.columns:
+        pivot_result[host] = 0.0
+
+    # Fill any other missing values with 0 (optional, for cleaner output)
+    pivot_result = pivot_result.fillna(0.0)
+
+    # Sort by the main host column
+    sorted_result = pivot_result.sort_values(by=host, ascending=False)
+
+    # Reorder columns to make the main host come right after 'Marker'
     columns = list(sorted_result.columns)
-    columns.remove(params["host"])
-    columns.insert(1, params["host"])
+    columns.remove(host)
+    columns.insert(1, host)
     sorted_result = sorted_result[columns]
+
+    # Rename columns to include '%' for hosts
     sorted_result.columns = [col + " %" if col != 'Marker' else col for col in sorted_result.columns]
+
     return sorted_result
 
 

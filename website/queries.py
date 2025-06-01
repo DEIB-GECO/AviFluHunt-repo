@@ -402,8 +402,8 @@ get_markers_location_distribution = \
      "JOIN Location location ON isolate.location_id = location.location_id) "
      ""
      "SELECT SBS.state as 'State', "
-     "COUNT(DISTINCT segmentMarkers.segment_id) AS '# Found in Location',"
-     "(SELECT COUNT(*) FROM SegmentsByState WHERE state = SBS.state) AS 'Total Markers in Location', "
+     "COUNT(DISTINCT segmentMarkers.segment_id) AS '#Isolates with Marker',"
+     "(SELECT COUNT(*) FROM SegmentsByState WHERE state = SBS.state) AS 'Total #Isolates in Location', "
      "COUNT(DISTINCT segmentMarkers.segment_id) * 100.0 / "
      "(SELECT COUNT(*) FROM SegmentsByState WHERE state = SBS.state) AS 'Normalized Percentage' "
      "FROM SegmentMarkers segmentMarkers "
@@ -592,7 +592,8 @@ get_markers_by_relevance = \
      "FROM SegmentMarkers) "
      ""
      "SELECT marker.name AS 'Marker', "
-     "ROUND((markerCount.marker_count * 100.0) / totalCount.total_count, 2) AS 'Percentage' "
+     "ROUND((markerCount.marker_count * 100.0) / totalCount.total_count, 2) AS 'Percentage', "
+     "markerCount.marker_count as 'Marker Count', TotalCount.total_count as 'Total Count' "
      "FROM Marker marker "
      "JOIN MarkerCount markerCount ON marker.marker_id = markerCount.marker_id "
      "CROSS JOIN TotalCount totalCount "
@@ -755,7 +756,8 @@ get_markers_over_time = \
      f""
      f"SELECT name AS 'Marker', MOTI.year AS 'Year', count AS '# per Year', count * 1.0/total_for_year AS Percentage "
      f"FROM MarkerOverTimeInformation MOTI "
-     f"JOIN TotalOverTime TOT ON MOTI.year = TOT.year")
+     f"JOIN TotalOverTime TOT ON MOTI.year = TOT.year "
+     f"WHERE MOTI.year > 1900 ")
 
 
 # QUERIES ONTOLOGY
