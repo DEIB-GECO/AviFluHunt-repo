@@ -99,6 +99,8 @@ def manip_result(result, query_selection, local_params):
             return manip_result3(result, local_params)
         if query_selection == 4:
             return manip_result4(result, local_params)
+        if query_selection == 11:
+            return manip_result11(result)
     return result
 
 
@@ -109,7 +111,10 @@ def get_result_graph(selection):
             if not st.session_state.result.empty:
                 st.session_state.graph = plot_data(st.session_state.result, **plot_params)
         else:
-            st.session_state.graph = None
+            if selection == 10:
+                st.session_state.graph = plot_query10(st.session_state.result)
+            else:
+                st.session_state.graph = None
 
 
 def get_global_isolates_params():
@@ -273,7 +278,7 @@ query_mapping = {
                 'ylabel': 'Distinct Markers Per Host',
                 'color': 'skyblue',
                 'show_values': True,
-                'sort_column': 'Host',
+                'sort_column': 'Distinct Markers Per Host',
                 'plot_column': 'Distinct Markers Per Host',
                 'label_column': 'Host',
                 'host_comparison': False

@@ -354,6 +354,38 @@ def manip_result4(results_pre, params):
     return sorted_result
 
 
+def manip_result11(results_pre):
+    if "Year" not in results_pre.columns or "Month" not in results_pre.columns:
+        return pandas.DataFrame()
+
+    df = results_pre.copy()
+
+    # Drop NA values
+    df = df[df["Year"].notna() & df["Month"].notna()]
+
+    # Convert to integers
+    try:
+        df["Year"] = df["Year"].astype(int)
+        df["Month"] = df["Month"].astype(int)
+    except ValueError:
+        return pandas.DataFrame()
+
+    # Filter valid ranges
+    df = df[df["Year"] >= 1900]
+    df = df[(df["Month"] >= 1) & (df["Month"] <= 12)]
+
+    # Create new formatted column and drop old ones
+    df["Period (mm/yyyy)"] = df["Month"].astype(str).str.zfill(2) + "/" + df["Year"].astype(str)
+    df = df.drop(columns=["Year", "Month"])
+
+    # Sort chronologically
+    df["__sort"] = df["Period (mm/yyyy)"].apply(lambda x: int(x[3:] + x[:2]))  # e.g., 202401
+    df = df.sort_values("__sort").drop(columns="__sort").reset_index(drop=True)
+
+    return df
+
+
+
 def plot_data(result_df, sort_column, plot_column, top_n=20, label_column=None, plot_type='barh', title='',
               xlabel='', ylabel='', color='skyblue', is_bar=True, show_values=False, rotation=0,
               host_comparison=False):
@@ -451,4 +483,37 @@ def plot_data(result_df, sort_column, plot_column, top_n=20, label_column=None, 
 
     return plt.gcf()
 
+
+def plot_query10(df, title="Mutation Distribution by Bin Range", color="steelblue"):
+    """
+    Plots a bar chart showing mutation counts across defined ranges (bins).
+
+    Parameters:
+    - df: DataFrame with columns ['Start', 'End', 'Total Mutations']
+    - title: Plot title
+    - color: Bar color
+    """
+
+    # Combine Start and End into a single label for x-axis
+    df['Range'] = df.apply(lambda row: f"{row['Start']}-{row['End']}", axis=1)
+
+    # Plot
+    plt.figure(figsize=(10, 6))
+    bars = plt.bar(df['Range'], df['Total Mutations'], color=color)
+
+    # Add value labels on top of bars
+    for bar in bars:
+        yval = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width() / 2, yval + 5, int(yval),
+                 va='bottom', ha='center', fontsize=8)
+
+    # Customize axes and title
+    plt.xlabel("Position Range")
+    plt.ylabel("Total Mutations")
+    plt.title(title)
+    plt.xticks(rotation=45)
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.tight_layout()
+
+    return plt.gcf()
 

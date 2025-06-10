@@ -313,8 +313,8 @@ def build_query_input_form(query_selection, global_config):
 def build_add_manual_for_10():
     with st.container(key="add_manual_input_container"):
         if 'num_inputs' not in st.session_state:
-            st.session_state.num_inputs = 1
-        st.number_input("Number of regions:", min_value=0, step=1, key="num_inputs")
+            st.session_state.num_inputs = 0
+        st.number_input("N. of regions (with 0, use Fixed-size)", min_value=0, step=1, key="num_inputs")
 
 
 def recap_global_filters(global_config):
@@ -379,7 +379,7 @@ def get_query_and_params(selected_query_index):
 def build_results_container(selected_query_index):
     with (st.container(key="results_container")):
 
-        if query_mapping[selected_query_index]["plot_params"]:
+        if query_mapping[selected_query_index]["plot_params"] or selected_query_index == 10:
 
             table_tab, graph_tab = st.tabs(["Data"] + ["Graph"])
             with table_tab:

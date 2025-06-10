@@ -160,8 +160,8 @@ param_label10a: "Subtype:"
 param_label10b: "Annotation:"
 param_label10c: "Size:"
 param_label10d: "Offset:"
-param_tab10a: "Manual Zones"
-param_tab10b: "Fixed Size Zones"
+param_tab10a: "Manual regions"
+param_tab10b: "Fixed-size regions"
 error10: "There is no data for the specified filters"
 
 # QUERY 11
