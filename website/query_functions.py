@@ -25,12 +25,33 @@ states = db.query(get_states).sort_values("state")
 regions = db.query(get_regions).sort_values("region")
 effects = db.query("SELECT * FROM Effect").sort_values("effect_full")
 hosts_with_at_least_one_marker = (
-    db.query(""
-             "SELECT DISTINCT Host.host_name "
-             "FROM Host "
-             "JOIN Isolate I ON Host.host_id = I.host_id "
-             "JOIN Segment S ON I.isolate_epi = S.isolate_epi "
-             "JOIN SegmentMarkers SM ON S.segment_id = SM.segment_id ")).sort_values("host_name")
+    db.query(
+        """
+        WITH HostIdWithMarkers as ( 
+            SELECT DISTINCT Host.host_id 
+            FROM Host 
+            JOIN Isolate I ON Host.host_id = I.host_id 
+            JOIN Segment S ON I.isolate_epi = S.isolate_epi 
+            JOIN SegmentMarkers SM ON S.segment_id = SM.segment_id
+        ),
+        ParentsIdWithMarkers AS (
+            -- Anchor member: start with the hosts from HostIdWithMarkers
+            SELECT parent_id
+            FROM Taxonomy
+            WHERE host_id IN (SELECT host_id FROM HostIdWithMarkers)
+            
+            UNION ALL
+            
+            -- Recursive member: get parents of parents, climbing up the tree
+            SELECT t.parent_id
+            FROM Taxonomy t
+            INNER JOIN ParentsIdWithMarkers p ON t.host_id = p.parent_id
+        )
+        SELECT DISTINCT h.host_name 
+        FROM Host h
+        WHERE h.host_id IN HostIdWithMarkers OR h.host_id IN ParentsIdWithMarkers
+        ORDER BY h.host_name
+        """))
 
 
 def get_marker():
@@ -375,11 +396,11 @@ def manip_result11(results_pre):
     df = df[(df["Month"] >= 1) & (df["Month"] <= 12)]
 
     # Create new formatted column and drop old ones
-    df["Period (mm/yyyy)"] = df["Month"].astype(str).str.zfill(2) + "/" + df["Year"].astype(str)
+    df["Period (yyyy/mm)"] = df["Year"].astype(str) + "/" + df["Month"].astype(str).str.zfill(2)
     df = df.drop(columns=["Year", "Month"])
 
     # Sort chronologically
-    df["__sort"] = df["Period (mm/yyyy)"].apply(lambda x: int(x[3:] + x[:2]))  # e.g., 202401
+    df["__sort"] = df["Period (yyyy/mm)"].apply(lambda x: int(x[5:7] + x[:4])) # e.g., 202401
     df = df.sort_values("__sort").drop(columns="__sort").reset_index(drop=True)
 
     return df
