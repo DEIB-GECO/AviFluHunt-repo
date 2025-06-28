@@ -113,6 +113,8 @@ def get_result_graph(selection):
         else:
             if selection == 10:
                 st.session_state.graph = plot_query10(st.session_state.result)
+            elif selection == 11:
+                st.session_state.graph = plot_query11(st.session_state.result)
             else:
                 st.session_state.graph = None
 

@@ -379,7 +379,7 @@ def get_query_and_params(selected_query_index):
 def build_results_container(selected_query_index):
     with (st.container(key="results_container")):
 
-        if query_mapping[selected_query_index]["plot_params"] or selected_query_index == 10:
+        if query_mapping[selected_query_index]["plot_params"] or selected_query_index == 10 or selected_query_index == 11:
 
             table_tab, graph_tab = st.tabs(["Data"] + ["Graph"])
             with table_tab:
