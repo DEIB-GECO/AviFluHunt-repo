@@ -403,7 +403,6 @@ def manip_result11(results_pre):
     df["__sort"] = df["Period (yyyy/mm)"].apply(lambda x: int(x[5:7] + x[:4])) # e.g., 202401
     df = df.sort_values("__sort").drop(columns="__sort").reset_index(drop=True)
 
-    print(df)
     return df
 
 
@@ -440,7 +439,6 @@ def plot_data(result_df, sort_column, plot_column, top_n=20, label_column=None, 
 
         host1_col = df_sorted.columns[1]
         host2_col = df_sorted.columns[2]
-        print(df_sorted)
 
         y_labels = [f"{row['Marker']}" for _, row in df_sorted.iterrows()]
         plt.figure(figsize=(8, 6))
@@ -539,35 +537,22 @@ def plot_query10(df, title="Mutation Distribution by Bin Range", color="steelblu
 
     return plt.gcf()
 
+
 def plot_query11(df, title="Monthly Mutation Rate per Sample", color="mediumseagreen"):
-    """
-    Plots mutation rate per sample over time (monthly).
-
-    Parameters:
-    - df: DataFrame with columns ['# Mutation', '# Samples', 'Mutation per Sample', 'Period (yyyy/mm)']
-    - title: Plot title
-    - color: Line color
-    """
-
     import matplotlib.pyplot as plt
     import pandas as pd
 
-    # Convert Period to datetime for proper sorting
+    df = df.copy()  # Avoid modifying the original DataFrame
     df['Date'] = pd.to_datetime(df['Period (yyyy/mm)'], format='%Y/%m')
-
-    # Sort by Date
     df = df.sort_values(by='Date')
 
-    # Plot
     plt.figure(figsize=(14, 6))
     plt.plot(df['Date'], df['#Mutation per Sample'], marker='o', color=color, linewidth=2)
 
-    # Add data point labels (optional)
     for x, y in zip(df['Date'], df['#Mutation per Sample']):
-        if y > 20:  # Only label significant spikes
+        if y > 20:
             plt.text(x, y + 0.5, f"{y:.1f}", ha='center', va='bottom', fontsize=8)
 
-    # Customize plot
     plt.title(title)
     plt.xlabel("Time (YYYY-MM)")
     plt.ylabel("Mutations per Sample")
@@ -576,3 +561,4 @@ def plot_query11(df, title="Monthly Mutation Rate per Sample", color="mediumseag
     plt.xticks(rotation=45)
 
     return plt.gcf()
+
