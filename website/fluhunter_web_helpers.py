@@ -59,7 +59,7 @@ def set_default_table_order(selection, columns):
     column_map = {
         2: "Percentage",
         3: "Diff",
-        5: "#",
+        5: "# Segments with marker",
         6: "Normalized Percentage",
         7: "Found in #Isolates",
         8: "Distinct Markers Per Host",
@@ -240,10 +240,10 @@ query_mapping = {
                 'top_n': 20,
                 'title': 'Top Hosts',
                 'xlabel': 'Host',
-                'ylabel': '#',
+                'ylabel': '# Segments with marker',
                 'color': 'skyblue',
-                'sort_column': '#',
-                'plot_column': '#',
+                'sort_column': '# Segments with marker',
+                'plot_column': '# Segments with marker',
                 'label_column': "Host",
                 'host_comparison': False
             }

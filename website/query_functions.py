@@ -80,6 +80,8 @@ def params2():
         #subtype = st.selectbox(label=strings["param_label2a"],  options=["H5N1"])
         min_perc = st.number_input(label=strings["param_label2c"], key=strings["param_label2c"],
                                    min_value=0.0, step=0.1, max_value=100.0)
+        max_perc = st.number_input(label=strings["param_label2d"], key=strings["param_label2d"],
+                                   min_value=100.0, step=0.1, max_value=100.0)
         segment = st.selectbox(label=strings["param_label2b"], options=segments)
     with r_col:
         min_n_instances = st.number_input(label=strings["param_label2f"], key=strings["param_label2f"],
@@ -89,7 +91,7 @@ def params2():
         "subtype": "H5N1",
         "segment_type": segment,
         "min_perc": min_perc,
-        "max_perc": 100,
+        "max_perc": max_perc,
         "min_n_instances": min_n_instances
     }
 
@@ -230,7 +232,9 @@ def params8():
 def params9():
     min_perc = st.number_input(label=strings["param_label9a"], key=strings["param_label9a"],
                                min_value=0.0, step=0.1, max_value=100.0)
-    return {"min_perc": min_perc, "max_perc": 100}
+    max_perc = st.number_input(label=strings["param_label9b"], key=strings["param_label9b"],
+                               min_value=100.0, step=0.1, max_value=100.0)
+    return {"min_perc": min_perc, "max_perc": max_perc}
 
 
 def with_query10(bins):
@@ -283,39 +287,40 @@ def params11():
 
 
 def params13():
-    # Prepare the options for the 'host' and 'drug' selectboxes
+    # Prepare the options for 'host' and 'drug' selectboxes
     host_options = {"No filter": None}
     drug_options = {"No filter": None}
 
-    # Handle effects['host'] (mapping empty values to "Unspecified" and None to "No filter")
-    for host in effects["host"].tolist():
-        if host == '':
-            host_options["Unspecified"] = host
-        elif host is not None:
-            host_options[host] = host
+    # Handle effects['host']
+    for host in effects["host"].dropna().unique():
+        key = "Unspecified" if host == '' else host
+        host_options[key] = host
 
-    # Handle effects['drug'] (mapping empty values to "Unspecified" and None to "No filter")
-    for drug in effects["drug"].tolist():
-        if drug == '':
-            drug_options["Unspecified"] = drug
-        elif drug is not None:
-            drug_options[drug] = drug
+    # Handle effects['drug']
+    for drug in effects["drug"].dropna().unique():
+        key = "Unspecified" if drug == '' else drug
+        drug_options[key] = drug
 
-    # Create the selectboxes with the updated options
-    effect_host = st.selectbox(
+    # Selectbox for 'host'
+    effect_host_label = st.selectbox(
         label=strings["param_label13a"],
-        options=list(host_options.keys()),  # Display the keys (labels)
-        index=list(host_options.keys()).index("Unspecified")  # Set default to "Unspecified"
+        options=list(host_options.keys()),
+        index=0  # Default to "No filter"
     )
 
-    effect_drug = st.selectbox(
+    # Selectbox for 'drug'
+    effect_drug_label = st.selectbox(
         label=strings["param_label13b"],
-        options=list(drug_options.keys()),  # Display the keys (labels)
-        index=list(drug_options.keys()).index("Unspecified")  # Set default to "Unspecified"
+        options=list(drug_options.keys()),
+        index=0  # Default to "No filter"
     )
 
-    # Return the selected values (lookup the actual values from the dictionary)
-    return {"host": host_options[effect_host], "drug": drug_options[effect_drug]}
+    # Return filter values: None means "no filter", otherwise the selected value
+    return {
+        "host": host_options[effect_host_label],
+        "drug": drug_options[effect_drug_label]
+    }
+
 
 
 def params14():
@@ -519,7 +524,7 @@ def plot_query10(df, title="Mutation Distribution by Bin Range", color="steelblu
 
     # Plot
     plt.figure(figsize=(10, 6))
-    bars = plt.bar(df['Range'], df['Total Mutations'], color=color)
+    bars = plt.bar(df['Range'], df['# Distinct mutations'], color=color)
 
     # Add value labels on top of bars
     for bar in bars:
@@ -529,7 +534,7 @@ def plot_query10(df, title="Mutation Distribution by Bin Range", color="steelblu
 
     # Customize axes and title
     plt.xlabel("Position Range")
-    plt.ylabel("Total Mutations")
+    plt.ylabel("# Distinct mutations")
     plt.title(title)
     plt.xticks(rotation=45)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
@@ -538,7 +543,7 @@ def plot_query10(df, title="Mutation Distribution by Bin Range", color="steelblu
     return plt.gcf()
 
 
-def plot_query11(df, title="Monthly Mutation Rate per Sample", color="mediumseagreen"):
+def plot_query11(df, title="Monthly Mutation Rate per Segment", color="mediumseagreen"):
     import matplotlib.pyplot as plt
     import pandas as pd
 
@@ -547,15 +552,15 @@ def plot_query11(df, title="Monthly Mutation Rate per Sample", color="mediumseag
     df = df.sort_values(by='Date')
 
     plt.figure(figsize=(14, 6))
-    plt.plot(df['Date'], df['#Mutation per Sample'], marker='o', color=color, linewidth=2)
+    plt.plot(df['Date'], df['#Mutation per Segment'], marker='o', color=color, linewidth=2)
 
-    for x, y in zip(df['Date'], df['#Mutation per Sample']):
+    for x, y in zip(df['Date'], df['#Mutation per Segment']):
         if y > 20:
             plt.text(x, y + 0.5, f"{y:.1f}", ha='center', va='bottom', fontsize=8)
 
     plt.title(title)
     plt.xlabel("Time (YYYY-MM)")
-    plt.ylabel("Mutations per Sample")
+    plt.ylabel("#Mutation per Segment")
     plt.grid(True, linestyle='--', alpha=0.5)
     plt.tight_layout()
     plt.xticks(rotation=45)

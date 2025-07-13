@@ -37,7 +37,7 @@ param_label2b: "Segment:"
 param_label2c: "Min:"
 param_label2d: "Max:"
 param_label2e: "Limit:"
-param_label2f: "Min # Instances:"
+param_label2f: "Min # Found:"
 error2: "There are no markers within the specified filters"
 
 # QUERY 3
@@ -128,7 +128,7 @@ param_label9c: "Limit:"
 error9: "There are no markers within the specified range of presence in the dataset"
 
 # QUERY 10
-label10: "Most mutated genomic regions"
+label10: "Mutations on genomic regions"
 explanation10:
   "<p class='query_text' style='text-align: justify;'>
   Find the most mutable zones (compared to a reference) within the dataset.<br>
@@ -165,20 +165,20 @@ param_tab10b: "Fixed-size regions"
 error10: "There is no data for the specified filters"
 
 # QUERY 11
-label11: "Temporal distribution of mutations"
+label11: "Temporal distribution of sample mutation rate %"
 explanation11:
   "<p class='query_text'style='text-align: justify;'>
   Get information on how many mutated segments samples where found for each month in the given range. <br>
-  For more interesting information, the total number of samples collected in the same period is reported 
-  along a ratio indicating the n. of mutation for each sample in the same period.<br><br>
+  For more interesting information, the total number of segments collected in the same period is reported 
+  along a ratio indicating the n. of mutation for each segment in the same period.<br><br>
   <b>Note: The specified months go from the 1st of the month to its last day included</b>
   </p>"
 param_label11a: "Subtype:"
-param_label11b: "Segment:"
+param_label11b: "Segment Type:"
 param_label11c: "From:"
 param_label11d: "To:"
-param_label11e: "Min # Of Samples:"
-error11: "No samples where reported in the given timeframe for the selected subtype/segment combination"
+param_label11e: "Min # Of Segments:"
+error11: "No segment where reported in the given timeframe for the selected subtype/segment type combination"
 
 # QUERY 12
 label12: "Marker groups containing a specific marker"
