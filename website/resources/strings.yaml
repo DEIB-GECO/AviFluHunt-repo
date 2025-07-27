@@ -23,7 +23,7 @@ param_label1a: "Marker Group:"
 error1: "There is no known group for the selected markers"
 
 # QUERY 2
-label2: "Markers by relative percentage of human samples"
+label2: "Markers by relative % of human isolates"
 explanation2:
   "<p class='query_text'style='text-align: justify;'>
   Get information about how often a marker has infected human hosts.<br><br>
@@ -41,7 +41,7 @@ param_label2f: "Min # Found:"
 error2: "There are no markers within the specified filters"
 
 # QUERY 3
-label3: "Markers by difference in relative presence between hosts"
+label3: "Markers by difference in hosts' presence"
 explanation3:
   "<p class='query_text'style='text-align: justify;'>
   Get information on the difference in infection rate of markers for the 
@@ -56,7 +56,7 @@ param_label3c: "Other Hosts of Interests: "
 error3: "There's no data for the selected hosts"
 
 # QUERY 4
-label4: "Prevalence comparison of markers in different hosts"
+label4: "Markers' comparison in hosts' presence"
 explanation4:
   "<p class='query_text'style='text-align: justify;'>
   Get information on the presence of markers in different hosts. 
@@ -91,7 +91,7 @@ param_label6b: "Location:"
 error6: "There is no data for the selected marker"
 
 # QUERY 7
-label7: "Markers % presence per specific segments and hosts"
+label7: "Markers % presence per specific segment/host"
 explanation7:
   "<p class='query_text'style='text-align: justify;'>
   Get information on the most common (in absolute terms) marker. <br>
@@ -165,7 +165,7 @@ param_tab10b: "Fixed-size regions"
 error10: "There is no data for the specified filters"
 
 # QUERY 11
-label11: "Temporal distribution of sample mutation rate %"
+label11: "Temporal distribution of mutations"
 explanation11:
   "<p class='query_text'style='text-align: justify;'>
   Get information on how many mutated segments samples where found for each month in the given range. <br>
@@ -181,7 +181,7 @@ param_label11e: "Min # Of Segments:"
 error11: "No segment where reported in the given timeframe for the selected subtype/segment type combination"
 
 # QUERY 12
-label12: "Marker groups containing a specific marker"
+label12: "Marker groups with specific marker"
 explanation12:
   "<p class='query_text'style='text-align: justify;'>
   Get all the marker groups that contain the given marker.<br>
