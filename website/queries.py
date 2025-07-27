@@ -703,7 +703,7 @@ get_segment_mutability_zones = \
     "    start_range AS 'Start', "
     "    end_range AS 'End', "
     "    bin_count AS '# Distinct mutations', "
-    "    mut_count * 1.0 / TS.total_segments AS 'Mutated Isolates Ratio',"
+    "    mut_count * 1.0 / TS.total_segments AS 'Mutations' ratio on segments',"
     "    TS.total_segments AS '# Distinct segments' "
     "FROM CountPerBin CPB "
     "JOIN TotalSegments TS"
