@@ -269,7 +269,7 @@ def params10():
         bin_size = st.number_input(label=strings["param_label10c"], min_value=0, step=10, value=0)
         offset = st.number_input(label=strings["param_label10d"], min_value=0, step=1, value=0)
 
-    if bin_size == 0:
+    if bin_size == 0 or st.session_state.num_inputs > 0:
         bins = [(0, 0)]
         if st.session_state.num_inputs > 0:
             bins = [(st.session_state[f"start_{i + 1}"], st.session_state[f"end_{i + 1}"])
