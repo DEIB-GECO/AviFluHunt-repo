@@ -9,4 +9,4 @@ services:
     container_name: flu-hunter
     ports:
       - 6960:8501
-
+    restart: unless-stopped

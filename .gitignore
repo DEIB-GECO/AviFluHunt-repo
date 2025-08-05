@@ -168,3 +168,16 @@ cython_debug/
 *.csv
 *.fasta.log
 venv/
+
+*.fasta~
+
+identifier.sqlite
+
+.streamlit/secrets.toml
+
+data_backend/mutations_test.py
+
+*.png
+
+
+*.dmp

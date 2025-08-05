@@ -1,0 +1,38 @@
+version: '3.8'
+services:
+  data_manager:
+    build:
+      context: .
+      dockerfile: data_manager/Dockerfile
+    volumes:
+      - sqlite_data:/app/db  # Shared volume for SQLite
+      - ${fasta_file}:/app/ext_files/fasta.fasta
+      - ${metadata_file}:/app/ext_files/metadata.xls
+    environment:
+      - FASTA_FILE=/app/ext_files/fasta.fasta
+      - METADATA_FILE=/app/ext_files/metadata.xls
+      - UPDATE_ALSO_KNOWLEDGE=${update_also_knowledge}
+    networks:
+      - app-network
+
+  web_application:
+    build:
+      context: .
+      dockerfile: web_application/Dockerfile
+    ports:
+      - "8501:8501"
+    volumes:
+      - sqlite_data:/app/db  # Frontend can access the same SQLite db if needed
+    networks:
+      - app-network
+    depends_on:
+      data_manager:
+        condition: service_completed_successfully
+
+volumes:
+  sqlite_data:
+    driver: local  # A shared volume where the SQLite database file will be stored
+
+networks:
+  app-network:
+    driver: bridge
