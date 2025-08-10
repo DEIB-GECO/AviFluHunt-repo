@@ -5,13 +5,13 @@ welcome_message: "<p>Welcome to AviFluHunt</p>"
 
 query_select_label: "Query"
 query_inputs_label: "<h3 id='inputs_title'>Inputs</h3>"
-global_input_recap_label: "<h5>Global Filters</h5><br>"
+global_input_recap_label: "🛠 Global Settings"
 submit_button: "Run"
 
 ## QUERIES
 
 # QUERY 1
-label1: "Obtain the literature associated to a group of markers"
+label1: "Literature references per group of markers"
 explanation1:
   "<p class='query_text' style='text-align: justify;'>
   Select one or more markers to retrieve all the groups,
@@ -23,7 +23,7 @@ param_label1a: "Marker Group:"
 error1: "There is no known group for the selected markers"
 
 # QUERY 2
-label2: "Get markers by relative percentage of human samples"
+label2: "Markers by relative % of human isolates"
 explanation2:
   "<p class='query_text'style='text-align: justify;'>
   Get information about how often a marker has infected human hosts.<br><br>
@@ -37,11 +37,11 @@ param_label2b: "Segment:"
 param_label2c: "Min:"
 param_label2d: "Max:"
 param_label2e: "Limit:"
-param_label2f: "Min # Instances:"
+param_label2f: "Min # Found:"
 error2: "There are no markers within the specified filters"
 
 # QUERY 3
-label3: "Get markers by difference in relative presence between two hosts"
+label3: "Markers by difference in hosts' presence"
 explanation3:
   "<p class='query_text'style='text-align: justify;'>
   Get information on the difference in infection rate of markers for the 
@@ -56,7 +56,7 @@ param_label3c: "Other Hosts of Interests: "
 error3: "There's no data for the selected hosts"
 
 # QUERY 4
-label4: "Given a reference host, compare marker presence other hosts"
+label4: "Markers' comparison in hosts' presence"
 explanation4:
   "<p class='query_text'style='text-align: justify;'>
   Get information on the presence of markers in different hosts. 
@@ -68,7 +68,7 @@ param_label4b: "Other Hosts:"
 error4: "Theres's no data for the selected hosts"
 
 # QUERY 5
-label5: "Given a marker obtain information on host distribution"
+label5: "Host distribution per specific marker"
 explanation5:
   "<p class='query_text'style='text-align: justify;'>
   Get information on the hosts markup of the selected marker.
@@ -79,7 +79,7 @@ param_label5a: "Marker:"
 error5: "There is no data for the selected marker"
 
 # QUERY 6
-label6: "Given a marker obtain the location distribution, normalized"
+label6: "Location distribution per specific marker"
 explanation6:
   "<p class='query_text'style='text-align: justify;'>
   Get information on the location markup of the selected marker. <br>
@@ -91,7 +91,7 @@ param_label6b: "Location:"
 error6: "There is no data for the selected marker"
 
 # QUERY 7
-label7: "Get the most common marker"
+label7: "Markers % presence per specific segment/host"
 explanation7:
   "<p class='query_text'style='text-align: justify;'>
   Get information on the most common (in absolute terms) marker. <br>
@@ -105,7 +105,7 @@ param_label7d: "Host:"
 error7: "There are no markers within the specified filters"
 
 # QUERY 8
-label8: "Get N. of instances of distinct markers for each host"
+label8: "Distribution of distinct markers per host type"
 explanation8:
   "<p class='query_text'style='text-align: justify;'>
   Get information on how many different markers have infected the same host.<br>
@@ -116,7 +116,7 @@ param_label8b: "Segment:"
 error8: "There is no data for the selected subtype/segment combination"
 
 # QUERY 9
-label9: "Get how common is each marker"
+label9: "Markers % presence"
 explanation9:
   "<p class='query_text'style='text-align: justify;'>
   Get information on the relative percentage of markers in the dataset.<br>
@@ -128,7 +128,7 @@ param_label9c: "Limit:"
 error9: "There are no markers within the specified range of presence in the dataset"
 
 # QUERY 10
-label10: "Find the Most Mutable Zones"
+label10: "Mutations on genomic regions"
 explanation10:
   "<p class='query_text' style='text-align: justify;'>
   Find the most mutable zones (compared to a reference) within the dataset.<br>
@@ -160,28 +160,28 @@ param_label10a: "Subtype:"
 param_label10b: "Annotation:"
 param_label10c: "Size:"
 param_label10d: "Offset:"
-param_tab10a: "Manual Regions"
+param_tab10a: "Manual regions"
 param_tab10b: "Fixed-size regions"
 error10: "There is no data for the specified filters"
 
 # QUERY 11
-label11: "Get the number of mutation found in data submitted for each month"
+label11: "Temporal distribution of mutations"
 explanation11:
   "<p class='query_text'style='text-align: justify;'>
   Get information on how many mutated segments samples where found for each month in the given range. <br>
-  For more interesting information, the total number of samples collected in the same period is reported 
-  along a ratio indicating the n. of mutation for each sample in the same period.<br><br>
+  For more interesting information, the total number of segments collected in the same period is reported 
+  along a ratio indicating the n. of mutation for each segment in the same period.<br><br>
   <b>Note: The specified months go from the 1st of the month to its last day included</b>
   </p>"
 param_label11a: "Subtype:"
-param_label11b: "Segment:"
+param_label11b: "Segment Type:"
 param_label11c: "From:"
 param_label11d: "To:"
-param_label11e: "Min # Of Samples:"
-error11: "No samples where reported in the given timeframe for the selected subtype/segment combination"
+param_label11e: "Min # Of Segments:"
+error11: "No segment where reported in the given timeframe for the selected subtype/segment type combination"
 
 # QUERY 12
-label12: "Retrieve the marker groups for a specific marker"
+label12: "Marker groups with specific marker"
 explanation12:
   "<p class='query_text'style='text-align: justify;'>
   Get all the marker groups that contain the given marker.<br>
@@ -191,7 +191,7 @@ param_label12a: "Marker:"
 error12: "No group was found for the given marker"
 
 # QUERY 13
-label13: "Retrieve the effects associated to host/drug"
+label13: "Effects associated with specific host or drug"
 explanation13:
   "<p class='query_text'style='text-align: justify;'>
   Get information on which effects are associated to particular types of host and/or drugs.
@@ -201,7 +201,7 @@ param_label13b: "Drug:"
 error13: "No effect was found for the given combination of host and drug"
 
 # QUERY 14
-label14: "Retrieve the marker groups associated to a particular effect"
+label14: "Marker groups associated with specific effect"
 explanation14:
   "<p class='query_text'style='text-align: justify;'>
   Get information on all the marker groups associated to the selected effect along the doi 
@@ -211,7 +211,7 @@ param_label14a: "Effect:"
 error14: "No group of marker was found associated to the given effect"
 
 # QUERY 15
-label15: "Trends in marker presence over time"
+label15: "Prevalence in time per specific marker"
 explanation15:
   "<p class='query_text' style='text-align: justify;'>
   Explore trends in marker prevalence with this time-series visualization, showing how 

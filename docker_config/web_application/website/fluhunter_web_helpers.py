@@ -8,8 +8,6 @@ from query_functions import *
 # PASSWORD CHECK
 def check_auth():
 
-    return True
-
     def password_entered():
         """Checks whether a password entered by the user is correct."""
         if hmac.compare_digest(st.session_state["password"], st.secrets["password"]):
@@ -41,19 +39,19 @@ def init_session():
     if 'current_query_type' not in st.session_state:
         st.session_state.current_query_type = "Markers"
     if 'global_regions' not in st.session_state:
-        st.session_state.global_regions = None
+        st.session_state.global_regions = {f"{region.replace(" ", "")}": region for region in fe_get_regions(db)['region'].tolist()}
     if 'g_regions' not in st.session_state:
         st.session_state.g_regions = fe_get_regions(db)['region'].tolist()
     if 'global_states' not in st.session_state:
         st.session_state.global_states = None
     if 'global_start_year' not in st.session_state:
-        st.session_state.global_start_year = None
+        st.session_state.global_start_year = 2000
     if 'global_end_year' not in st.session_state:
-        st.session_state.global_end_year = None
+        st.session_state.global_end_year = 2025
     if 'global_start_month' not in st.session_state:
-        st.session_state.global_start_month = None
+        st.session_state.global_start_month = 1
     if 'global_end_month' not in st.session_state:
-        st.session_state.global_end_month = None
+        st.session_state.global_end_month = 1
 
 
 def set_default_table_order(selection, columns):
@@ -61,7 +59,7 @@ def set_default_table_order(selection, columns):
     column_map = {
         2: "Percentage",
         3: "Diff",
-        5: "#",
+        5: "# Segments with marker",
         6: "Normalized Percentage",
         7: "Found in #Isolates",
         8: "Distinct Markers Per Host",
@@ -101,6 +99,8 @@ def manip_result(result, query_selection, local_params):
             return manip_result3(result, local_params)
         if query_selection == 4:
             return manip_result4(result, local_params)
+        if query_selection == 11:
+            return manip_result11(result)
     return result
 
 
@@ -108,9 +108,15 @@ def get_result_graph(selection):
     if st.session_state.result is not None:
         plot_params = query_mapping[selection]["plot_params"]
         if plot_params:
-            st.session_state.graph = plot_data(st.session_state.result, **plot_params)
+            if not st.session_state.result.empty:
+                st.session_state.graph = plot_data(st.session_state.result, **plot_params)
         else:
-            st.session_state.graph = None
+            if selection == 10:
+                st.session_state.graph = plot_query10(st.session_state.result)
+            elif selection == 11:
+                st.session_state.graph = plot_query11(st.session_state.result)
+            else:
+                st.session_state.graph = None
 
 
 def get_global_isolates_params():
@@ -138,7 +144,7 @@ def replace_query_placeholders(selected_query_index, query, params):
         query = query.replace("hosts", params["hosts"])
 
     if st.session_state.global_regions:
-        global_regions = ", ".join(f":{region.replace(' ', '')}" for region in st.session_state.global_regions.values())
+        global_regions = ", ".join(f":{region.replace(' ', '')}" for region in st.session_state.global_regions)
         query = query.replace("global_regions_placeholder", global_regions)
     else:
         query = query.replace("global_regions_placeholder", "")
@@ -167,8 +173,7 @@ def get_pygwalker_default_config(selected_query_index):
 
 @st.cache_data(show_spinner=False)
 def split_frame(df, rows):
-    df = [df.loc[i: min(i + rows - 1, len(df) - 1), :] for i in range(0, len(df), rows)]
-    return df
+    return [df.iloc[i:i + rows] for i in range(0, len(df), rows)]
 
 
 def fe_get_filtered_isolates_count(database_connection):
@@ -208,7 +213,19 @@ query_mapping = {
         3: {
             'query': get_markers_id_by_host_relative_presence,
             'params_func': params3,
-            'plot_params': {}
+            'plot_params': {
+                'plot_type': "bar",
+                'top_n': 20,
+                'title': '',
+                'xlabel': 'Host',
+                'ylabel': 'Distinct Markers Per Host',
+                'color': 'skyblue',
+                'show_values': True,
+                'sort_column': 'Diff',
+                'plot_column': 'Distinct Markers Per Host',
+                'label_column': 'Host',
+                'host_comparison': True
+            }
         },
         4: {
             'query': get_markers_id_by_host_relative_presence,
@@ -223,11 +240,12 @@ query_mapping = {
                 'top_n': 20,
                 'title': 'Top Hosts',
                 'xlabel': 'Host',
-                'ylabel': '#',
+                'ylabel': '# Segments with marker',
                 'color': 'skyblue',
-                'sort_column': '#',
-                'plot_column': '#',
-                'label_column': "Host"
+                'sort_column': '# Segments with marker',
+                'plot_column': '# Segments with marker',
+                'label_column': "Host",
+                'host_comparison': False
             }
         },
         6: {
@@ -242,7 +260,8 @@ query_mapping = {
                 'color': 'skyblue',
                 'sort_column': 'Normalized Percentage',
                 'plot_column': 'Normalized Percentage',
-                'label_column': "State"
+                'label_column': "State",
+                'host_comparison': False
             }
         },
         7: {
@@ -261,9 +280,10 @@ query_mapping = {
                 'ylabel': 'Distinct Markers Per Host',
                 'color': 'skyblue',
                 'show_values': True,
-                'sort_column': 'Host',
+                'sort_column': 'Distinct Markers Per Host',
                 'plot_column': 'Distinct Markers Per Host',
-                'label_column': 'Host'
+                'label_column': 'Host',
+                'host_comparison': False
             }
         },
         9: {
@@ -279,7 +299,8 @@ query_mapping = {
                 'show_values': False,
                 'sort_column': 'Percentage',
                 'plot_column': 'Percentage',
-                'label_column': 'Marker'
+                'label_column': 'Marker',
+                'host_comparison': False
             }
         },
         10: {
@@ -320,7 +341,8 @@ query_mapping = {
                 'show_values': True,
                 'sort_column': 'Year',
                 'plot_column': 'Year',
-                'label_column': 'Year'
+                'label_column': 'Year',
+                'host_comparison': False
             }
         }
     }

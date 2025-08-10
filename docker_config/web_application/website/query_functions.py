@@ -1,7 +1,8 @@
+import pandas
 import yaml
 from matplotlib import pyplot as plt
 
-import pandas as pd
+
 from queries import *
 import streamlit as st
 
@@ -10,19 +11,47 @@ with open('website/resources/strings.yaml', 'r') as yaml_file:
     strings = yaml.safe_load(yaml_file)
 
 
-db = st.connection(name="fluhunt", type="sql", url="sqlite:///db/fluhunt.db")
+db = st.connection(name="fluhunt", type="sql", url="sqlite:///website/data/fluhunt.db")
 
 
 # DB ROWS
-markers = db.query(get_markers)
-segments = db.query(get_segments)
-annotations = db.query(get_annotations)
+markers = db.query(get_markers).sort_values("name")
+segments = db.query(get_segments).sort_values("segment_type")
+annotations = db.query(get_annotations).sort_values("annotation_name")
 hosts = db.query(get_hosts).sort_values("host_name")
 taxonomy = db.query(get_taxonomy)
 taxonomy_hosts = db.query(get_taxonomy_hosts)
 states = db.query(get_states).sort_values("state")
 regions = db.query(get_regions).sort_values("region")
-effects = db.query("SELECT * FROM Effect")
+effects = db.query("SELECT * FROM Effect").sort_values("effect_full")
+hosts_with_at_least_one_marker = (
+    db.query(
+        """
+        WITH HostIdWithMarkers as ( 
+            SELECT DISTINCT Host.host_id 
+            FROM Host 
+            JOIN Isolate I ON Host.host_id = I.host_id 
+            JOIN Segment S ON I.isolate_epi = S.isolate_epi 
+            JOIN SegmentMarkers SM ON S.segment_id = SM.segment_id
+        ),
+        ParentsIdWithMarkers AS (
+            -- Anchor member: start with the hosts from HostIdWithMarkers
+            SELECT parent_id
+            FROM Taxonomy
+            WHERE host_id IN (SELECT host_id FROM HostIdWithMarkers)
+            
+            UNION ALL
+            
+            -- Recursive member: get parents of parents, climbing up the tree
+            SELECT t.parent_id
+            FROM Taxonomy t
+            INNER JOIN ParentsIdWithMarkers p ON t.host_id = p.parent_id
+        )
+        SELECT DISTINCT h.host_name 
+        FROM Host h
+        WHERE h.host_id IN HostIdWithMarkers OR h.host_id IN ParentsIdWithMarkers
+        ORDER BY h.host_name
+        """))
 
 
 def get_marker():
@@ -48,18 +77,18 @@ def params2():
     l_col, r_col = st.columns(2)
 
     with l_col:
-        subtype = st.selectbox(label=strings["param_label2a"],  options=["H5N1"])
+        #subtype = st.selectbox(label=strings["param_label2a"],  options=["H5N1"])
         min_perc = st.number_input(label=strings["param_label2c"], key=strings["param_label2c"],
                                    min_value=0.0, step=0.1, max_value=100.0)
-    with r_col:
-        segment = st.selectbox(label=strings["param_label2b"], options=segments)
         max_perc = st.number_input(label=strings["param_label2d"], key=strings["param_label2d"],
-                                   min_value=0.0, step=0.1, max_value=100.0, value=100.0)
+                                   min_value=100.0, step=0.1, max_value=100.0)
+        segment = st.selectbox(label=strings["param_label2b"], options=segments)
+    with r_col:
         min_n_instances = st.number_input(label=strings["param_label2f"], key=strings["param_label2f"],
                                           min_value=1, step=1)
 
     return {
-        "subtype": subtype,
+        "subtype": "H5N1",
         "segment_type": segment,
         "min_perc": min_perc,
         "max_perc": max_perc,
@@ -176,8 +205,8 @@ def params4():
     taxonomy_tree = build_taxonomy_tree(taxonomy, taxonomy_hosts_names, 0)
     filtered_taxonomy_tree = filter_taxonomy_by_level(taxonomy_tree, [0, 3, 4])
 
-    host = st.selectbox(label=strings["param_label4a"], options=sorted(get_all_keys(filtered_taxonomy_tree)))
-    other_hosts = st.multiselect(label=strings["param_label4b"], options=sorted(get_all_keys(filtered_taxonomy_tree)),
+    host = st.selectbox(label=strings["param_label4a"], options=hosts)
+    other_hosts = st.multiselect(label=strings["param_label4b"], options=hosts,
                                  max_selections=5)
 
     return {
@@ -188,23 +217,23 @@ def params4():
 
 
 def params7():
-    subtype = st.selectbox(label=strings["param_label7a"], options=["H5N1"])
+    #subtype = st.selectbox(label=strings["param_label7a"], options=["H5N1"])
     segment = st.selectbox(label=strings["param_label7b"], options=segments)
-    host = st.selectbox(label=strings["param_label7d"], options=hosts)
-    return {"subtype": subtype, "segment_type": segment, "host": host}
+    host = st.selectbox(label=strings["param_label7d"], options=hosts_with_at_least_one_marker)
+    return {"subtype": "H5N1", "segment_type": segment, "host": host}
 
 
 def params8():
-    subtype = st.selectbox(label=strings["param_label8a"], options=["H5N1"])
+    #subtype = st.selectbox(label=strings["param_label8a"], options=["H5N1"])
     segment = st.selectbox(label=strings["param_label8b"], options=segments['segment_type'].tolist())
-    return {"subtype": subtype, "segment_type": segment if segment else None}
+    return {"subtype": "H5N1", "segment_type": segment if segment else None}
 
 
 def params9():
     min_perc = st.number_input(label=strings["param_label9a"], key=strings["param_label9a"],
                                min_value=0.0, step=0.1, max_value=100.0)
     max_perc = st.number_input(label=strings["param_label9b"], key=strings["param_label9b"],
-                               min_value=0.0, step=0.1, max_value=100.0, value=100.0)
+                               min_value=100.0, step=0.1, max_value=100.0)
     return {"min_perc": min_perc, "max_perc": max_perc}
 
 
@@ -221,15 +250,13 @@ def params10():
     annotation_list.remove("HA1")
     annotation_list.remove("HA2")
 
-    subtype = st.selectbox(label=strings["param_label10a"], options=[None, "H5N1"])
+    #subtype = st.selectbox(label=strings["param_label10a"], options=[None, "H5N1"])
     segment = st.selectbox(label=strings["param_label10b"], options=annotation_list)
+
+    st.html("<div id='10_space' style='height: 13vh;'><br></div>")
 
     manual_tab, auto_tab = st.tabs([strings["param_tab10a"], strings["param_tab10b"]])
     with manual_tab:
-
-        if 'num_inputs' not in st.session_state:
-            st.session_state.num_inputs = 1
-
         start_col, end_col = st.columns(2)
         for i in range(st.session_state.num_inputs):
             with start_col:
@@ -242,27 +269,60 @@ def params10():
         bin_size = st.number_input(label=strings["param_label10c"], min_value=0, step=10, value=0)
         offset = st.number_input(label=strings["param_label10d"], min_value=0, step=1, value=0)
 
-    if bin_size == 0:
-        bins = [(st.session_state[f"start_{i + 1}"], st.session_state[f"end_{i + 1}"])
-                for i in range(st.session_state.num_inputs)]
+    if bin_size == 0 or st.session_state.num_inputs > 0:
+        bins = [(0, 0)]
+        if st.session_state.num_inputs > 0:
+            bins = [(st.session_state[f"start_{i + 1}"], st.session_state[f"end_{i + 1}"])
+                    for i in range(st.session_state.num_inputs)]
     else:
         bins = [(i, i + bin_size) for i in range(offset, 1000 + offset, bin_size)][0:500]
 
-    return {"subtype": subtype, "segment_type": segment if segment else None, "bins": bins}
+    return {"subtype": "H5N1", "segment_type": segment if segment else None, "bins": bins}
 
 
 def params11():
-    subtype = st.selectbox(label=strings["param_label11a"], options=[None, "H5N1"])
+     #subtype = st.selectbox(label=strings["param_label11a"], options=[None, "H5N1"])
     segment = st.selectbox(label=strings["param_label11b"], options=segments['segment_type'].tolist())
     min_n_instances = st.number_input(label=strings["param_label11e"], key=strings["param_label11e"],
                                       min_value=1, step=1)
-    return {"subtype": subtype, "segment_type": segment, "min_n_instances": min_n_instances}
+    return {"subtype": "H5N1", "segment_type": segment, "min_n_instances": min_n_instances}
 
 
 def params13():
-    effect_host = st.selectbox(label=strings["param_label13a"], options=set([None] + effects["host"].tolist()))
-    effect_drug = st.selectbox(label=strings["param_label13b"], options=set([None] + effects["drug"].tolist()))
-    return {"host": effect_host, "drug": effect_drug}
+    # Prepare the options for 'host' and 'drug' selectboxes
+    host_options = {"No filter": None}
+    drug_options = {"No filter": None}
+
+    # Handle effects['host']
+    for host in effects["host"].dropna().unique():
+        key = "Unspecified" if host == '' else host
+        host_options[key] = host
+
+    # Handle effects['drug']
+    for drug in effects["drug"].dropna().unique():
+        key = "Unspecified" if drug == '' else drug
+        drug_options[key] = drug
+
+    # Selectbox for 'host'
+    effect_host_label = st.selectbox(
+        label=strings["param_label13a"],
+        options=list(host_options.keys()),
+        index=0  # Default to "No filter"
+    )
+
+    # Selectbox for 'drug'
+    effect_drug_label = st.selectbox(
+        label=strings["param_label13b"],
+        options=list(drug_options.keys()),
+        index=0  # Default to "No filter"
+    )
+
+    # Return filter values: None means "no filter", otherwise the selected value
+    return {
+        "host": host_options[effect_host_label],
+        "drug": drug_options[effect_drug_label]
+    }
+
 
 
 def params14():
@@ -278,33 +338,85 @@ def params15():
 
 
 def manip_result3(results_pre, params):
-    pivot_result = results_pre.pivot(index='Marker', columns='host_name', values='percentage').reset_index()
-    pivot_result[f'Diff'] = (
-            pivot_result[params["host1"]] - pivot_result[params["host2"]])
-    sorted_result = pivot_result.sort_values(by=f'Diff', ascending=False)
-    print(pivot_result)
-    columns = list(sorted_result.columns)
-    columns.remove(params["host1"])
-    columns.insert(1, params["host1"])
-    columns.remove(params["host2"])
-    columns.insert(2, params["host2"])
-    sorted_result = sorted_result[columns]
-    return sorted_result
+    try:
+        pivot_result = results_pre.pivot(index='Marker', columns='host_name', values='percentage').reset_index()
+        pivot_result[f'Diff'] = (
+                pivot_result[params["host1"]] - pivot_result[params["host2"]])
+        sorted_result = pivot_result.sort_values(by=f'Diff', ascending=False)
+        columns = list(sorted_result.columns)
+        columns.remove(params["host1"])
+        columns.insert(1, params["host1"])
+        columns.remove(params["host2"])
+        columns.insert(2, params["host2"])
+        sorted_result = sorted_result[columns]
+        return sorted_result
+    except KeyError:
+        return pandas.DataFrame()
 
 
 def manip_result4(results_pre, params):
+    host = params["host"]
+
+    # Pivot the results
     pivot_result = results_pre.pivot(index='Marker', columns='host_name', values='percentage').reset_index()
-    sorted_result = pivot_result.sort_values(by=params["host"], ascending=False)
+
+    # Add the missing host column with 0.0 if it doesn't exist
+    if host not in pivot_result.columns:
+        pivot_result[host] = 0.0
+
+    # Fill any other missing values with 0 (optional, for cleaner output)
+    pivot_result = pivot_result.fillna(0.0)
+
+    # Sort by the main host column
+    sorted_result = pivot_result.sort_values(by=host, ascending=False)
+
+    # Reorder columns to make the main host come right after 'Marker'
     columns = list(sorted_result.columns)
-    columns.remove(params["host"])
-    columns.insert(1, params["host"])
+    columns.remove(host)
+    columns.insert(1, host)
     sorted_result = sorted_result[columns]
+
+    # Rename columns to include '%' for hosts
     sorted_result.columns = [col + " %" if col != 'Marker' else col for col in sorted_result.columns]
+
     return sorted_result
 
 
+def manip_result11(results_pre):
+    if "Year" not in results_pre.columns or "Month" not in results_pre.columns:
+        return pandas.DataFrame()
+
+    df = results_pre.copy()
+
+    # Drop NA values
+    df = df[df["Year"].notna() & df["Month"].notna()]
+
+    # Convert to integers
+    try:
+        df["Year"] = df["Year"].astype(int)
+        df["Month"] = df["Month"].astype(int)
+    except ValueError:
+        return pandas.DataFrame()
+
+    # Filter valid ranges
+    df = df[df["Year"] >= 1900]
+    df = df[(df["Month"] >= 1) & (df["Month"] <= 12)]
+
+    # Create new formatted column and drop old ones
+    df["Period (yyyy/mm)"] = df["Year"].astype(str) + "/" + df["Month"].astype(str).str.zfill(2)
+    df = df.drop(columns=["Year", "Month"])
+
+    # Sort chronologically
+    df["__sort"] = df["Period (yyyy/mm)"].apply(lambda x: int(x[5:7] + x[:4])) # e.g., 202401
+    df = df.sort_values("__sort").drop(columns="__sort").reset_index(drop=True)
+
+    return df
+
+
+
 def plot_data(result_df, sort_column, plot_column, top_n=20, label_column=None, plot_type='barh', title='',
-              xlabel='', ylabel='', color='skyblue', is_bar=True, show_values=False, rotation=0):
+              xlabel='', ylabel='', color='skyblue', is_bar=True, show_values=False, rotation=0,
+              host_comparison=False):
     """
     Generalized function for plotting graphs with sorting, labeling, and value display.
 
@@ -330,6 +442,21 @@ def plot_data(result_df, sort_column, plot_column, top_n=20, label_column=None, 
     # Create the plot
     plt.figure(figsize=(12, 8))
 
+    if host_comparison:
+
+        host1_col = df_sorted.columns[1]
+        host2_col = df_sorted.columns[2]
+
+        y_labels = [f"{row['Marker']}" for _, row in df_sorted.iterrows()]
+        plt.figure(figsize=(8, 6))
+        plt.barh(y_labels, df_sorted["Diff"], color="skyblue")
+        plt.xlabel("Difference %")
+        plt.ylabel("Marker")
+        plt.title(f"Top {top_n} Marker difference between {host1_col} and {host2_col}")
+        plt.gca().invert_yaxis()  # Invert y-axis to match sorting
+
+        return plt.gcf()
+
     if plot_type == 'barh' and is_bar:
         plt.barh(df_sorted[label_column], df_sorted[plot_column], color=color)
         plt.gca().invert_yaxis()  # Invert y-axis to have the highest value on top
@@ -354,9 +481,15 @@ def plot_data(result_df, sort_column, plot_column, top_n=20, label_column=None, 
         for marker in df_sorted['Marker'].unique():
             subset = df_sorted[df_sorted['Marker'] == marker]
 
-            # Reindex to include all years, filling missing values with NaN
-            subset = subset.set_index('Year').reindex(all_years).reset_index()
+            # Reindex to include all years
+            subset = subset.set_index('Year').reindex(all_years)
 
+            # Fill missing values (choose one method)
+            subset['Percentage'] = subset['Percentage'].interpolate()  # Option 1: interpolate
+            # subset['Percentage'] = subset['Percentage'].ffill()     # Option 2: forward fill
+            # subset['Percentage'] = subset['Percentage'].bfill()     # Option 3: backward fill
+
+            subset = subset.reset_index()
             plt.plot(subset['Year'], subset['Percentage'], marker='^', label=marker)
 
         # Set x-ticks to show all years
@@ -367,7 +500,7 @@ def plot_data(result_df, sort_column, plot_column, top_n=20, label_column=None, 
     plt.ylabel(ylabel)
     plt.title(title)
     plt.grid(axis='x', linestyle='--', alpha=0.7)
-    plt.xticks(rotation=rotation)
+    plt.xticks(rotation=90)
 
     # Show the legend for line plots
     if plot_type == 'line':
@@ -377,4 +510,62 @@ def plot_data(result_df, sort_column, plot_column, top_n=20, label_column=None, 
 
     return plt.gcf()
 
+
+def plot_query10(df, title="Mutation Distribution by Bin Range", color="steelblue"):
+    """
+    Plots a bar chart showing mutation counts across defined ranges (bins).
+
+    Parameters:
+    - df: DataFrame with columns ['Start', 'End', 'Total Mutations']
+    - title: Plot title
+    - color: Bar color
+    """
+
+    # Combine Start and End into a single label for x-axis
+    df['Range'] = df.apply(lambda row: f"{row['Start']}-{row['End']}", axis=1)
+
+    # Plot
+    plt.figure(figsize=(10, 6))
+    bars = plt.bar(df['Range'], df['# Distinct mutations'], color=color)
+
+    # Add value labels on top of bars
+    for bar in bars:
+        yval = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width() / 2, yval + 5, int(yval),
+                 va='bottom', ha='center', fontsize=8)
+
+    # Customize axes and title
+    plt.xlabel("Position Range")
+    plt.ylabel("# Distinct mutations")
+    plt.title(title)
+    plt.xticks(rotation=45)
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.tight_layout()
+
+    return plt.gcf()
+
+
+def plot_query11(df, title="Monthly Mutation Rate per Segment", color="mediumseagreen"):
+    import matplotlib.pyplot as plt
+    import pandas as pd
+
+    df = df.copy()  # Avoid modifying the original DataFrame
+    df['Date'] = pd.to_datetime(df['Period (yyyy/mm)'], format='%Y/%m')
+    df = df.sort_values(by='Date')
+
+    plt.figure(figsize=(14, 6))
+    plt.plot(df['Date'], df['#Mutation per Segment'], marker='o', color=color, linewidth=2)
+
+    for x, y in zip(df['Date'], df['#Mutation per Segment']):
+        if y > 20:
+            plt.text(x, y + 0.5, f"{y:.1f}", ha='center', va='bottom', fontsize=8)
+
+    plt.title(title)
+    plt.xlabel("Time (YYYY-MM)")
+    plt.ylabel("#Mutation per Segment")
+    plt.grid(True, linestyle='--', alpha=0.5)
+    plt.tight_layout()
+    plt.xticks(rotation=45)
+
+    return plt.gcf()
 

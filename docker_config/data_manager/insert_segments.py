@@ -87,6 +87,7 @@ class MutationDatabaseHandler:
     # TODO: ugly
     def organize_dna_fasta_by_reference(self):
 
+        print("Collecting Isolates...")
         header, sequence = None, ""
         for line in self.fasta_file.readlines():
             if line.startswith('>'):
@@ -107,6 +108,8 @@ class MutationDatabaseHandler:
             if self.is_valid_sequence(sequence):
                 if self.create_isolate(header_dict["isolate_id"]) and self.create_isolate(header_dict["isolate_id"]) != -1:
                     self.add_to_dna_fasta_by_ref_dict(header, sequence)
+
+        print("Finished collecting Isolates. Starting alignements...")
 
     def get_coding_sequences_fasta(self, aligned_dna_fastas, dna_insertions_file, inteins, reference_fasta):
 
@@ -192,7 +195,10 @@ class MutationDatabaseHandler:
         except KeyError:
             return -1
 
-        host = isolate_metadata[17]
+        if isolate_metadata.size == 0:
+            return -1
+
+        host = isolate_metadata[19]
 
         if host:
 
@@ -206,14 +212,15 @@ class MutationDatabaseHandler:
                     self.create_common_host(host_id, host)
                 except TypeError:
                     host_id = -1  # NCBI Problem
+                    self.create_common_host(host_id, host)
         else:
             host_id = -1
 
-        collection_date = isolate_metadata[25]
-        location_id = self.get_location_id(isolate_metadata[16])
+        collection_date = isolate_metadata[27]
+        location_id = self.get_location_id(isolate_metadata[18])
         subtype_id = self.get_subtype(isolate_metadata[12].split("/")[-1].strip())["subtype_id"]
 
-        #clade = isolate_metadata[14]
+        #clade = isolate_metadata[15]
         #print(self.extract_clade_levels(clade))
 
         self.database_handler.insert_row("Isolate",
@@ -349,7 +356,7 @@ class MutationDatabaseHandler:
 
     def add_to_dna_fasta_by_ref_dict(self, header, sequence):
         segment = header.split("|")[1]
-        subtype = header.split("|")[5][-4:]
+        subtype = header.split("|")[-1][-4:]
 
         key = f"{subtype}_{segment}"
         entry = f"{header}\n{sequence}\n"
@@ -562,14 +569,13 @@ class MutationDatabaseHandler:
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser()
     parser.add_argument('-fasta', type=str, required=False)
     parser.add_argument('-metadata', type=str, required=False)
 
     # Parse the command-line arguments
     args = parser.parse_args()
-       
+
     fasta = args.fasta
     meta = args.metadata
     MutationDatabaseHandler(meta, fasta)

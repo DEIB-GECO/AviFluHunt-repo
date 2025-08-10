@@ -256,7 +256,7 @@ class MutationDatabaseHandler:
     """ --- HELPER FUNCTIONS --- """
     def add_to_dna_fasta_by_ref_dict(self, header, dna_sequence):
         segment = header.split("|")[1]
-        subtype = header.split("|")[5][-4:]
+        subtype = header.split("|")[-1][-4:]
 
         key = f"{subtype}_{segment}"
         entry = f"{header}\n{dna_sequence}\n"

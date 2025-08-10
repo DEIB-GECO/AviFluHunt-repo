@@ -152,7 +152,7 @@ input {
     margin-top: .5vh;
     margin-bottom: 1.5vh;
     height: 0 !important;
-    padding-left: 83vw;
+    padding-left: 67.5vw;
 }
 
 .st-key-global_container > div > div {
@@ -181,6 +181,58 @@ input {
 .st-key-global_container div {
     width: max-content;
     flex: content !important;
+}
+
+.st-key-taxonomy_tree_overlay * {
+    color: black;
+}
+
+.st-key-taxonomy_tree_overlay label > div:first-of-type {
+    min-width: 0 !important;
+    background-color: transparent;
+    max-width: 0% !important;
+    max-height: 0% !important;
+}
+
+.st-key-taxonomy_tree_search label > div:first-of-type {
+    background-color: transparent;
+    max-width: 100% !important;
+    max-height: auto !important;
+}
+
+.st-key-taxonomy_tree_search {
+    margin-bottom: 2vh;
+}
+
+.st-key-taxonomy_tree_search .stTextInput > * {
+    width: auto;
+    float: left !important;
+}
+
+.st-key-taxonomy_tree_search .stTextInput > div {
+    border: 1px solid black !important; 
+}
+
+.st-key-taxonomy_tree_overlay label {
+    margin-right: 1vw !important;
+    margin-top: 0 !important;
+}
+
+.st-key-taxonomy_tree_overlay label:has(input[aria-checked="false"]) p {
+    color: blue !important;
+}
+
+.st-key-taxonomy_tree_overlay label:has(input[aria-checked="false"]) p::before {
+    content: "▶ ";
+}
+
+.st-key-taxonomy_tree_overlay label:has(input[aria-checked="true"]) p {
+    color: black !important;
+    text-decoration: none !important;
+}
+
+.st-key-taxonomy_tree_overlay label:has(input[aria-checked="true"]) p::before {
+    content: "▼ ";
 }
 
 .st-key-isolates_remaining {
@@ -350,7 +402,6 @@ hr {
 
 .st-key-query_selector .stSelectbox {
     margin-top: -0.5vh;
-    max-height: 30vh;
     background-color: white;
     border-radius: 5px !important;
 }
@@ -361,7 +412,6 @@ svg * {
 
 .st-key-query_selector .stSelectbox div {
     height: auto !important;
-    max-height: 30vh;
     white-space: wrap !important;
     font-weight: bold;
     color: black;
@@ -392,6 +442,51 @@ svg * {
     word-wrap: break-word !important; 
 }
 
+.st-key-no_global_filters {
+    background-color: var(--accent-color);
+    padding: 7.5% !important; 
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1vh;
+    max-width: 100%;
+    box-sizing: border-box !important; 
+    overflow: hidden !important; 
+    word-wrap: break-word !important; 
+}
+
+.st-key-no_global_filters * {
+    font-weight: bold;
+    font-size: 14px !important;
+    max-width: 100%;
+    box-sizing: border-box !important; 
+    overflow: hidden !important; 
+    word-wrap: break-word !important; 
+}
+
+.st-key-global_filters_recap_top {
+    display: inline-block !important;
+    vertical-align: central !important;
+    margin-bottom: 2vh;
+}
+
+.st-key-global_filters_recap_top > div:nth-child(1) button {
+    padding: 0 !important;
+}
+
+.st-key-global_filters_recap_top > div:nth-child(1) * {
+    font-size: 18px !important;
+    font-weight: bold;
+    text-align: left;
+}
+
+.st-key-global_filters_recap_top > div:nth-child(1) *:hover {
+    text-decoration: underline;
+}
+
+.st-key-recap_modify * {
+    font-size: 24px;
+}
+
 .st-key-query_inputs_container svg * {
     color: white;
 }
@@ -420,7 +515,6 @@ svg * {
 .st-key-query_inputs_container .stDateInput > div 
 {
     height: auto !important;
-    max-height: 30vh;
     white-space: wrap !important;
     background-color: white;
 }
@@ -433,6 +527,11 @@ svg * {
     height: auto !important;
     color: black;
     font-size: 14px !important;
+}
+
+.stMultiSelect span * {
+    font-size: 12px;
+    font-weight: bold;
 }
 
 .stNumberInputContainer {
@@ -581,6 +680,17 @@ th {
 
 #bottom_about_container > div h6 {
     font-weight: normal;
+}
+
+.st-key-add_manual_input_container {
+    position: absolute;
+    margin-top: 120px;
+    z-index: 9999;
+}
+
+.st-key-add_manual_input_container label {
+    font-size: 13px;
+    font-weight: bold;
 }
 """
 }</style>', unsafe_allow_html=True)
