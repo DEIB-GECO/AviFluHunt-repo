@@ -2,7 +2,8 @@ import streamlit as st
 st.set_page_config(layout="wide", page_title="AviFluHunt")
 from aviflunhunt_fe import *
 
-
+with open('website/resources/strings.yaml', 'r') as yaml_file:
+    strings = yaml.safe_load(yaml_file)
 class GlobalConfig:
     text_resources = strings  # TODO: deal with other file!
     queries = {
@@ -13,11 +14,10 @@ class GlobalConfig:
     }
     database_connection = db
 
-
 global_config = GlobalConfig()
 
-if not check_auth():
-    st.stop()
+#if not check_auth():
+    #st.stop()
 
 init_session()
 

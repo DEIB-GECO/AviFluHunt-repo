@@ -122,7 +122,6 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
 .venv
 env/
 venv/
@@ -178,6 +177,3 @@ identifier.sqlite
 data_backend/mutations_test.py
 
 *.png
-
-
-*.dmp

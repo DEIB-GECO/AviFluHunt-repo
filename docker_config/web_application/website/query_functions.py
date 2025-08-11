@@ -10,8 +10,7 @@ import streamlit as st
 with open('website/resources/strings.yaml', 'r') as yaml_file:
     strings = yaml.safe_load(yaml_file)
 
-
-db = st.connection(name="fluhunt", type="sql", url="sqlite:///website/data/fluhunt.db")
+db = st.connection(name="fluhunt", type="sql", url="sqlite:///db/fluhunt.db")
 
 
 # DB ROWS
@@ -49,8 +48,6 @@ hosts_with_at_least_one_marker = (
         )
         SELECT DISTINCT h.host_name 
         FROM Host h
-        WHERE h.host_id IN HostIdWithMarkers OR h.host_id IN ParentsIdWithMarkers
-        ORDER BY h.host_name
         """))
 
 

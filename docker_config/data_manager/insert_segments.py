@@ -265,20 +265,39 @@ class MutationDatabaseHandler:
         return -1
 
     def insert_taxonomy_recursively(self, taxonomy):
-
         current_host_name = taxonomy[0]
 
-        # Step 1: Check if the current level is already in the database
+        # Step 1: Get or insert parent
+        parent_id = self.insert_taxonomy_recursively(taxonomy[1:]) if len(taxonomy) > 1 else None
+
+        # Step 2: Check if current host already exists
         current_id = self.search_host_id_in_scientific_names(current_host_name)
 
         if current_id is not None:
+            # Prevent reversed or cyclic relationships
+            if parent_id is not None and self.is_descendant(parent_id, current_id):
+                raise ValueError(f"Inserting ({current_id}, {parent_id}) would create a cycle.")
+
             return current_id
+        else:
+            # Step 3: Insert and link to parent
+            return self.create_host_and_taxonomy_link(current_host_name, parent_id)
 
-        # Step 2: Process the parent level (remaining taxonomy)
-        parent_id = self.insert_taxonomy_recursively(taxonomy[1:])
-
-        # Step 3: Insert the current level and link it to the parent
-        return self.create_host_and_taxonomy_link(current_host_name, parent_id)
+    def is_descendant(self, start_id, target_id):
+        """
+        Returns True if target_id is an ancestor of start_id.
+        Walks up from start_id and checks if we reach target_id.
+        """
+        current_id = start_id
+        while current_id is not None:
+            rows = self.database_handler.get_rows("Taxonomy", ["host_id"], [current_id])
+            if not rows:
+                return False
+            parent_id = rows[0]["parent_id"]
+            if parent_id == target_id:
+                return True
+            current_id = parent_id
+        return False
 
     def create_host_and_taxonomy_link(self, host_name, parent_id):
         host_id = self.database_handler.insert_row("Host", ["host_id", "host_name"],
@@ -569,6 +588,7 @@ class MutationDatabaseHandler:
 
 
 if __name__ == "__main__":
+    print("Starting segment insertion")
     parser = argparse.ArgumentParser()
     parser.add_argument('-fasta', type=str, required=False)
     parser.add_argument('-metadata', type=str, required=False)

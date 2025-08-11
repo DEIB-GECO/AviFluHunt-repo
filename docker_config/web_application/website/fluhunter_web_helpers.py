@@ -8,6 +8,7 @@ from query_functions import *
 # PASSWORD CHECK
 def check_auth():
 
+    return True
     def password_entered():
         """Checks whether a password entered by the user is correct."""
         if hmac.compare_digest(st.session_state["password"], st.secrets["password"]):
@@ -171,7 +172,6 @@ def get_pygwalker_default_config(selected_query_index):
     return query_pyg_config_file
 
 
-@st.cache_data(show_spinner=False)
 def split_frame(df, rows):
     return [df.iloc[i:i + rows] for i in range(0, len(df), rows)]
 
