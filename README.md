@@ -8,19 +8,12 @@
 1. [Introduction](#introduction)  
 2. [Getting Started](#getting-started)  
 3. [User Interface Overview](#user-interface-overview)  
-4. [Queries](#queries)  
-   - [a) Literature](#a-literature)  
-   - [b) Data on Markers](#b-data-on-markers)  
-   - [c) Markers and Hosts](#c-markers-and-hosts)  
-   - [d) Mutations](#d-mutations)  
-5. [Global Settings](#global-settings)  
-6. [Taxonomy Tree](#taxonomy-tree)  
-7. [Viewing and Downloading Results](#viewing-and-downloading-results)  
-8. [Additional Notes](#additional-notes)
+4. [Additional Notes](#additional-notes)
+5. [Extra](#extra)
 
 ---
 
-### 1. Introduction
+## 1. Introduction
 
 AviFluHunt provides a **web-based interface** for avian flu researchers to:
 - Filter data by location, date range, or host type.
@@ -31,7 +24,7 @@ The system is built to leverage **domain knowledge** (markers, effects, literatu
 
 ---
 
-### 2. Getting Started
+## 2. Getting Started
 
 For details on how to use AviFluHunt Docker, please visit [this link](https://github.com/DEIB-GECO/AviFluHunt/blob/main/docker_doc.md), then come back here!
 
@@ -48,7 +41,7 @@ For details on how to use AviFluHunt Docker, please visit [this link](https://gi
 
 ---
 
-### 3. User Interface Overview
+## 3. User Interface Overview
 
 Here follows a breakdown of the main interface sections (refer to the screenshot below for an example):
 
@@ -74,7 +67,7 @@ Here follows a breakdown of the main interface sections (refer to the screenshot
 
 
 
-#### Queries
+### Queries
 
 The queries are grouped into four **macro categories**. Select a macro group, then pick one of the listed queries from the dropdown.
 
@@ -82,7 +75,7 @@ The queries are grouped into four **macro categories**. Select a macro group, th
 
 
 
-#### Global Settings
+### Global Settings
 
 Global filters affect **all** queries you run. Use them to narrow your dataset by **location** and **date range**.
 
@@ -96,8 +89,7 @@ Global filters affect **all** queries you run. Use them to narrow your dataset b
 You can revisit the **Global Settings** panel anytime to adjust these filters. The **Global Settings Recap** displays your current selection.
 
 
-
-#### Taxonomy Tree
+### Taxonomy Tree
 
 The **Taxonomy Tree** is an informational tool showing avian species in the database. It is generated based on:
 - Automatically detected hosts in your dataset.  
@@ -105,7 +97,7 @@ The **Taxonomy Tree** is an informational tool showing avian species in the data
 
 ---
 
-### 4. Additional Notes
+## 4. Additional Notes
 
 - **Performance**:  
   Large datasets (big `.fasta` or `.xls` files) may slow queries. Narrow your date range or location to improve performance.
@@ -124,19 +116,19 @@ The **Taxonomy Tree** is an informational tool showing avian species in the data
 
 ---
 
+## 5. Extra
+
 ### Acknowledgements
 
 We gratefully acknowledge all data contributors, i.e. the Authors and their Originating Laboratories responsible for obtaining the specimens, and their Submitting Laboratories that generated the genetic sequence and metadata and shared via the GISAID Initiative the data on which part of this research is based. 
 
 The authors are grateful to Stefano Ceri, Alice Fusaro, and Edoardo Giussani for the fruitful discussions inspiring this research, and to Jana Penic for assisting with Influenza data preparation.
 
----
 
 ### Funding
 The work was supported by Ministero dell'Università e della Ricerca (PRIN PNRR 2022 "SENSIBLE" project, n. P2022CNN2J), funded by the European Union, Next Generation EU, within PNRR M4.C2.1.1. 
 Politecnico di Milano, CUP D53D23017400001; Università degli Studi di Milano, CUP G53D23006690001. See our [project's website](https://sensible-prin.github.io/)! 
 
----
 
 ### Citation
 
