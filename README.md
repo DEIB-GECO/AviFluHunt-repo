@@ -1,4 +1,5 @@
-### Avian Flu Data Analysis  
+## AviFluHunt Database and Tool  
+
 **Frontend User Documentation**
 
 ---
@@ -19,19 +20,20 @@
 
 ---
 
-#### 1. Introduction
+### 1. Introduction
 
-This application provides a **web-based interface** for avian flu researchers to:
-- Query markers and their effects on hosts or drugs.
-- Examine literature references and marker groups.
+AviFluHunt provides a **web-based interface** for avian flu researchers to:
 - Filter data by location, date range, or host type.
-- View an automatically generated taxonomy tree of avian species in the database.
+- Query markers and their effects on hosts or drugs (according to literature).
+- Build interesting analytics on markers, segments, and mutations.
 
-The system is built to leverage **domain knowledge** (markers, effects, literature references, etc.) and is powered by a **Dockerized backend** to simplify setup and deployment. If you have not yet set up the Docker environment, please refer to the project’s **README** for instructions on installation and configuration.
+The system is built to leverage **domain knowledge** (markers, effects, literature references, etc.) and is powered by a **Dockerized backend** to simplify setup and deployment.
 
 ---
 
-#### 2. Getting Started
+### 2. Getting Started
+
+For details on how to use AviFluHunt Docker, please visit [this link](https://github.com/DEIB-GECO/AviFluHunt/blob/main/docker_doc.md), then come back here!
 
 1. **Access the Application**  
    Once Docker is running (using `docker compose up -d`), open your browser and navigate to the URL provided in the Docker logs (e.g., `http://localhost:8000`).
@@ -39,116 +41,48 @@ The system is built to leverage **domain knowledge** (markers, effects, literatu
 2. **Prepare Required Data Files**  
    - A `.fasta` file containing sequence data for analysis.  
    - A `.xls` metadata file following the structure of GISAID downloads.  
-   - (Optional) Updated XLSX files containing domain knowledge if you set `update_also_knowledge=true`.
+   - (Optional) Updated XLSX files containing domain knowledge if you set `update_also_knowledge=true` (details [here](https://github.com/DEIB-GECO/AviFluHunt/blob/main/docker_doc.md)).
 
 3. **Verify Global Settings**  
-   Before running queries, ensure the **Global Filters** (dates, locations) match the subset of data you wish to analyze.
+   Before running queries, ensure the **Global Filters** (dates, locations) match the subset of data you expect to analyze.
 
 ---
 
-#### 3. User Interface Overview
+### 3. User Interface Overview
 
-Below is a simplified breakdown of the main interface sections (refer to the attached screenshot for an example):
+Here follows a breakdown of the main interface sections (refer to the screenshot below for an example):
+
+<img width="8000" height="4018" alt="interface" src="https://github.com/user-attachments/assets/61d9e4b1-8fe0-4a88-912f-5bc7bf32318b" />
 
 1. **Navigation Bar (Top-Right)**
    - **Taxonomy Tree**: View or hide the avian taxonomy tree.  
    - **Global Settings**: Open the global settings panel to change date ranges and geographic filters.  
    - **About**: General information about the project.
 
-2. **Query Section (Left Panel / Center)**
-   - **Query Macro Group**: Select which set of queries you want to explore (Literature, Data on Markers, Markers and Hosts, Mutations).  
+2. **Query Section (Top-Center)**
+   - **Query Macro Group**: Select which set of queries you want to explore (Markers Effects, Markers, Markers and Hosts, Mutations).  
    - **Specific Query**: After choosing a macro group, select a query from the dropdown.
 
-3. **Global Settings Recap (Left Panel)**
-   - Displays your current global filters (e.g., date range, selected regions).
+3. **Global Settings Recap (Top-Left Panel)**
+   - Displays your current global filters (e.g., date range, selected geographical regions).
 
-4. **Inputs for Each Query (Left Panel or Center)**
+4. **Inputs for Each Query (Bottom-Left Panel)**
    - Depending on the query, you may need to specify additional parameters (e.g., marker name, effect type, host type).
 
 5. **Results Panel (Center / Bottom)**
-   - Shows query outputs in a table or graph form, often with an option to **Download** the data or the graph.
+   - Shows query outputs in a table or graph form, often with an option to download the data (CSV file) or the graph (PNG file).
 
 ---
 
-#### 4. Queries
+#### Queries
 
 The queries are grouped into four **macro categories**. Select a macro group, then pick one of the listed queries from the dropdown.
 
-##### a) Literature
-
-1. **Obtain the Literature Associated to a Group of Markers**  
-   - **Purpose**: Look up references (DOI, publication, etc.) discussing a specific group of markers.  
-   - **Inputs**: Marker group name or ID.  
-   - **Output**: Table of relevant literature entries.
-
-2. **Retrieve the Marker Groups for a Specific Marker**  
-   - **Purpose**: Given a single marker, find all groups that include it.  
-   - **Inputs**: Marker name or ID.  
-   - **Output**: Table listing associated marker groups and their descriptions.
-
-3. **Retrieve the Effects Associated to Host/Drug**  
-   - **Purpose**: Find known effects (e.g., transmissibility, drug resistance) tied to a specific host or drug.  
-   - **Inputs**: Host name (e.g., human, chicken) or drug name.  
-   - **Output**: Table of markers, effect descriptions, and literature references.
-
-4. **Retrieve the Marker Groups Associated to a Particular Effect**  
-   - **Purpose**: Identify marker groups linked to a specified effect (e.g., “increased transmission in humans”).  
-   - **Inputs**: Effect name or partial description.  
-   - **Output**: Table of marker groups.
-
-##### b) Data on Markers
-
-1. **Get How Common Each Marker Is**  
-   - **Purpose**: Show the overall frequency of each marker in the filtered dataset.  
-   - **Output**: Table or chart showing marker frequency counts or percentages.
-
-2. **Get the Most Common Marker**  
-   - **Purpose**: Identify which marker appears most frequently.  
-   - **Output**: Single marker result or top-ranked list of markers.
-
-3. **Given a Marker, Obtain the Location Distribution (Normalized)**  
-   - **Purpose**: Show how often the specified marker appears in each location (country, region, etc.), normalized by the total isolates in that location.  
-   - **Output**: Table or map visualization (if available).
-
-4. **Trends in Marker Presence Over Time**  
-   - **Purpose**: Display how a marker’s prevalence changes by month or year.  
-   - **Output**: Time-series graph and/or data table.
-
-##### c) Markers and Hosts
-
-1. **Given a Marker, Obtain Information on Host Distribution**  
-   - **Purpose**: Determine which hosts (e.g., human, chicken, duck) carry a specified marker.  
-   - **Output**: Table or chart of host distribution.
-
-2. **Get Markers by Relative Percentage of Human Samples**  
-   - **Purpose**: Identify markers that are most common (or least common) in human samples compared to others.  
-   - **Output**: Ranked list of markers based on relative frequency in humans.
-
-3. **Get Markers by Difference in Relative Presence Between Two Hosts**  
-   - **Purpose**: Compare two hosts (e.g., chicken vs. duck) to find markers that are significantly more prevalent in one than the other.  
-   - **Output**: Table showing marker name, difference in percentage, and significance if applicable.
-
-4. **Given a Reference Host, Compare Marker Presence in Other Hosts**  
-   - **Purpose**: Select a reference host and see how marker frequencies differ across all other hosts in the dataset.  
-   - **Output**: Table or bar chart of comparative frequencies.
-
-5. **Get Number of Instances of Distinct Markers for Each Host**  
-   - **Purpose**: Show how many distinct markers appear in each host.  
-   - **Output**: Table or chart enumerating marker counts per host.
-
-##### d) Mutations
-
-1. **Find the Most Mutable Zones**  
-   - **Purpose**: Identify genomic regions with the highest mutation rates.  
-   - **Output**: Table or genomic visualization indicating hotspots.
-
-2. **Find the Most Mutable Zones**  
-   - **Purpose**: If this is a variant of the above query, it may use different thresholds or parameters.  
-   - **Output**: Similar table/graph highlighting mutation hotspots.
+<img width="990" height="733" alt="image" src="https://github.com/user-attachments/assets/ff1cc452-2ee0-4ee1-a3dc-609ef34e7dd4" />
 
 ---
 
-#### 5. Global Settings
+#### Global Settings
 
 Global filters affect **all** queries you run. Use them to narrow your dataset by **location** and **date range**.
 
@@ -163,23 +97,11 @@ You can revisit the **Global Settings** panel anytime to adjust these filters. T
 
 ---
 
-#### 6. Taxonomy Tree
+#### Taxonomy Tree
 
-The **Taxonomy Tree** is an **informational** tool showing avian species in the database. It’s generated based on:
+The **Taxonomy Tree** is an informational tool showing avian species in the database. It is generated based on:
 - Automatically detected hosts in your dataset.  
 - Supplemental taxonomy data (used if the automatic taxonomer fails to identify certain hosts).
-
-Usually, **no action** is needed here unless you need to review or explore host classifications. If some hosts are not recognized, you may need to update the fallback data in the XLSX files.
-
----
-
-#### 7. Viewing and Downloading Results
-
-Most queries produce **tables**, **graphs**, or both:
-
-- **Download Data**: You can download query results as CSV or Excel files.  
-- **Download Graph**: If a graph is displayed, a “Download PNG” button may be available.  
-- **Pygwalker Interface**: Some queries offer an interactive data exploration tool (Pygwalker) for building custom visualizations.
 
 ---
 
@@ -193,12 +115,51 @@ Most queries produce **tables**, **graphs**, or both:
 
 - **Troubleshooting**:  
   - **No Results?** Check that your **Global Settings** (date range, location) include valid data.  
-  - **Missing Markers/Hosts?** Confirm your metadata file follows GISAID-like structure and `.fasta` file path is correct.  
+  - **Missing Markers/Hosts?** Confirm your metadata file follows a GISAID-like structure and `.fasta` file path is correct.  
   - **Taxonomy Issues?** Rare hosts may require manual addition to the fallback taxonomy data.
 
 - **Further Assistance**:  
-  Refer to the **GitHub README** for Docker commands and environment variable details. For additional support or to report a bug, open an issue on the project’s GitHub repository.
+  Refer to [this documentation](https://github.com/DEIB-GECO/AviFluHunt/blob/main/docker_doc.md) for Docker commands and environment variable details.
+  For additional support or to report a bug, open an issue on the project’s GitHub repository.
 
 ---
 
-**End of Documentation**
+---
+
+### Acknowledgements
+
+We gratefully acknowledge all data contributors, i.e. the Authors and their Originating Laboratories responsible for obtaining the specimens, and their Submitting Laboratories that generated the genetic sequence and metadata and shared via the GISAID Initiative the data on which part of this research is based. 
+
+The authors are grateful to Stefano Ceri, Alice Fusaro, and Edoardo Giussani for the fruitful discussions inspiring this research, and to Jana Penic for assisting with Influenza data preparation.
+
+
+### Funding
+The work was supported by Ministero dell'Università e della Ricerca (PRIN PNRR 2022 "SENSIBLE" project, n. P2022CNN2J), funded by the European Union, Next Generation EU, within PNRR M4.C2.1.1. 
+Politecnico di Milano, CUP D53D23017400001; Università degli Studi di Milano, CUP G53D23006690001. See our [project's website](https://sensible-prin.github.io/)! 
+
+### Citation
+
+The AviFluHunt application has been created by 
+```
+Luca Cassenti, Tommaso Alfonsi, Anna Bernasconi
+Dipartimento di Elettronica, Informazione e Bioingegneria
+Politecnico di Milano
+Via Ponzio 34/5 Milano
+20133 Milano
+Italy
+```
+Please, consider citing this work in your research as:
+
+```
+Luca Cassenti, Tommaso Alfonsi, Anna Bernasconi (2025).
+AviFluHunt: a database and tool for flexible querying of avian influenza sequence data.
+[https://github.com/DEIB-GECO/AviFluHunt](https://github.com/DEIB-GECO/AviFluHunt).
+_Manuscript in preparation._
+```
+
+### Contact us
+https://annabernasconi.faculty.polimi.it/
+
+anna.bernasconi@polimi.it
+
+Phone: +39 02 2399 3494
