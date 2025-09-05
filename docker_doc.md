@@ -1,26 +1,22 @@
-# Avian Flu Data Analysis Project
+## AviFluHunt Database and Tool  
 
-## Docker Environment Documentation
+**FDocker Environment Documentation**
 
 ### Table of Contents
-1. [Overview](#overview)  
-2. [System Requirements](#system-requirements)  
-3. [Directory Structure](#directory-structure)  
-4. [Configuration Files](#configuration-files)  
-5. [Building and Running Containers](#building-and-running-containers)  
-6. [Managing Containers](#managing-containers)  
-7. [Environment Variables](#environment-variables)  
-8. [Common Issues and Troubleshooting](#common-issues-and-troubleshooting)  
-9. [FAQ](#faq)
+[System Requirements](#system-requirements)  
+[Directory Structure](#directory-structure)  
+[Configuration Files](#configuration-files)  
+[Building and Running Containers](#building-and-running-containers)  
+[Managing Containers](#managing-containers)  
+[Environment Variables](#environment-variables)  
+[Troubleshooting and FAQs](#common-issues-and-troubleshooting)
 
 ---
 
-### 1. Overview
-This project utilizes Docker and Docker Compose to create a portable, reproducible environment for avian flu data analysis. The Docker setup packages all dependencies and scripts into containers, allowing researchers to focus on analysis without worrying about setup.
+This project utilizes Docker and Docker Compose to create a portable, reproducible environment for avian flu data analysis. 
+The Docker setup packages all dependencies and scripts into containers, allowing researchers to focus on analysis without worrying about setup.
 
----
-
-### 2. System Requirements
+### System Requirements
 - **Operating System**: Windows, macOS, or Linux  
 - **Docker Version**: 20.10 or later  
 - **Docker Compose Version**: v2.0 or later  
@@ -29,7 +25,7 @@ This project utilizes Docker and Docker Compose to create a portable, reproducib
 
 ---
 
-### 3. Directory Structure
+### Directory Structure
 ```
 project-root/
 │
@@ -44,7 +40,8 @@ project-root/
 
 ---
 
-### 4. Configuration Files
+### Configuration Files
+
 #### `docker-compose.yml`
 Defines multiple services:
 - **backend**: Main computation engine for the app.
@@ -63,7 +60,8 @@ update_also_knowledge=true
 
 ---
 
-### 5. Building and Running Containers
+### Building and Running Containers
+
 #### **Initial Build**
 ```bash
 docker compose build
@@ -85,7 +83,8 @@ Stops and removes all containers in the project.
 
 ---
 
-### 6. Managing Containers
+### Managing Containers
+
 #### **Check Running Containers**
 ```bash
 docker ps
@@ -110,7 +109,7 @@ Replace `service_name` with the actual name (e.g., `frontend`, `backend`).
 
 ---
 
-### 7. Environment Variables
+### Environment Variables
 Defined in `.env` file:
 
 | Variable               | Description                                                                 |
@@ -125,7 +124,7 @@ Defined in `.env` file:
 
 ---
 
-### 8. Common Issues and Troubleshooting
+### Troubleshooting and FAQs
 | Problem                        | Solution                                                    |
 |-------------------------------|--------------------------------------------------------------|
 | Container fails to start      | Run `docker compose logs` to check error logs.               |
@@ -133,9 +132,7 @@ Defined in `.env` file:
 | Database not updating         | Set `update_also_knowledge=true` and restart.                |
 | Docker too slow               | Narrow scope using Global Filters (region/date) in frontend. |
 
----
 
-### 9. FAQ
 **Q: Do I need to rebuild after updating the `.env` file?**  
 A: No. Just restart the containers:
 ```bash
@@ -147,4 +144,5 @@ A: Yes. Add XLSX files to `knowledge/` and set `update_also_knowledge=true`.
 
 **Q: Can I run this on a server?**  
 A: Yes, deploy on any system with Docker installed. Configure port mapping as needed.
+
 
