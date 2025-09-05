@@ -138,8 +138,8 @@ Please, consider citing this work in your research as:
 ```
 Luca Cassenti, Tommaso Alfonsi, Anna Bernasconi (2025).
 AviFluHunt: a database and tool for flexible querying of avian influenza sequence data.
-[https://github.com/DEIB-GECO/AviFluHunt](https://github.com/DEIB-GECO/AviFluHunt).
-_Manuscript in preparation._
+https://github.com/DEIB-GECO/AviFluHunt.
+[Manuscript in preparation]
 ```
 
 ---
