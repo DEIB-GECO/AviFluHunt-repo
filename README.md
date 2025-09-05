@@ -5,11 +5,11 @@
 ---
 
 #### Table of Contents
-1. [Introduction](#introduction)  
-2. [Getting Started](#getting-started)  
-3. [User Interface Overview](#user-interface-overview)  
-4. [Additional Notes](#additional-notes)
-5. [Extra](#extra)
+1. [Introduction](#1-introduction)  
+2. [Getting Started](#2-getting-started)  
+3. [User Interface Overview](#3-user-interface-overview)  
+4. [Additional Notes](#4-additional-notes)
+5. [Extra](#5-extra)
 
 ---
 
@@ -67,17 +67,12 @@ Here follows a breakdown of the main interface sections (refer to the screenshot
 
 
 
-### Queries
-
-The queries are grouped into four **macro categories**. Select a macro group, then pick one of the listed queries from the dropdown.
+The **queries** are grouped into four **macro categories**. Select a macro group, then pick one of the listed queries from the dropdown.
 
 <img width="990" height="733" alt="image" src="https://github.com/user-attachments/assets/ff1cc452-2ee0-4ee1-a3dc-609ef34e7dd4" />
 
 
-
-### Global Settings
-
-Global filters affect **all** queries you run. Use them to narrow your dataset by **location** and **date range**.
+**Global filters** affect all queries you run. Use them to narrow your dataset by location and date range.
 
 1. **Location**  
    - **Regions**: Select from a list of continents or large areas (e.g., Asia, Europe).  
@@ -87,9 +82,6 @@ Global filters affect **all** queries you run. Use them to narrow your dataset b
    - Choose a **Start Date** and **End Date**. Only isolates collected within this date range are considered.
 
 You can revisit the **Global Settings** panel anytime to adjust these filters. The **Global Settings Recap** displays your current selection.
-
-
-### Taxonomy Tree
 
 The **Taxonomy Tree** is an informational tool showing avian species in the database. It is generated based on:
 - Automatically detected hosts in your dataset.  
