@@ -9,9 +9,13 @@ The Docker setup packages all dependencies and scripts into containers, allowing
 
 ### Table of Contents
 [System Requirements](#system-requirements)  
+
 [Directory Structure](#directory-structure)  
+
 [Quick Start](#quick-start)
+
 [Detailed Guide](#detailed-guide)  
+
 [Troubleshooting and FAQs](#troubleshooting-and-faqs)
 
 ---
@@ -165,6 +169,7 @@ A: Yes. Add XLSX files to `knowledge/` and set `update_also_knowledge=true`.
 
 **Q: Can I run this on a server?**  
 A: Yes, deploy on any system with Docker installed. Configure port mapping as needed.
+
 
 
 
