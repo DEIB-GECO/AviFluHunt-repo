@@ -7,10 +7,8 @@
 ### Table of Contents
 [System Requirements](#system-requirements)  
 [Directory Structure](#directory-structure)  
-[Configuration Files](#configuration-files)  
-[Building and Running Containers](#building-and-running-containers)  
-[Managing Containers](#managing-containers)  
-[Environment Variables](#environment-variables)  
+[Quick Start](#quick-start)
+[Detailed Guide](#detailed-guide)  
 [Troubleshooting and FAQs](#common-issues-and-troubleshooting)
 
 ---
@@ -63,15 +61,17 @@ docker compose up -d
 
 ---
 
-### Configuration Files
+### Detailed Guide
 
-#### `docker-compose.yml`
+#### Configuration Files
+
+##### `docker-compose.yml`
 Defines multiple services:
 - **backend**: Main computation engine for the app.
 - **frontend**: Web interface served to users.
 - **db**: Database container (if needed).
 
-#### `.env`
+##### `.env`
 User-defined file placed in the root directory with absolute paths to necessary data files and configuration flags.
 
 Example:
@@ -81,58 +81,57 @@ metadata_file=/absolute/path/to/your/metadata.xls
 update_also_knowledge=true
 ```
 
----
 
-### Building and Running Containers
+#### Building and Running Containers
 
-#### **Initial Build**
+##### **Initial Build**
 ```bash
 docker compose build
 ```
 This builds the containers according to the `Dockerfile`.
 
-#### **Starting Containers**
+##### **Starting Containers**
 ```bash
 docker compose up -d
 ```
 - The `-d` flag runs containers in detached (background) mode.
 - After startup, access the frontend at `http://localhost:8000` (or your configured port).
 
-#### **Shutting Down**
+##### **Shutting Down**
 ```bash
 docker compose down
 ```
 Stops and removes all containers in the project.
 
----
+
 
 ### Managing Containers
 
-#### **Check Running Containers**
+##### **Check Running Containers**
 ```bash
 docker ps
 ```
 
-#### **Check All Containers (including stopped)**
+##### **Check All Containers (including stopped)**
 ```bash
 docker ps -a
 ```
 
-#### **Remove All Containers from This Project**
+##### **Remove All Containers from This Project**
 If using a custom project name (e.g., `avian_flu`):
 ```bash
 docker rm -f $(docker ps -aq --filter "label=com.docker.compose.project=avian_flu")
 ```
 
-#### **Run Only One Container**
+##### **Run Only One Container**
 ```bash
 docker compose up -d service_name
 ```
 Replace `service_name` with the actual name (e.g., `frontend`, `backend`).
 
----
 
-### Environment Variables
+
+#### Environment Variables
 Defined in `.env` file:
 
 | Variable               | Description                                                                 |
@@ -167,6 +166,7 @@ A: Yes. Add XLSX files to `knowledge/` and set `update_also_knowledge=true`.
 
 **Q: Can I run this on a server?**  
 A: Yes, deploy on any system with Docker installed. Configure port mapping as needed.
+
 
 
 
