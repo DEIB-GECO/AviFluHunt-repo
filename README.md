@@ -72,7 +72,7 @@ Here follows a breakdown of the main interface sections (refer to the screenshot
 5. **Results Panel (Center / Bottom)**
    - Shows query outputs in a table or graph form, often with an option to download the data (CSV file) or the graph (PNG file).
 
----
+
 
 #### Queries
 
@@ -80,7 +80,7 @@ The queries are grouped into four **macro categories**. Select a macro group, th
 
 <img width="990" height="733" alt="image" src="https://github.com/user-attachments/assets/ff1cc452-2ee0-4ee1-a3dc-609ef34e7dd4" />
 
----
+
 
 #### Global Settings
 
@@ -95,7 +95,7 @@ Global filters affect **all** queries you run. Use them to narrow your dataset b
 
 You can revisit the **Global Settings** panel anytime to adjust these filters. The **Global Settings Recap** displays your current selection.
 
----
+
 
 #### Taxonomy Tree
 
@@ -105,7 +105,7 @@ The **Taxonomy Tree** is an informational tool showing avian species in the data
 
 ---
 
-#### 8. Additional Notes
+### 4. Additional Notes
 
 - **Performance**:  
   Large datasets (big `.fasta` or `.xls` files) may slow queries. Narrow your date range or location to improve performance.
@@ -124,18 +124,19 @@ The **Taxonomy Tree** is an informational tool showing avian species in the data
 
 ---
 
----
-
 ### Acknowledgements
 
 We gratefully acknowledge all data contributors, i.e. the Authors and their Originating Laboratories responsible for obtaining the specimens, and their Submitting Laboratories that generated the genetic sequence and metadata and shared via the GISAID Initiative the data on which part of this research is based. 
 
 The authors are grateful to Stefano Ceri, Alice Fusaro, and Edoardo Giussani for the fruitful discussions inspiring this research, and to Jana Penic for assisting with Influenza data preparation.
 
+---
 
 ### Funding
 The work was supported by Ministero dell'Università e della Ricerca (PRIN PNRR 2022 "SENSIBLE" project, n. P2022CNN2J), funded by the European Union, Next Generation EU, within PNRR M4.C2.1.1. 
 Politecnico di Milano, CUP D53D23017400001; Università degli Studi di Milano, CUP G53D23006690001. See our [project's website](https://sensible-prin.github.io/)! 
+
+---
 
 ### Citation
 
@@ -157,7 +158,10 @@ AviFluHunt: a database and tool for flexible querying of avian influenza sequenc
 _Manuscript in preparation._
 ```
 
+---
+
 ### Contact us
+
 https://annabernasconi.faculty.polimi.it/
 
 anna.bernasconi@polimi.it
