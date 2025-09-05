@@ -4,6 +4,9 @@
 
 ---
 
+This project utilizes Docker and Docker Compose to create a portable, reproducible environment for avian flu data analysis. 
+The Docker setup packages all dependencies and scripts into containers, allowing researchers to focus on analysis without worrying about setup.
+
 ### Table of Contents
 [System Requirements](#system-requirements)  
 [Directory Structure](#directory-structure)  
@@ -12,9 +15,6 @@
 [Troubleshooting and FAQs](#common-issues-and-troubleshooting)
 
 ---
-
-This project utilizes Docker and Docker Compose to create a portable, reproducible environment for avian flu data analysis. 
-The Docker setup packages all dependencies and scripts into containers, allowing researchers to focus on analysis without worrying about setup.
 
 ### System Requirements
 - **Operating System**: Windows, macOS, or Linux  
@@ -104,8 +104,7 @@ docker compose down
 Stops and removes all containers in the project.
 
 
-
-### Managing Containers
+#### Managing Containers
 
 ##### **Check Running Containers**
 ```bash
@@ -166,6 +165,7 @@ A: Yes. Add XLSX files to `knowledge/` and set `update_also_knowledge=true`.
 
 **Q: Can I run this on a server?**  
 A: Yes, deploy on any system with Docker installed. Configure port mapping as needed.
+
 
 
 
