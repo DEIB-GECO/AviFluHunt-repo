@@ -1,6 +1,8 @@
 ## AviFluHunt Database and Tool  
 
-**FDocker Environment Documentation**
+**Docker Environment Documentation**
+
+---
 
 ### Table of Contents
 [System Requirements](#system-requirements)  
@@ -37,6 +39,27 @@ project-root/
 ├── app/                         # Application source code (Flask backend, UI frontend)
 └── README.md                    # Project overview and usage
 ```
+
+---
+
+### Quick start
+
+- From [https://github.com/DEIB-GECO/AviFluHunt/](https://github.com/DEIB-GECO/AviFluHunt/), download the code (e.g., as a ZIP archive)
+- From the terminal, reach the docker_config subfolder
+- Open and edit the `.env` file by adding the paths of the sequences and metadata files (note that big files will require long processing times).
+  An example configuration file is:
+```env
+fasta_file=/absolute/path/to/your/sequences.fasta
+metadata_file=/absolute/path/to/your/metadata.xls
+update_also_knowledge=true
+```
+- Open the Docker application (installation guidelines on [https://docs.docker.com/get-started/get-docker/](https://docs.docker.com/get-started/get-docker/))
+- From the terminal, run the following: (the first will possibly require at least 20mins even for small datasets)
+```bash
+docker compose build
+docker compose up -d
+```
+- Open the application on localhost:8501
 
 ---
 
@@ -144,5 +167,6 @@ A: Yes. Add XLSX files to `knowledge/` and set `update_also_knowledge=true`.
 
 **Q: Can I run this on a server?**  
 A: Yes, deploy on any system with Docker installed. Configure port mapping as needed.
+
 
 
