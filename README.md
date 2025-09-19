@@ -31,13 +31,11 @@ For details on how to use AviFluHunt Docker, please visit [this link](https://gi
 1. **Access the Application**  
    Once Docker is running (using `docker compose up -d`), open your browser and navigate to the URL provided in the Docker logs (e.g., `http://localhost:8000`).
 
-2. **Prepare Required Data Files**  
-   - A `.fasta` file containing sequence data for analysis.  
-   - A `.xls` metadata file following the structure of GISAID downloads.  
-   - (Optional) Updated XLSX files containing domain knowledge if you set `update_also_knowledge=true` (details [here](https://github.com/DEIB-GECO/AviFluHunt/blob/main/docker_doc.md)).
-
-3. **Verify Global Settings**  
+2. **Verify Global Settings**  
    Before running queries, ensure the **Global Filters** (dates, locations) match the subset of data you expect to analyze.
+
+3. **Choose a Query and Start Exploring**  
+   Choose a group of queries and, from the top dropdown menu, select a query. Results are shown in the bottom right panel.
 
 ---
 
