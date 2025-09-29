@@ -46,13 +46,13 @@ def init_session():
     if 'global_states' not in st.session_state:
         st.session_state.global_states = None
     if 'global_start_year' not in st.session_state:
-        st.session_state.global_start_year = 2000
+        st.session_state.global_start_year = 1900
     if 'global_end_year' not in st.session_state:
-        st.session_state.global_end_year = 2025
+        st.session_state.global_end_year = 2099
     if 'global_start_month' not in st.session_state:
         st.session_state.global_start_month = 1
     if 'global_end_month' not in st.session_state:
-        st.session_state.global_end_month = 1
+        st.session_state.global_end_month = 12
 
 
 def set_default_table_order(selection, columns):
