@@ -1,0 +1,7 @@
+pandas==2.3.2
+PyYAML==6.0.1
+streamlit==1.40.1
+matplotlib==3.10.6
+pygwalker==0.4.9.15
+streamlit_option_menu==0.4.0
+taxoniq==1.0.3

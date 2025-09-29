@@ -160,20 +160,20 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
 
+# VS Code
+.vscode/
+
+# Streamlit
+.streamlit/secrets.toml
+
 # OTHER
+*.DS_Store
 *.fasta
 *.db
 *.xls
 *.csv
 *.fasta.log
 venv/
-
+*.sqlite
 *.fasta~
-
-identifier.sqlite
-
-.streamlit/secrets.toml
-
-data_backend/mutations_test.py
-
 *.png
