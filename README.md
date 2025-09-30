@@ -69,9 +69,13 @@ Open a terminal window in the AviFluHunt software directoy and run the command `
 
 ### Start AviFluHunt after the first time
 
-If you have already shut down the application with `docker-compose down` and want to bring it back up without applying any change to the input, you can edit the `.env` file and set the flag `update_also_knowledge` to `false` to speed-up the boot time; then, open a terminal window in the AviFluHunt software directory and run the command `docker-compose build && docker-compose up -d`. 
+This section applies if you have already shut down the application with `docker-compose down`. Otherwise, simply navigate to [http://localhost:8501](http://localhost:8501) to keep using the previous instance of AviFluHunt that is still running in the background. 
 
-If, instead, you changed the input files, set the flag `update_also_knowledge` equal to `true` in the `.env` file; make sure the paths to the metadata and sequence files are correct; then open a terminal window in the AviFluHunt software directory and run the command `docker-compose build && docker-compose up -d`. Notice that changes in the input files are additive, i.e., new isolates found in the input will be added to the isolates already present in the app's internal database. Isolates will never be removed from the app unless you erase the database (see [Erase AviFluHunt's database](#erase-avifluhunts-database)).
+**Restart the app without input changes**: 
+Edit the `.env` file and set the flag `update_also_knowledge` to `false` to speed-up the boot time. Then, open a terminal window in the AviFluHunt software directory and run the command `docker-compose build && docker-compose up -d`. 
+
+**Restart the app with input changes**: 
+Set the flag `update_also_knowledge` equal to `true` in the `.env` file and make sure the paths to the metadata and sequence files are still correct, or update them accordingly. Open a terminal window in the AviFluHunt software directory and run the command `docker-compose build && docker-compose up -d`. Notice that changes in the input files are additive, i.e., new isolates found in the input will be added to the isolates already present in the app's internal database. Isolates will never be removed from the app unless you erase the database (see [Erase AviFluHunt's database](#erase-avifluhunts-database)).
 
 
 ### Erase AviFluHunt's database
