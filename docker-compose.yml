@@ -19,7 +19,7 @@ services:
       context: .
       dockerfile: web_application/Dockerfile
     ports:
-      - "60543:8501"
+      - "8501:8501"
     volumes:
       - sqlite_data:/app/db  # Frontend can access the same SQLite db if needed
     networks:
